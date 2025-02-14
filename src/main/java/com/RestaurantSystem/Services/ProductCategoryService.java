@@ -29,16 +29,16 @@ public class ProductCategoryService {
     }
 
     public ProductCategory updateCategory(String categoryName, String newCategoryName) {
-        ProductCategory productCategory = productCategoryRepo.findById(categoryName).orElseThrow();
+        ProductCategory productCategory = productCategoryRepo.findById(categoryName)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
         ProductCategory response = null;
         if (productCategory != null) {
             productCategoryRepo.delete(productCategory);
 
-            ProductCategory newProductCategory = new ProductCategory(newCategoryName);
-            response = productCategoryRepo.save(newProductCategory);
+            productCategory = productCategoryRepo.save(new ProductCategory(newCategoryName));
         }
 
-        return response;
+        return productCategory;
     }
 }
