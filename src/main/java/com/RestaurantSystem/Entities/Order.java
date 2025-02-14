@@ -25,31 +25,37 @@ public class Order {
     @Setter private int tableNumber;
     private LocalDateTime openOrderDateUtc;
     @Setter private LocalDateTime completedOrderDateUtc;
-    @Setter private String annotations;
+    @Setter private String notes;
     @Setter private double price;
     @Setter private double priceWithServiceTax;
     @Setter private double discount;
     @Setter private OrderStatus status;
 
     @OneToMany
-    private List<Products> orderItems;
+    private List<Product> orderItems;
 
     // <>------------ Constructors ------------<>
-    public Order(int orderNumberOnDay, int tableNumber, List<Products> orderItems) {
+    public Order(int orderNumberOnDay, int tableNumber,String notes, List<Product> orderItems) {
         this.orderNumberOnDay = orderNumberOnDay;
         this.tableNumber = tableNumber;
         this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
+        this.notes = notes;
         this.orderItems = orderItems;
         this.status = OrderStatus.OPEN;
     }
 
 
     // <>------------ Methods ------------<>
-    public void addProducts(List<Products> products) {
-        this.orderItems.addAll(products);
+    public void addProducts(List<Product> products) {
+        if (this.status == OrderStatus.OPEN) {
+            this.orderItems.addAll(products);
+        }
     }
-    public void removeProducts(List<Products> products) {
-        this.orderItems.removeAll(products);
+
+    public void removeProducts(List<Product> products) {
+        if (this.status == OrderStatus.OPEN) {
+            this.orderItems.removeAll(products);
+        }
     }
 }
 

@@ -13,7 +13,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @Getter
-public class Products {
+public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -26,7 +26,7 @@ public class Products {
 
 
     // <>------------ Constructors ------------<>
-    public Products(String name, double price, String description, ProductCategory category) {
+    public Product(String name, double price, String description, ProductCategory category) {
         this.name = name;
         this.price = price;
         this.description = description;

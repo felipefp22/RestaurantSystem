@@ -2,7 +2,7 @@ package com.RestaurantSystem.Entities.ENUMs;
 
 public enum OrderStatus {
     OPEN,
-    CLOSEDFORPAYMENT,
+    CLOSEDWAITINGPAYMENT,
     PAID,
     CANCELLED
 }
