@@ -4,7 +4,10 @@ import com.RestaurantSystem.Entities.ProductCategory;
 import com.RestaurantSystem.Repositories.ProductCategoryRepo;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductCategoryService {
@@ -15,8 +18,8 @@ public class ProductCategoryService {
     }
 
     // <> ---------- Methods ---------- <>
-    public List<ProductCategory> getAllCategories() {
-        List<ProductCategory> response = productCategoryRepo.findAll();
+    public Set<ProductCategory> getAllCategories() {
+        Set<ProductCategory> response = new HashSet<>(productCategoryRepo.findAll());
 
         return response;
     }

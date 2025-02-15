@@ -1,9 +1,6 @@
 package com.RestaurantSystem.Controllers;
 
-import com.RestaurantSystem.Entities.DTOs.ChangeOrderTableDTO;
-import com.RestaurantSystem.Entities.DTOs.UpdateNotesOnOrderDTO;
-import com.RestaurantSystem.Entities.DTOs.CreateOrderDTO;
-import com.RestaurantSystem.Entities.DTOs.ProductsToAddOnOrderDTO;
+import com.RestaurantSystem.Entities.DTOs.*;
 import com.RestaurantSystem.Entities.Order;
 import com.RestaurantSystem.Services.OrderService;
 import org.springframework.http.ResponseEntity;
@@ -68,22 +65,22 @@ public class OrderController {
     }
 
     @PutMapping("/close-order/{orderID}")
-    public ResponseEntity<Order> closeOrder(@PathVariable UUID orderID) {
-        var response = orderService.closeOrder(orderID);
+    public ResponseEntity<Order> closeOrder(@PathVariable OrderToCloseDTO orderToCloseDTO) {
+        var response = orderService.closeOrder(orderToCloseDTO);
 
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/confirm-paid-order/{orderID}")
-    public ResponseEntity<Order> confirmPaidOrder(@PathVariable UUID orderID) {
-        var response = orderService.confirmPaidOrder(orderID);
+    public ResponseEntity<Order> confirmPaidOrder(@PathVariable ConfirmOrCancelOrderDTO confirmOrderDTO) {
+        var response = orderService.confirmPaidOrder(confirmOrderDTO);
 
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/cancel-order/{orderID}")
-    public ResponseEntity<Order> cancelOrder(@PathVariable UUID orderID) {
-        var response = orderService.cancelOrder(orderID);
+    public ResponseEntity<Order> cancelOrder(@PathVariable ConfirmOrCancelOrderDTO confirmOrCancelOrderDTO) {
+        var response = orderService.cancelOrder(confirmOrCancelOrderDTO);
 
         return ResponseEntity.ok(response);
     }

@@ -5,6 +5,8 @@ import com.RestaurantSystem.Services.ProductCategoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/product-category")
 public class ProductCategoryController {
@@ -16,7 +18,7 @@ public class ProductCategoryController {
 
     // <>------------ Methods ------------<>
     @GetMapping("/get-all-categories")
-    public ResponseEntity<ProductCategory> getAllCategories() {
+    public ResponseEntity<Set<ProductCategory>> getAllCategories() {
         var response = productCategoryService.getAllCategories();
 
         return ResponseEntity.ok(response);

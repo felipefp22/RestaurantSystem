@@ -27,8 +27,9 @@ public class Order {
     @Setter private LocalDateTime completedOrderDateUtc;
     @Setter private String notes;
     @Setter private double price;
-    @Setter private double priceWithServiceTax;
+    @Setter private double serviceTax;
     @Setter private double discount;
+    @Setter private double totalPrice;
     @Setter private OrderStatus status;
 
     @OneToMany
