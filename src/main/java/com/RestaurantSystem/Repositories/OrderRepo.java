@@ -1,7 +1,7 @@
 package com.RestaurantSystem.Repositories;
 
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
-import com.RestaurantSystem.Entities.Order;
+import com.RestaurantSystem.Entities.Order.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

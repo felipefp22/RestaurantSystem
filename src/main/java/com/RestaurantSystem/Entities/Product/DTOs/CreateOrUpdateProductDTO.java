@@ -1,4 +1,4 @@
-package com.RestaurantSystem.Entities.DTOs;
+package com.RestaurantSystem.Entities.Product.DTOs;
 
 import java.util.UUID;
 

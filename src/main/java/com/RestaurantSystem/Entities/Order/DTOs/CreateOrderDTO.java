@@ -1,5 +1,5 @@
-package com.RestaurantSystem.Entities.DTOs;
-import com.RestaurantSystem.Entities.Product;
+package com.RestaurantSystem.Entities.Order.DTOs;
+import com.RestaurantSystem.Entities.Product.Product;
 
 import java.util.List;
 
