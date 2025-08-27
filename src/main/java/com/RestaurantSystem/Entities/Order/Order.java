@@ -4,15 +4,16 @@ import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 
 import java.util.UUID;
 
 @Entity
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -36,10 +37,18 @@ public class Order {
 
     private OrderStatus status;
 
-    @OneToMany
-    private List<Product> orderItems;
+    @ManyToMany
+    @JoinTable(
+            name = "order_products",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private List<Product> orderItems = new ArrayList<>();
 
     // <>------------ Constructors ------------<>
+    public Order() {
+    }
+
     public Order(int orderNumberOnShift, String tableNumberOrDeliveryOrPickup, String notes, List<Product> orderItems) {
         this.orderNumberOnShift = orderNumberOnShift;
         this.tableNumberOrDeliveryOrPickup = tableNumberOrDeliveryOrPickup;

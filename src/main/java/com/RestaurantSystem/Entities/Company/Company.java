@@ -29,6 +29,7 @@ public class Company {
 
     private List<String> productsCategories;
 
+    @OneToMany(mappedBy = "company")
     private List<Product> products;
 
     @OneToMany(mappedBy = "company")

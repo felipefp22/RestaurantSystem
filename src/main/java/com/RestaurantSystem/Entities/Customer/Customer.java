@@ -27,5 +27,9 @@ public class Customer {
     private Double lng;
     private String complement;
 
+    //<>------------ Constructors ------------<>
+    public Customer() {
+    }
+
 
 }
