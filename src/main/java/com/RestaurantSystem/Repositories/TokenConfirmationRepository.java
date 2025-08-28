@@ -1,0 +1,17 @@
+package com.RestaurantSystem.Repositories;
+
+import com.RestaurantSystem.Entities.User.TokenConfirmation;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface TokenConfirmationRepository extends JpaRepository<TokenConfirmation, UUID> {
+
+    List<TokenConfirmation> findAllByUserToChangeID(String userToChangeID);
+
+    Optional<TokenConfirmation> findByConfirmationCode(int code);
+}
