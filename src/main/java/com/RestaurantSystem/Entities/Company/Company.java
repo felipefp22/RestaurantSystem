@@ -1,11 +1,11 @@
 package com.RestaurantSystem.Entities.Company;
 
+import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import com.RestaurantSystem.Entities.User.AuthUserLogin;
+import jakarta.persistence.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +14,7 @@ import java.util.UUID;
 public class Company {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     private String owner;
@@ -42,6 +43,20 @@ public class Company {
     public Company() {
     }
 
+    public Company(CreateCompanyDTO createCompanyDTO, AuthUserLogin owner){
+        this.owner = owner.getEmail();
+        this.companyName = createCompanyDTO.companyName();
+        this.companyEmail = createCompanyDTO.companyEmail();
+        this.companyPhone = createCompanyDTO.companyPhone();
+        this.companyAddress = createCompanyDTO.companyAddress();
+        this.urlCompanyLogo = createCompanyDTO.urlCompanyLogo();
+        this.managers = List.of();
+        this.employees = List.of();
+        this.productsCategories = List.of();
+        this.products = List.of();
+        this.customers = List.of();
+        this.shifts = List.of();
+    }
 
     //<>------------ Getters and setters ------------<>
 
