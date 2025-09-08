@@ -1,11 +1,19 @@
 package com.RestaurantSystem.Entities.Order.DTOs;
-import com.RestaurantSystem.Entities.Product.Product;
 
 import java.util.List;
+import java.util.UUID;
 
 public record CreateOrderDTO(
-        int tableNumber,
-        List<Product> orderItems,
+        String tableNumberOrDeliveryOrPickup,
+        UUID customerID,
+        String pickupName,
+        List<OrderItemDTO> orderItemsIDs,
         String notes
 ) {
+    public record OrderItemDTO(
+            UUID productID,
+            int quantity
+    ) {
+
+    }
 }

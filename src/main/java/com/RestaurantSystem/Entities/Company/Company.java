@@ -38,6 +38,8 @@ public class Company {
     @OneToMany(mappedBy = "company")
     private List<Shift> shifts;
 
+    private int numberOfTables;
+
     //<>------------ Constructors ------------<>
     public Company() {
     }
@@ -54,6 +56,7 @@ public class Company {
         this.productsCategories = List.of();
         this.customers = List.of();
         this.shifts = List.of();
+        this.numberOfTables = createCompanyDTO.numberOfTables();
     }
 
     //<>------------ Getters and setters ------------<>
@@ -145,5 +148,12 @@ public class Company {
 
     public List<Shift> getShifts() {
         return shifts;
+    }
+
+    public int getNumberOfTables() {
+        return numberOfTables;
+    }
+    public void setNumberOfTables(int numberOfTables) {
+        this.numberOfTables = numberOfTables;
     }
 }

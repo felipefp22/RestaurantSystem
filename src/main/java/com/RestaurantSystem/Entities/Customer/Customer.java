@@ -2,9 +2,11 @@ package com.RestaurantSystem.Entities.Customer;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
+import com.RestaurantSystem.Entities.Order.Order;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -17,6 +19,9 @@ public class Customer {
     @JsonIgnore
     @ManyToOne
     private Company company;
+
+    @OneToMany(mappedBy = "customer")
+    private List<Order> orders;
 
     private String customerName;
     private String phone;
@@ -34,6 +39,7 @@ public class Customer {
     }
     public Customer(Company company, CreateOrUpdateCustomerDTO createDTO) {
         this.company = company;
+        this.orders = List.of();
         this.customerName = createDTO.customerName();
         this.phone = createDTO.phone();
         this.address = createDTO.address();
@@ -54,6 +60,10 @@ public class Customer {
 
     public Company getCompany() {
         return company;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
     }
 
     public String getCustomerName() {

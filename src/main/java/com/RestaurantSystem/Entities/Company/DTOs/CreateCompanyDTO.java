@@ -5,6 +5,7 @@ public record CreateCompanyDTO(
     String companyEmail,
     String companyPhone,
     String companyAddress,
-    String urlCompanyLogo
+    String urlCompanyLogo,
+    int numberOfTables
 ) {
 }

@@ -1,6 +1,8 @@
 package com.RestaurantSystem.Entities.Order;
 
+import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
+import com.RestaurantSystem.Entities.Order.DTOs.CreateOrderDTO;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import jakarta.persistence.*;
@@ -26,6 +28,11 @@ public class Order {
     private int orderNumberOnShift;
     private String tableNumberOrDeliveryOrPickup;
 
+    @ManyToOne
+    private Customer customer;
+
+    private String pickupName;
+
     private LocalDateTime openOrderDateUtc;
     private LocalDateTime completedOrderDateUtc;
 
@@ -35,6 +42,7 @@ public class Order {
     private double totalPrice;
     private String notes;
 
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -44,12 +52,14 @@ public class Order {
     public Order() {
     }
 
-    public Order(int orderNumberOnShift, String tableNumberOrDeliveryOrPickup, String notes, List<OrdersItems> orderItems) {
+    public Order(Shift shift, int orderNumberOnShift, CreateOrderDTO createOrderDTO, Customer customer) {
+        this.shift = shift;
         this.orderNumberOnShift = orderNumberOnShift;
-        this.tableNumberOrDeliveryOrPickup = tableNumberOrDeliveryOrPickup;
+        this.tableNumberOrDeliveryOrPickup = createOrderDTO.tableNumberOrDeliveryOrPickup();
+        this.customer = customer;
+        this.pickupName = createOrderDTO.pickupName();
         this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
-        this.notes = notes;
-        this.orderItems = orderItems;
+        this.notes = createOrderDTO.notes();
         this.status = OrderStatus.OPEN;
     }
 
@@ -59,6 +69,7 @@ public class Order {
     public UUID getId() {
         return id;
     }
+
     public Shift getShift() {
         return shift;
     }
@@ -70,6 +81,23 @@ public class Order {
     public String getTableNumberOrDeliveryOrPickup() {
         return tableNumberOrDeliveryOrPickup;
     }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public String getPickupName() {
+        return pickupName;
+    }
+
+    public void setPickupName(String pickupName) {
+        this.pickupName = pickupName;
+    }
+
     public LocalDateTime getOpenOrderDateUtc() {
         return openOrderDateUtc;
     }
