@@ -8,6 +8,6 @@ public record CreateOrUpdateProductDTO(
         double price,
         String description,
         String imagePath,
-        String category
+        String productCategoryID
 ) {
 }

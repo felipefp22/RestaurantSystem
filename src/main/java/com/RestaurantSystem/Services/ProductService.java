@@ -3,59 +3,57 @@ package com.RestaurantSystem.Services;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
 import com.RestaurantSystem.Entities.Product.Product;
+import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
+import com.RestaurantSystem.Repositories.ProductCategoryRepo;
 import com.RestaurantSystem.Repositories.ProductRepo;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class ProductService {
     private final ProductRepo productRepo;
+    private final ProductCategoryRepo productCategoryRepo;
     private final AuthUserRepository authUserRepository;
     private final CompanyRepo companyRepo;
 
-    public ProductService(ProductRepo productRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo) {
+    public ProductService(ProductRepo productRepo, ProductCategoryRepo productCategoryRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo) {
         this.productRepo = productRepo;
+        this.productCategoryRepo = productCategoryRepo;
         this.authUserRepository = authUserRepository;
         this.companyRepo = companyRepo;
     }
 
     // <> ---------- Methods ---------- <>
-    public List<Product> getAllProducts(String requesterID) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
+//    public List<Product> getAllProducts(String requesterID) {
+//        AuthUserLogin requester = authUserRepository.findById(requesterID)
+//                .orElseThrow(() -> new RuntimeException("Requester not found"));
+//
+//        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+//                .orElseThrow(() -> new RuntimeException("Company not found"));
+//
+//        return company.getProducts();
+//    }
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        return company.getProducts();
-    }
-
-    public List<Product> getProductsByCategory(String requesterID, String category) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-
-        return company.getProducts().stream().filter(x -> x.getCategory().equals(category)).toList();
-    }
+//    public List<Product> getProductsByCategory(String requesterID, String category) {
+//        AuthUserLogin requester = authUserRepository.findById(requesterID)
+//                .orElseThrow(() -> new RuntimeException("Requester not found"));
+//
+//        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+//                .orElseThrow(() -> new RuntimeException("Company not found"));
+//
+//
+//        return company.getProducts().stream().filter(x -> x.getCategory().equals(category)).toList();
+//    }
 
     public Product getProductById(String requesterID, UUID productId) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        return company.getProducts().stream().filter(x -> x.getId().equals(productId)).findFirst()
+        return productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
@@ -66,12 +64,14 @@ public class ProductService {
         Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
+        ProductCategory productCategoryToAddProduct = productCategoryRepo.findById(UUID.fromString(productToCreate.productCategoryID()))
+                .orElseThrow(() -> new RuntimeException("Category not found"));
         if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product, ask to manager");
-        if (!company.getProductsCategories().contains(productToCreate.category()))
-            throw new RuntimeException("Category not found, create it first");
 
-        Product product = new Product(productToCreate, company, productToCreate.category());
+        Product product = new Product(productToCreate, productCategoryToAddProduct);
+
+        productRepo.save(product);
 
         return productRepo.save(product);
     }
@@ -86,21 +86,20 @@ public class ProductService {
         if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product, ask to manager");
 
-        Product productToUpdate = company.getProducts().stream()
-                .filter(x -> x.getId().equals(productToUpdateDTO.id()))
-                .findFirst()
+        Product productToUpdate = productRepo.findById(productToUpdateDTO.id())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+        ProductCategory productCategoryToAddProduct = productCategoryRepo.findById(UUID.fromString(productToUpdateDTO.productCategoryID()))
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
         productToUpdate.setName(productToUpdateDTO.name());
         productToUpdate.setPrice(productToUpdateDTO.price());
         productToUpdate.setDescription(productToUpdateDTO.description());
         productToUpdate.setImagePath(productToUpdateDTO.imagePath());
 
-        if (productToUpdateDTO.category() != productToUpdateDTO.category()) {
-            if (!company.getProductsCategories().contains(productToUpdateDTO.category()))
+        if (productToUpdate.getProductCategory() != productCategoryToAddProduct) {
+            if (!company.getProductsCategories().contains(productCategoryToAddProduct))
                 throw new RuntimeException("Category not found, create it first");
-
-            productToUpdate.setCategory(productToUpdateDTO.category());
+            productToUpdate.setProductCategory(productCategoryToAddProduct);
         }
 
         return productRepo.save(productToUpdate);
@@ -116,10 +115,11 @@ public class ProductService {
         if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product, ask to manager");
 
-        Product productToDelete = company.getProducts().stream()
-                .filter(x -> x.getId().equals(productId))
-                .findFirst()
+        Product productToDelete = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (productToDelete.getProductCategory().getCompany().getId() != company.getId())
+            throw new RuntimeException("This product does not belong to your company");
 
         productRepo.delete(productToDelete);
     }

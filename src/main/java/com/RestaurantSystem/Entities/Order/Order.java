@@ -37,19 +37,14 @@ public class Order {
 
     private OrderStatus status;
 
-    @ManyToMany
-    @JoinTable(
-            name = "order_products",
-            joinColumns = @JoinColumn(name = "order_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private List<Product> orderItems = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrdersItems> orderItems = new ArrayList<>();
 
     // <>------------ Constructors ------------<>
     public Order() {
     }
 
-    public Order(int orderNumberOnShift, String tableNumberOrDeliveryOrPickup, String notes, List<Product> orderItems) {
+    public Order(int orderNumberOnShift, String tableNumberOrDeliveryOrPickup, String notes, List<OrdersItems> orderItems) {
         this.orderNumberOnShift = orderNumberOnShift;
         this.tableNumberOrDeliveryOrPickup = tableNumberOrDeliveryOrPickup;
         this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
@@ -131,13 +126,17 @@ public class Order {
         this.status = status;
     }
 
-    public void addProducts(List<Product> products) {
+    public List<OrdersItems> getOrderItems() {
+        return orderItems;
+    }
+
+    public void addProducts(List<OrdersItems> products) {
         if (this.status == OrderStatus.OPEN) {
             this.orderItems.addAll(products);
         }
     }
 
-    public void removeProducts(List<Product> products) {
+    public void removeProducts(List<OrdersItems> products) {
         if (this.status == OrderStatus.OPEN) {
             this.orderItems.removeAll(products);
         }

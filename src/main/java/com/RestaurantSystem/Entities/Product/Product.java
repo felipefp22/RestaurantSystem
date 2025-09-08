@@ -1,7 +1,8 @@
 package com.RestaurantSystem.Entities.Product;
 
-import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
+import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -13,25 +14,23 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @JsonIgnore
     @ManyToOne
-    private Company company;
+    private ProductCategory productCategory;
 
     private String name;
     private double price;
     private String description;
     private String imagePath;
 
-    private String category;
-
     // <>------------ Constructors ------------<>
     public Product() {
     }
-    public Product(CreateOrUpdateProductDTO productToCreate, Company company, String category) {
-        this.company = company;
+    public Product(CreateOrUpdateProductDTO productToCreate, ProductCategory productCategory) {
+        this.productCategory = productCategory;
         this.name = productToCreate.name();
         this.price = productToCreate.price();
         this.description = productToCreate.description();
-        this.category = category;
     }
 
     // <>------------ Getters and Setters ------------<>
@@ -39,8 +38,11 @@ public class Product {
         return id;
     }
 
-    public Company getCompany() {
-        return company;
+    public ProductCategory getProductCategory() {
+        return productCategory;
+    }
+    public void setProductCategory(ProductCategory productCategory) {
+        this.productCategory = productCategory;
     }
 
     public String getName() {
@@ -73,13 +75,5 @@ public class Product {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 }

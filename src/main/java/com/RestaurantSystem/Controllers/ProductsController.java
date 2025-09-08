@@ -23,23 +23,23 @@ public class ProductsController {
     }
 
     // <>------------ Methods ------------<>
-    @GetMapping("/get-all-products")
-    public ResponseEntity<List<Product>> getAllProducts(@RequestHeader("Authorization") String authorizationHeader) {
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-
-        var response = productService.getAllProducts(requesterID);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/get-products-by-category/{category}")
-    public ResponseEntity<List<Product>> getProductsByCategory(@RequestHeader("Authorization") String authorizationHeader,
-                                                              @PathVariable String category) {
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-        var response = productService.getProductsByCategory(requesterID, category);
-
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping("/get-all-products")
+//    public ResponseEntity<List<Product>> getAllProducts(@RequestHeader("Authorization") String authorizationHeader) {
+//        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+//
+//        var response = productService.getAllProducts(requesterID);
+//
+//        return ResponseEntity.ok(response);
+//    }
+//
+//    @GetMapping("/get-products-by-category/{category}")
+//    public ResponseEntity<List<Product>> getProductsByCategory(@RequestHeader("Authorization") String authorizationHeader,
+//                                                              @PathVariable String category) {
+//        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+//        var response = productService.getProductsByCategory(requesterID, category);
+//
+//        return ResponseEntity.ok(response);
+//    }
 
     @GetMapping("/get-products-by-id/{productId}")
     public ResponseEntity<Product> getProductById(@RequestHeader("Authorization") String authorizationHeader,

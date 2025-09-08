@@ -3,6 +3,7 @@ package com.RestaurantSystem.Entities.Company;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Product.Product;
+import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import jakarta.persistence.*;
@@ -28,10 +29,8 @@ public class Company {
     private List<String> managers;
     private List<String> employees;
 
-    private List<String> productsCategories;
-
-    @OneToMany(mappedBy = "company")
-    private List<Product> products;
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductCategory> productsCategories;
 
     @OneToMany(mappedBy = "company")
     private List<Customer> customers;
@@ -53,7 +52,6 @@ public class Company {
         this.managers = List.of();
         this.employees = List.of();
         this.productsCategories = List.of();
-        this.products = List.of();
         this.customers = List.of();
         this.shifts = List.of();
     }
@@ -136,22 +134,10 @@ public class Company {
         return this.employees;
     }
 
-    public List<String> getProductsCategories() {
+    public List<ProductCategory> getProductsCategories() {
         return productsCategories;
     }
 
-    public List<String> addProductsCategory(String category) {
-        this.productsCategories.add(category);
-        return this.productsCategories;
-    }
-    public List<String> removeProductsCategory(String category) {
-        this.productsCategories.remove(category);
-        return this.productsCategories;
-    }
-
-    public List<Product> getProducts() {
-        return products;
-    }
 
     public List<Customer> getCustomers() {
         return customers;

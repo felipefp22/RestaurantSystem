@@ -1,8 +1,10 @@
 package com.RestaurantSystem.Controllers;
 
+import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.CompanyService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,11 +23,13 @@ public class CompanyController {
     // <> ------------- Methods ------------- <>
 
     @PostMapping("/create-company")
-    public void createCompany(@RequestHeader("Authorization") String authorizationHeader,
-                              @RequestBody CreateCompanyDTO createCompanyDTO) {
+    public ResponseEntity<Company> createCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                                 @RequestBody CreateCompanyDTO createCompanyDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        companyService.createCompany(requesterID, createCompanyDTO);
+        var response = companyService.createCompany(requesterID, createCompanyDTO);
+
+        return ResponseEntity.ok(response);
     }
 }
