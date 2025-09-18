@@ -2,10 +2,7 @@ package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
-import com.RestaurantSystem.Entities.Order.DTOs.ConfirmOrCancelOrderDTO;
-import com.RestaurantSystem.Entities.Order.DTOs.CreateOrderDTO;
-import com.RestaurantSystem.Entities.Order.DTOs.OrderToCloseDTO;
-import com.RestaurantSystem.Entities.Order.DTOs.ProductsToAddOnOrderDTO;
+import com.RestaurantSystem.Entities.Order.DTOs.*;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Order.Order;
 import com.RestaurantSystem.Entities.Order.OrdersItems;
@@ -17,9 +14,12 @@ import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.OrderRepo;
 import com.RestaurantSystem.Repositories.OrdersItemsRepo;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,11 +44,6 @@ public class OrderService {
     }
 
     // <> ---------- Methods ---------- <>
-
-    public List<Order> getOrdersByDate(LocalDateTime date) {
-
-
-    }
 
     public Order createOrder(String requesterID, CreateOrderDTO orderToCreate) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
@@ -76,7 +71,8 @@ public class OrderService {
 
         if (!orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && !orderToCreate.tableNumberOrDeliveryOrPickup().equals("pickup")) {
             int tableNumber = Integer.parseInt(orderToCreate.tableNumberOrDeliveryOrPickup());
-            if(tableNumber > company.getNumberOfTables() || tableNumber < 1) throw new RuntimeException("Invalid table number.");
+            if (tableNumber > company.getNumberOfTables() || tableNumber < 1)
+                throw new RuntimeException("Invalid table number.");
             if (currentShift.getOrders().stream()
                     .anyMatch(o -> o.getTableNumberOrDeliveryOrPickup().equals(orderToCreate.tableNumberOrDeliveryOrPickup()) && (o.getStatus() == OrderStatus.OPEN || o.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT))) {
                 throw new RuntimeException("Table is already occupied.");
@@ -100,83 +96,245 @@ public class OrderService {
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
     }
 
-    public Order addNotesOnOrder(UUID uuid, String notes) {
+    public Order addNotesOnOrder(String requesterID, UUID orderId, String notes) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+
+        Shift currentShift = company.getShifts().stream()
+                .filter(x -> x.getEndTimeUTC() == null)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
+
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderId).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't add notes to no open orders.");
+
+        order.setNotes(notes);
+
+        return orderRepo.save(order);
     }
 
-    public Order addProductsOnOrder(ProductsToAddOnOrderDTO products) {
+    public Order addProductsOnOrder(String requesterID, UUID orderID, ProductsToAddOnOrderDTO productsToAdd) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Shift currentShift = company.getShifts().stream()
+                .filter(x -> x.getEndTimeUTC() == null)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
+
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderID).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't add products to no open orders.");
+
+        List<OrdersItems> ordersItems = productsToAdd.products().stream().map(x -> {
+            Product product = company.getProductsCategories().stream().flatMap(c -> c.getProducts().stream())
+                    .filter(p -> p.getId().equals(x.productId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + x.productId()));
+
+
+            return new OrdersItems(order, product, x.quantity());
+        }).toList();
+
+        ordersItemsRepo.saveAll(ordersItems);
+
+        return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding products."));
     }
 
-    public Order removeProductsOnOrder(ProductsToAddOnOrderDTO products) {
+    public Order removeProductsOnOrder(String requesterID, UUID orderID, ProductsToAddOnOrderDTO productsToRemove) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Shift currentShift = company.getShifts().stream()
+                .filter(x -> x.getEndTimeUTC() == null)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
+
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderID).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        if (order.getStatus() != OrderStatus.OPEN)
+            throw new RuntimeException("Can't remove products to no open orders.");
+
+        List<OrdersItems> itemsToDelete = new ArrayList<>();
+
+        productsToRemove.products().forEach(x -> {
+            order.getOrderItems().forEach(y -> {
+                if (y.getProductId().equals(x.productId())) {
+                    if (x.quantity() >= y.getQuantity()) {
+                        itemsToDelete.add(y);
+                    } else {
+                        y.setQuantity(y.getQuantity() - x.quantity());
+                        ordersItemsRepo.save(y);
+                    }
+                }
+            });
+        });
+
+        itemsToDelete.forEach(item -> {
+            order.getOrderItems().remove(item); // keep object graph consistent
+            ordersItemsRepo.delete(item);
+        });
+
+        return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing products."));
     }
 
-    public Order moveToAnotherTable(UUID uuid, int tableNumber) {
-        List<Order> openedOrders = orderRepo.findAllByTableNumberAndStatus(tableNumber, OrderStatus.OPEN);
-        Order order = orderRepo.findById(uuid).orElseThrow(() -> new RuntimeException("Order not found."));
+    public Order moveToAnotherTable(String requesterID, ChangeOrderTableDTO changeOrderTableDTO) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        if (openedOrders.size() == 0) {
-            order.setTableNumberOrDeliveryOrToGo(tableNumber);
-            return orderRepo.save(order);
+        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Shift currentShift = company.getShifts().stream()
+                .filter(x -> x.getEndTimeUTC() == null)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
+
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == changeOrderTableDTO.orderID()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        if (order.getStatus() != OrderStatus.OPEN)
+            throw new RuntimeException("Can't remove products to no open orders.");
+
+        if (changeOrderTableDTO.tableNumberOrDeliveryOrPickup().equals("delivery")) {
+            if (changeOrderTableDTO.customerID() != null) {
+                Customer customer = company.getCustomers().stream()
+                        .filter(c -> c.getId().toString().equals(changeOrderTableDTO.customerID()))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Customer not found in the company."));
+
+                order.setCustomer(customer);
+                order.setPickupName(null);
+                order.setTableNumberOrDeliveryOrPickup("delivery");
+            } else {
+                throw new RuntimeException("Customer is required for delivery orders.");
+            }
+        } else if (changeOrderTableDTO.tableNumberOrDeliveryOrPickup().equals("pickup")) {
+            if (changeOrderTableDTO.pickupName() != null && !changeOrderTableDTO.pickupName().isEmpty()) {
+                order.setPickupName(changeOrderTableDTO.pickupName());
+                order.setCustomer(changeOrderTableDTO.customerID() != null ? company.getCustomers().stream()
+                        .filter(c -> c.getId().toString().equals(changeOrderTableDTO.customerID()))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Customer not found in the company.")) : null);
+
+                order.setTableNumberOrDeliveryOrPickup("pickup");
+            } else {
+                throw new RuntimeException("Pickup name is required for pickup orders.");
+            }
         } else {
-            throw new RuntimeException("Table is already occupied.");
+            int newTableNumber = Integer.parseInt(changeOrderTableDTO.tableNumberOrDeliveryOrPickup()))
+            if (newTableNumber > company.getNumberOfTables() || newTableNumber < 1)
+                throw new RuntimeException("Invalid table number.");
+            if (currentShift.getOrders().stream()
+                    .anyMatch(o -> o.getTableNumberOrDeliveryOrPickup().equals(String.valueOf(newTableNumber)) && (o.getStatus() == OrderStatus.OPEN || o.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT))) {
+                throw new RuntimeException("Table is already occupied.");
+            }
+
+            order.setTableNumberOrDeliveryOrPickup(String.valueOf(newTableNumber));
+            order.setCustomer(changeOrderTableDTO.customerID() != null ? company.getCustomers().stream()
+                    .filter(c -> c.getId().toString().equals(changeOrderTableDTO.customerID()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Customer not found in the company.")) : null);
+
+            order.setPickupName(null);
         }
 
+        order.setNotes(changeOrderTableDTO.notes());
+        orderRepo.save(order);
+
+        return orderRepo.save(order);
     }
 
-    public Order closeOrder(OrderToCloseDTO orderToCloseDTO) {
-        Order order = orderRepo.findById(orderToCloseDTO.orderID()).orElseThrow(() -> new RuntimeException("Order not found."));
+    public Order closeOrder(String requesterID, OrderToCloseDTO orderToCloseDTO) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        if (order.getStatus() == OrderStatus.OPEN) {
-            calculateTotalPriceTaxAndDiscount(order, orderToCloseDTO);
-            order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
+        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+                .orElseThrow(() -> new RuntimeException("Company not found"));
 
-            return orderRepo.save(order);
-        } else if (order.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT) {
-            throw new RuntimeException("Order is already closed waiting payment.");
-        } else if (order.getStatus() == OrderStatus.PAID) {
-            throw new RuntimeException("Order is already paid.");
-        } else {
-            throw new RuntimeException("Error.");
-        }
+        Shift currentShift = company.getShifts().stream()
+                .filter(x -> x.getEndTimeUTC() == null)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
+
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderToCloseDTO.orderID()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't close to no open orders.");
+
+        calculateTotalPriceTaxAndDiscount(order, orderToCloseDTO);
+        order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
+        order.setCompletedByUser(requester);
+
+        return orderRepo.save(order);
     }
 
-    public Order confirmPaidOrder(ConfirmOrCancelOrderDTO confirmOrderDTO) {
-        Order order = orderRepo.findById(confirmOrderDTO.orderID()).orElseThrow(() -> new RuntimeException("Order not found."));
+    public Order confirmPaidOrder(String requesterID, UUID orderID) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Shift currentShift = company.getShifts().stream()
+                .filter(x -> x.getEndTimeUTC() == null)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
+
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderID).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't close to no open orders.");
 
         if (order.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT) {
             order.setStatus(OrderStatus.PAID);
+            order.setCompletedByUser(requester);
+            order.setCompletedOrderDateUtc(LocalDateTime.now(ZoneOffset.UTC));
+
             return orderRepo.save(order);
-        } else if (order.getStatus() == OrderStatus.CANCELLED) {
-            if(confirmOrderDTO.adminPassword().equals(adminPassword)) {
-                order.setStatus(OrderStatus.PAID);
-            } else {
-                throw new RuntimeException("Admin Password Wrong.");
-            }
-        }else if (order.getStatus() == OrderStatus.PAID) {
+        } else if (order.getStatus() == OrderStatus.PAID) {
             throw new RuntimeException("Order is already paid.");
-        } else if (order.getStatus() == OrderStatus.OPEN) {
-            throw new RuntimeException("Order is Open, you need to close it first.");
         } else {
-            throw new RuntimeException("Error.");
+            throw new RuntimeException("Only orders with status 'CLOSEDWAITINGPAYMENT' can be confirmed as paid.");
         }
     }
 
-    public Order cancelOrder(ConfirmOrCancelOrderDTO cancelOrderDTO) {
-        Order order = orderRepo.findById(cancelOrderDTO.orderID()).orElseThrow(() -> new RuntimeException("Order not found."));
+    public Order cancelOrder(String requesterID, ConfirmOrCancelOrderDTO cancelOrderDTO) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        if (order.getStatus() == OrderStatus.OPEN || order.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT || order.getStatus() == OrderStatus.PAID) {
-            if (cancelOrderDTO.adminPassword().equals(adminPassword)) {
-                order.setStatus(OrderStatus.CANCELLED);
+        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+                .orElseThrow(() -> new RuntimeException("Company not found"));
 
-                return orderRepo.save(order);
-            } else {
-                throw new RuntimeException("Password Wrong.");
-            }
-        } else if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new RuntimeException("Order is already cancelled.");
+        Shift currentShift = company.getShifts().stream()
+                .filter(x -> x.getEndTimeUTC() == null)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
+
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == cancelOrderDTO.orderID()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't close to no open orders.");
+        if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
+            throw new RuntimeException("Only orders with status 'CLOSEDWAITINGPAYMENT' can be cancelled.");
+
+        AuthUserLogin manager = company.getManagers().stream()
+                .filter(m -> m.equals(cancelOrderDTO.managerID()))
+                .findFirst()
+                .map(m -> authUserRepository.findById(m).orElseThrow(() -> new RuntimeException("Manager not found.")))
+                .orElseThrow(() -> new RuntimeException("Manager not found in the company."));
+
+        if (new BCryptPasswordEncoder().matches(cancelOrderDTO.adminPassword(), adminPassword)) {
+            order.setStatus(OrderStatus.CANCELLED);
+            order.setCompletedByUser(requester);
+            order.setIfCanceledAuthorizedByUser(manager);
+            order.setNotes((order.getNotes() != null ? order.getNotes() + " \n | " : "") + "Cancellation Reason: " + cancelOrderDTO.cancellationReason());
+            order.setCompletedOrderDateUtc(LocalDateTime.now(ZoneOffset.UTC));
+
+            return orderRepo.save(order);
         } else {
-            throw new RuntimeException("Error.");
+            throw new RuntimeException("Invalid admin password.");
         }
-
     }
 
     // <> ---------- Aux Methods ---------- <>

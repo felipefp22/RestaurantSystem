@@ -101,6 +101,17 @@ public class AuthUserController {
         return "Login failed!";
     }
 
+    @PutMapping("/set-own-administrative-password")
+    public ResponseEntity setOwnAdministrativePassword(@RequestHeader("Authorization") String authorizationHeader,
+                                                      @RequestBody SetOwnAdministrativePasswordDTO setOwnAdministrativePasswordDTO) throws Exception {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        authUserService.setOwnAdministrativePassword(requesterID, setOwnAdministrativePasswordDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
     // <>--------------- Tokens Confimations ---------------<>
     @PatchMapping("/request-reset-password")
     public ResponseEntity forgetPassword(@RequestHeader("emailToResetPassword") String emailToResetPassword) throws Exception {

@@ -31,6 +31,8 @@ public class AuthUserLogin implements UserDetails {
 
     private String companyId;
 
+    private String ownAdministrativePassword;
+
     // <>------------ Constructors ------------<>
 
     public AuthUserLogin() {
@@ -165,5 +167,12 @@ public class AuthUserLogin implements UserDetails {
 
     public void setCompanyId(String companyId) {
         this.companyId = companyId;
+    }
+
+    public String getOwnAdministrativePassword() {
+        return ownAdministrativePassword;
+    }
+    public void setOwnAdministrativePassword(String ownAdministrativePassword) {
+        this.ownAdministrativePassword = new BCryptPasswordEncoder().encode(ownAdministrativePassword);
     }
 }

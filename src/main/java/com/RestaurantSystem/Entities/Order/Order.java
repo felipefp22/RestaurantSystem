@@ -5,6 +5,7 @@ import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Order.DTOs.CreateOrderDTO;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
+import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,12 @@ public class Order {
 
     private LocalDateTime openOrderDateUtc;
     private LocalDateTime completedOrderDateUtc;
+
+    @ManyToOne
+    private AuthUserLogin completedByUser;
+
+    @ManyToOne
+    private AuthUserLogin ifCanceledAuthorizedByUser;
 
     private double price;
     private double serviceTax;
@@ -82,6 +89,10 @@ public class Order {
         return tableNumberOrDeliveryOrPickup;
     }
 
+    public void setTableNumberOrDeliveryOrPickup(String tableNumberOrDeliveryOrPickup) {
+        this.tableNumberOrDeliveryOrPickup = tableNumberOrDeliveryOrPickup;
+    }
+
     public Customer getCustomer() {
         return customer;
     }
@@ -104,6 +115,26 @@ public class Order {
 
     public LocalDateTime getCompletedOrderDateUtc() {
         return completedOrderDateUtc;
+    }
+
+    public void setCompletedOrderDateUtc(LocalDateTime completedOrderDateUtc) {
+        this.completedOrderDateUtc = completedOrderDateUtc;
+    }
+
+    public AuthUserLogin getCompletedByUser() {
+        return completedByUser;
+    }
+
+    public void setCompletedByUser(AuthUserLogin completedByUser) {
+        this.completedByUser = completedByUser;
+    }
+
+    public AuthUserLogin getIfCanceledAuthorizedByUser() {
+        return ifCanceledAuthorizedByUser;
+    }
+
+    public void setIfCanceledAuthorizedByUser(AuthUserLogin ifCanceledAuthorizedByUser) {
+        this.ifCanceledAuthorizedByUser = ifCanceledAuthorizedByUser;
     }
 
     public double getPrice() {

@@ -113,6 +113,12 @@ public class AuthUserService {
         return new IsEmailConfirmedDTO(authUserLogin.isEmailConfirmed());
     }
 
+    public void setOwnAdministrativePassword(String requesterID, SetOwnAdministrativePasswordDTO setOwnAdministrativePasswordDTO) {
+        AuthUserLogin authUserLogin = findUsuarioByEmail(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+
+        authUserLogin.setOwnAdministrativePassword(setOwnAdministrativePasswordDTO.newAdministrativePassword());
+        authUserRepository.save(authUserLogin);
+    }
 
 //    public String updateRole(String role, AuthUser authUser) {
 //        authUser.setRole(Role.valueOf(role.toUpperCase()));
@@ -158,6 +164,8 @@ public class AuthUserService {
         if (userLogin.isEmpty()) throw new NoSuchElementException("Usuário não encontrado");
         return userLogin;
     }
+
+
 
 //    public Optional<AuthUserLogin> findUsuarioByUsername(String username) {
 //
