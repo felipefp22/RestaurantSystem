@@ -96,7 +96,7 @@ public class OrderService {
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
     }
 
-    public Order addNotesOnOrder(String requesterID, UUID orderId, String notes) {
+    public Order addNotesOnOrder(String requesterID, UpdateNotesOnOrderDTO notesAndOrderID) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
@@ -109,15 +109,15 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderId).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == notesAndOrderID.orderId()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't add notes to no open orders.");
 
-        order.setNotes(notes);
+        order.setNotes(notesAndOrderID.notes());
 
         return orderRepo.save(order);
     }
 
-    public Order addProductsOnOrder(String requesterID, UUID orderID, ProductsToAddOnOrderDTO productsToAdd) {
+    public Order addProductsOnOrder(String requesterID, ProductsToAddOnOrderDTO productsToAdd) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
@@ -129,7 +129,7 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderID).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == productsToAdd.orderId()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't add products to no open orders.");
 
         List<OrdersItems> ordersItems = productsToAdd.products().stream().map(x -> {
@@ -147,7 +147,7 @@ public class OrderService {
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding products."));
     }
 
-    public Order removeProductsOnOrder(String requesterID, UUID orderID, ProductsToAddOnOrderDTO productsToRemove) {
+    public Order removeProductsOnOrder(String requesterID, ProductsToAddOnOrderDTO productsToRemove) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
@@ -159,7 +159,7 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderID).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == productsToRemove.orderId()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN)
             throw new RuntimeException("Can't remove products to no open orders.");
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record ProductsToAddOnOrderDTO(
+        UUID orderId,
         List<ProductsToAddDTO> products
 ) {
     public record ProductsToAddDTO(
