@@ -7,8 +7,6 @@ import com.RestaurantSystem.Services.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/order")
 public class OrderController {
@@ -83,10 +81,10 @@ public class OrderController {
 
     @PutMapping("/confirm-paid-order/{orderID}")
     public ResponseEntity<Order> confirmPaidOrder(@RequestHeader("Authorization") String authorizationHeader,
-                                                  @PathVariable UUID orderID) {
+                                                  @RequestBody FindOrderDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = orderService.confirmPaidOrder(requesterID, orderID);
+        var response = orderService.confirmPaidOrder(requesterID, dto);
 
         return ResponseEntity.ok(response);
     }

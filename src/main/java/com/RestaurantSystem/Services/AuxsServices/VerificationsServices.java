@@ -10,25 +10,37 @@ public class VerificationsServices {
 
     // <> ---------- Methods ---------- <>
 
-    public boolean isOwnerOrManager(Company company, AuthUserLogin requester) {
+    public boolean isOwnerOrManager(Company company, AuthUserLogin user) {
         Boolean requesterHavePermission = false;
 
-        if (company.getOwnerCompound().getOwner().equals(requester)) {
+        if (company.getOwnerCompound().getOwner().equals(user)) {
             requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.MANAGER))) {
+        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.MANAGER))) {
             requesterHavePermission = true;
         }
 
         return requesterHavePermission;
     }
 
-    public boolean isOwnerOrManagerOrSupervisor(Company company, AuthUserLogin requester) {
+    public boolean isOwnerOrManagerOrSupervisor(Company company, AuthUserLogin user) {
         Boolean requesterHavePermission = false;
 
-        if (company.getOwnerCompound().getOwner().equals(requester)) {
+        if (company.getOwnerCompound().getOwner().equals(user)) {
             requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.MANAGER))
-                || company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.SUPERVISOR))) {
+        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.MANAGER))
+                || company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.SUPERVISOR))) {
+            requesterHavePermission = true;
+        }
+
+        return requesterHavePermission;
+    }
+
+    public boolean worksOnCompany(Company company, AuthUserLogin user) {
+        Boolean requesterHavePermission = false;
+
+        if (company.getOwnerCompound().getOwner().equals(user)) {
+            requesterHavePermission = true;
+        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user))) {
             requesterHavePermission = true;
         }
 

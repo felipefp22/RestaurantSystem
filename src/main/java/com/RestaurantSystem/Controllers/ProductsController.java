@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
+import com.RestaurantSystem.Entities.Product.DTOs.FindProductDTO;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.ProductService;
@@ -41,11 +42,11 @@ public class ProductsController {
 //        return ResponseEntity.ok(response);
 //    }
 
-    @GetMapping("/get-products-by-id/{productId}")
+    @GetMapping("/get-products-by-categoryID/{productId}")
     public ResponseEntity<Product> getProductById(@RequestHeader("Authorization") String authorizationHeader,
-                                                  @PathVariable UUID productId) {
+                                                  @RequestBody FindProductDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-        var response = productService.getProductById(requesterID, productId);
+        var response = productService.getProductById(requesterID, dto);
 
         return ResponseEntity.ok(response);
     }
@@ -70,9 +71,9 @@ public class ProductsController {
 
     @DeleteMapping("/delete-product/{productId}")
     public ResponseEntity deleteProduct(@RequestHeader("Authorization") String authorizationHeader,
-                                        @PathVariable UUID productId) {
+                                        @RequestBody FindProductDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-        productService.deleteProduct(requesterID, productId);
+        productService.deleteProduct(requesterID, dto);
 
         return ResponseEntity.noContent().build();
     }

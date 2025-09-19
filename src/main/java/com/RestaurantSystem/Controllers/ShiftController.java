@@ -20,29 +20,32 @@ public class ShiftController {
     }
 
     //<>------------ Methods ------------<>
-    @GetMapping("/get-all-shifts")
-    public ResponseEntity<List<Shift>> getAllShifts(@RequestHeader("Authorization") String authorizationHeader) {
+    @GetMapping("/get-all-shifts/{companyID}")
+    public ResponseEntity<List<Shift>> getAllShifts(@RequestHeader("Authorization") String authorizationHeader,
+                                                    @PathVariable String companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = shiftService.getAllShifts(requesterID);
+        var response = shiftService.getAllShifts(requesterID, companyID);
 
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/create-shift")
-    private ResponseEntity<Shift> createShift(@RequestHeader("Authorization") String authorizationHeader) {
+    @PostMapping("/create-shift/{companyID}")
+    private ResponseEntity<Shift> createShift(@RequestHeader("Authorization") String authorizationHeader,
+                                              @PathVariable String companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = shiftService.createShift(requesterID);
+        var response = shiftService.createShift(requesterID, companyID);
 
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/close-shift")
-    private ResponseEntity<Shift> closeShift(@RequestHeader("Authorization") String authorizationHeader) {
+    @PutMapping("/close-shift/{companyID}")
+    private ResponseEntity<Shift> closeShift(@RequestHeader("Authorization") String authorizationHeader,
+                                             @PathVariable String companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = shiftService.closeShift(requesterID);
+        var response = shiftService.closeShift(requesterID, companyID);
 
         return ResponseEntity.ok(response);
     }

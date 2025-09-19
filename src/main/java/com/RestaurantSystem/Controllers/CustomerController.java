@@ -2,6 +2,7 @@ package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
+import com.RestaurantSystem.Entities.Customer.DTOs.FindCustomerDTO;
 import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.CustomerService;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +23,12 @@ public class CustomerController {
     }
 
     // <> ---------- Methods ---------- <>
-    @GetMapping("/get-all-customers")
-    public ResponseEntity<List<Customer>> getAllCustomers(@RequestHeader("Authorization") String authorizationHeader) {
+    @GetMapping("/get-all-customers/{companyID}")
+    public ResponseEntity<List<Customer>> getAllCustomers(@RequestHeader("Authorization") String authorizationHeader,
+                                                          @PathVariable String companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = customerService.getAllCustomers(requesterID);
+        var response = customerService.getAllCustomers(requesterID, companyID);
 
         return ResponseEntity.ok(response);
     }
@@ -53,10 +55,10 @@ public class CustomerController {
 
     @DeleteMapping("/delete-customer/{customerId}")
     public ResponseEntity<String> deleteCustomer(@RequestHeader("Authorization") String authorizationHeader,
-                                                   @PathVariable String customerId) {
+                                                   @RequestBody FindCustomerDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        customerService.deleteCustomer(requesterID, UUID.fromString(customerId));
+        customerService.deleteCustomer(requesterID, dto);
 
         return ResponseEntity.noContent().build();
     }

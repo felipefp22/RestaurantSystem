@@ -2,6 +2,7 @@ package com.RestaurantSystem.Entities.Shift;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Order.Order;
+import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -30,16 +31,21 @@ public class Shift {
     @OneToMany
     private List<Order> orders;
 
+    private String employeeOpenedShift;
+
+    private String employeeClosedShift;
+
     //<>------------ Constructors ------------<>
     public Shift() {
     }
-    public Shift(Company company, String shiftNumber) {
+    public Shift(Company company, String shiftNumber, AuthUserLogin manager) {
         this.id = company.getId().toString() + "_" + shiftNumber;
         this.company = company;
         this.shiftNumber = shiftNumber;
         this.startTimeUTC = LocalDateTime.now(ZoneOffset.UTC);
         this.endTimeUTC = null;
         this.orders = List.of();
+        this.employeeOpenedShift = manager.getEmail();
     }
 
 
@@ -71,5 +77,17 @@ public class Shift {
 
     public List<Order> getOrders() {
         return orders;
+    }
+
+    public String getManagerWhoseOpenedShift() {
+        return employeeOpenedShift;
+    }
+
+    public String getEmployeeClosedShift() {
+        return employeeClosedShift;
+    }
+
+    public void setEmployeeClosedShift(String employeeClosedShift) {
+        this.employeeClosedShift = employeeClosedShift;
     }
 }

@@ -2,9 +2,8 @@ package com.RestaurantSystem.Entities.Order.DTOs;
 
 import java.util.UUID;
 
-public record UpdateNotesOnOrderDTO(
+public record FindOrderDTO(
         UUID companyID,
-        UUID orderId,
-        String notes
+        UUID orderID
 ) {
 }

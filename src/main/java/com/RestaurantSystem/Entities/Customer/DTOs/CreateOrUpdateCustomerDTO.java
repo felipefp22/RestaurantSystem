@@ -3,6 +3,7 @@ package com.RestaurantSystem.Entities.Customer.DTOs;
 import java.util.UUID;
 
 public record CreateOrUpdateCustomerDTO(
+        UUID companyID,
         UUID id,
         String customerName,
         String phone,

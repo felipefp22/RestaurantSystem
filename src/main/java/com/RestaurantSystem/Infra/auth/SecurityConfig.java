@@ -74,7 +74,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/auth/delete-account-via-code/{deleteCode}").permitAll();
 
                     auth.requestMatchers("/advertise/get-advertises-to-map").permitAll();
-                    auth.requestMatchers("/advertise/get-advertise-by-id").permitAll();
+                    auth.requestMatchers("/advertise/get-advertise-by-categoryID").permitAll();
                     auth.requestMatchers("/advertise/get-advertises-categories-available").permitAll();
 
                     auth.requestMatchers("/helper-dialogs/helpers-texts").permitAll();

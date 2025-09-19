@@ -13,6 +13,7 @@ import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.OrderRepo;
 import com.RestaurantSystem.Repositories.OrdersItemsRepo;
+import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -35,12 +35,14 @@ public class OrderService {
     private final OrdersItemsRepo ordersItemsRepo;
     private final AuthUserRepository authUserRepository;
     private final CompanyRepo companyRepo;
+    private final VerificationsServices verificationsServices;
 
-    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo) {
+    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, VerificationsServices verificationsServices) {
         this.orderRepo = orderRepo;
         this.ordersItemsRepo = ordersItemsRepo;
         this.authUserRepository = authUserRepository;
         this.companyRepo = companyRepo;
+        this.verificationsServices = verificationsServices;
     }
 
     // <> ---------- Methods ---------- <>
@@ -49,8 +51,10 @@ public class OrderService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(orderToCreate.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Customer customer = null;
         if (orderToCreate.customerID() != null) {
@@ -100,9 +104,10 @@ public class OrderService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(notesAndOrderID.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Shift currentShift = company.getShifts().stream()
                 .filter(x -> x.getEndTimeUTC() == null)
@@ -121,8 +126,10 @@ public class OrderService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(productsToAdd.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Shift currentShift = company.getShifts().stream()
                 .filter(x -> x.getEndTimeUTC() == null)
@@ -151,8 +158,10 @@ public class OrderService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(productsToRemove.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Shift currentShift = company.getShifts().stream()
                 .filter(x -> x.getEndTimeUTC() == null)
@@ -190,8 +199,10 @@ public class OrderService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(changeOrderTableDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Shift currentShift = company.getShifts().stream()
                 .filter(x -> x.getEndTimeUTC() == null)
@@ -255,8 +266,10 @@ public class OrderService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(orderToCloseDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Shift currentShift = company.getShifts().stream()
                 .filter(x -> x.getEndTimeUTC() == null)
@@ -273,19 +286,21 @@ public class OrderService {
         return orderRepo.save(order);
     }
 
-    public Order confirmPaidOrder(String requesterID, UUID orderID) {
+    public Order confirmPaidOrder(String requesterID, FindOrderDTO dto) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(dto.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Shift currentShift = company.getShifts().stream()
                 .filter(x -> x.getEndTimeUTC() == null)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderID).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == dto.orderID()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't close to no open orders.");
 
         if (order.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT) {
@@ -305,8 +320,12 @@ public class OrderService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(cancelOrderDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        AuthUserLogin manager = authUserRepository.findById(cancelOrderDTO.managerID()).orElseThrow(() -> new RuntimeException("Manager not found"));
+
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, manager)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Shift currentShift = company.getShifts().stream()
                 .filter(x -> x.getEndTimeUTC() == null)
@@ -318,11 +337,6 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
             throw new RuntimeException("Only orders with status 'CLOSEDWAITINGPAYMENT' can be cancelled.");
 
-        AuthUserLogin manager = company.getManagers().stream()
-                .filter(m -> m.equals(cancelOrderDTO.managerID()))
-                .findFirst()
-                .map(m -> authUserRepository.findById(m).orElseThrow(() -> new RuntimeException("Manager not found.")))
-                .orElseThrow(() -> new RuntimeException("Manager not found in the company."));
 
         if (new BCryptPasswordEncoder().matches(cancelOrderDTO.adminPassword(), adminPassword)) {
             order.setStatus(OrderStatus.CANCELLED);

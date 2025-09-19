@@ -8,6 +8,7 @@ import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.ProductCategoryRepo;
+import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -18,21 +19,25 @@ public class ProductCategoryService {
     private final CompanyRepo companyRepo;
     private final AuthUserRepository authUserRepository;
     private final ProductCategoryRepo productCategoryRepo;
+    private final VerificationsServices verificationsServices;
 
-    public ProductCategoryService(CompanyRepo companyRepo, AuthUserRepository authUserRepository, ProductCategoryRepo productCategoryRepo) {
+    public ProductCategoryService(CompanyRepo companyRepo, AuthUserRepository authUserRepository, ProductCategoryRepo productCategoryRepo, VerificationsServices verificationsServices) {
         this.companyRepo = companyRepo;
         this.authUserRepository = authUserRepository;
         this.productCategoryRepo = productCategoryRepo;
+        this.verificationsServices = verificationsServices;
     }
 
 
     // <> ---------- Methods ---------- <>
-    public List<ProductCategory> getAllProductAndProductCategories(String requesterID) {
+    public List<ProductCategory> getAllProductAndProductCategories(String requesterID, String companyID) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(UUID.fromString(companyID))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         return company.getProductsCategories();
     }
@@ -41,11 +46,10 @@ public class ProductCategoryService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(createDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
-            throw new RuntimeException("You are not allowed to add a product category, ask to manager");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to add a product category, ask to manager");
 
         company.getProductsCategories().forEach(x -> {
             if (x.getCategoryName().toLowerCase().equals(createDTO.categoryName().toLowerCase()))
@@ -55,24 +59,25 @@ public class ProductCategoryService {
         ProductCategory categoryToCreate = new ProductCategory(createDTO, company);
         productCategoryRepo.save(categoryToCreate);
 
-        return getAllProductAndProductCategories(requesterID);
+        return getAllProductAndProductCategories(requesterID, createDTO.companyID().toString());
     }
 
     public List<ProductCategory> updateCategory(String requesterID, UpdateProductCategoryDTO updateDTO) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(updateDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        ProductCategory categoryToUpdate = productCategoryRepo.findById(updateDTO.id())
-                .orElseThrow(() -> new RuntimeException("Categories not found"));
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to add a product category, ask to manager");
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
-            throw new RuntimeException("You are not allowed to add a product category, ask to manager");
+        ProductCategory categoryToUpdate = company.getProductsCategories().stream()
+                .filter(x -> x.getId().equals(updateDTO.categoryID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
         company.getProductsCategories().forEach(x ->{
-            if (x.getCategoryName().toLowerCase().equals(updateDTO.categoryName().toLowerCase())) throw new RuntimeException("Category already exists");
+            if (x.getCategoryName().equalsIgnoreCase(updateDTO.categoryName())) throw new RuntimeException("Category already exists");
         });
 
         categoryToUpdate.setCategoryName(updateDTO.categoryName());
@@ -80,6 +85,6 @@ public class ProductCategoryService {
 
         productCategoryRepo.save(categoryToUpdate);
 
-        return getAllProductAndProductCategories(requesterID);
+        return getAllProductAndProductCategories(requesterID, updateDTO.companyID().toString());
     }
 }

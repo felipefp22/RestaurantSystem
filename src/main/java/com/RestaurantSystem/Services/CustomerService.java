@@ -3,10 +3,12 @@ package com.RestaurantSystem.Services;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
+import com.RestaurantSystem.Entities.Customer.DTOs.FindCustomerDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.CustomerRepo;
+import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,20 +19,24 @@ public class CustomerService {
     private final AuthUserRepository authUserRepository;
     private final CompanyRepo companyRepo;
     private final CustomerRepo customerRepo;
+    private final VerificationsServices verificationsServices;
 
-    public CustomerService(AuthUserRepository authUserRepository, CompanyRepo companyRepo, CustomerRepo customerRepo) {
+    public CustomerService(AuthUserRepository authUserRepository, CompanyRepo companyRepo, CustomerRepo customerRepo, VerificationsServices verificationsServices) {
         this.authUserRepository = authUserRepository;
         this.companyRepo = companyRepo;
         this.customerRepo = customerRepo;
+        this.verificationsServices = verificationsServices;
     }
 
     // <> ---------- Methods ---------- <>
-    public List<Customer> getAllCustomers(String requesterID) {
+    public List<Customer> getAllCustomers(String requesterID, String companyID) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(UUID.fromString(companyID))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         return company.getCustomers();
     }
@@ -39,8 +45,10 @@ public class CustomerService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(customerToCreateDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Customer newCustomer = new Customer(company, customerToCreateDTO);
 
@@ -53,8 +61,15 @@ public class CustomerService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Customer existingCustomer = customerRepo.findById(customerToUpdateDTO.id())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        Company company = companyRepo.findById(customerToUpdateDTO.companyID())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
+
+        Customer existingCustomer = company.getCustomers().stream()
+                .filter(c -> c.getId().equals(customerToUpdateDTO.id()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Customer not found in this company"));
 
         existingCustomer.setCustomerName(customerToUpdateDTO.customerName());
         existingCustomer.setPhone(customerToUpdateDTO.phone());
@@ -72,18 +87,19 @@ public class CustomerService {
         return existingCustomer;
     }
 
-    public void deleteCustomer(String requesterID, UUID customerId) {
+    public void deleteCustomer(String requesterID, FindCustomerDTO dto) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
+        Company company = companyRepo.findById(dto.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        Customer existingCustomer = customerRepo.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
-            throw new RuntimeException("You are not allowed to del a customer, ask to manager");
+        Customer existingCustomer = company.getCustomers().stream()
+                .filter(c -> c.getId().equals(dto.customerID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Customer not found in this company"));
 
         customerRepo.deleteById(existingCustomer.getId());
     }

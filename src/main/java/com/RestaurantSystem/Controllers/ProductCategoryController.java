@@ -24,11 +24,12 @@ public class ProductCategoryController {
 
     // <>------------ Methods ------------<>
 
-    @GetMapping("/get-all-categories-of-company")
-    public ResponseEntity<List<ProductCategory>> getAllProductAndProductCategories(@RequestHeader("Authorization") String authorizationHeader) {
+    @GetMapping("/get-all-categories-of-company/{companyID}")
+    public ResponseEntity<List<ProductCategory>> getAllProductAndProductCategories(@RequestHeader("Authorization") String authorizationHeader,
+                                                                                   @PathVariable String companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = productCategoryService.getAllProductAndProductCategories(requesterID);
+        var response = productCategoryService.getAllProductAndProductCategories(requesterID, companyID);
 
         return ResponseEntity.ok(response);
     }
