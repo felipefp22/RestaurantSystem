@@ -228,7 +228,7 @@ public class OrderService {
                 throw new RuntimeException("Pickup name is required for pickup orders.");
             }
         } else {
-            int newTableNumber = Integer.parseInt(changeOrderTableDTO.tableNumberOrDeliveryOrPickup()))
+            int newTableNumber = Integer.parseInt(changeOrderTableDTO.tableNumberOrDeliveryOrPickup());
             if (newTableNumber > company.getNumberOfTables() || newTableNumber < 1)
                 throw new RuntimeException("Invalid table number.");
             if (currentShift.getOrders().stream()

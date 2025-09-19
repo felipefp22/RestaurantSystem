@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Entities.Company;
 
+import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Product.Product;
@@ -18,7 +19,8 @@ public class Company {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    private String owner;
+    @ManyToOne
+    private CompaniesCompound ownerCompound;
 
     private String companyName;
     private String companyEmail;
@@ -44,8 +46,8 @@ public class Company {
     public Company() {
     }
 
-    public Company(CreateCompanyDTO createCompanyDTO, AuthUserLogin owner){
-        this.owner = owner.getEmail();
+    public Company(CreateCompanyDTO createCompanyDTO, CompaniesCompound ownerCompound){
+        this.ownerCompound = ownerCompound;
         this.companyName = createCompanyDTO.companyName();
         this.companyEmail = createCompanyDTO.companyEmail();
         this.companyPhone = createCompanyDTO.companyPhone();
@@ -65,12 +67,12 @@ public class Company {
         return id;
     }
 
-    public String getOwner() {
-        return owner;
+    public CompaniesCompound getOwner() {
+        return ownerCompound;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setOwner(CompaniesCompound ownerCompound) {
+        this.ownerCompound = ownerCompound;
     }
 
     public String getCompanyName() {
