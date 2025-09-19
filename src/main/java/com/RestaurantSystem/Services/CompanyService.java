@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Services;
 
+import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.UpdateCompanyDTO;
@@ -8,6 +9,7 @@ import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,16 +27,18 @@ public class CompanyService {
     // <> ------------- Methods ------------- <>
 
     public Company createCompany(String requesterID, CreateCompanyDTO createCompanyDTO) {
-        if(companyRepo.findByOwner(requesterID).isPresent()) throw new RuntimeException("This user already have Company: " + requesterID);
-        if(companyRepo.findByCompanyName(createCompanyDTO.companyName()).isPresent()) throw new RuntimeException("Already have company with that name.");
-
         AuthUserLogin owner = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
-        if(owner.getCompanyId() != null) throw new RuntimeException("This user already have Company: " + requesterID);
+        CompaniesCompound companiesCompound = owner.getCompaniesCompounds().stream()
+                .filter(x -> x.getId().equals(createCompanyDTO.companiesCompoundID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("You are not part of this Companies Compound"));
 
-        Company company = new Company(createCompanyDTO, owner);
-        Company companySaved = companyRepo.save(company);
-        owner.setCompanyId(String.valueOf(companySaved.getId()));
-        authUserRepository.save(owner);
+        if (companiesCompound.getCompanies().stream()
+                .anyMatch(c -> c.getCompanyName().equalsIgnoreCase(createCompanyDTO.companyName())))
+            throw new RuntimeException("This Companies Compound already has a company with this name");
+
+        Company company = new Company(companiesCompound, createCompanyDTO);
+        companyRepo.save(company);
 
         return company;
     }
@@ -43,21 +47,27 @@ public class CompanyService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        if(requester.getCompaniesCompounds().isEmpty())
+            throw new RuntimeException("Just Owner can update a company");
 
-        if(company.getId() != updateCompanyDTO.id()) throw new RuntimeException("You can update only your company");
+        List<Company> companies = requester.getCompaniesCompounds().stream()
+                .flatMap(compound -> compound.getCompanies().stream())
+                .filter(c -> c.getId().equals(updateCompanyDTO.id()))
+                .toList();
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
-            throw new RuntimeException("You are not allowed to add a product category, ask to manager");
+        if (companies.isEmpty())
+            throw new RuntimeException("No Company found in your compounds");
 
-        company.setCompanyName(updateCompanyDTO.companyName());
-        company.setCompanyEmail(updateCompanyDTO.companyEmail());
-        company.setCompanyPhone(updateCompanyDTO.companyPhone());
-        company.setCompanyAddress(updateCompanyDTO.companyAddress());
-        company.setUrlCompanyLogo(updateCompanyDTO.urlCompanyLogo());
-        company.setNumberOfTables(updateCompanyDTO.numberOfTables());
+        Company companyToUpdate = companies.stream().filter(c -> c.getId().equals(updateCompanyDTO.id())).findFirst()
+                .orElseThrow(() -> new RuntimeException("Company not found in your compounds"));
 
-        return companyRepo.save(company);
+        companyToUpdate.setCompanyName(updateCompanyDTO.companyName());
+        companyToUpdate.setCompanyEmail(updateCompanyDTO.companyEmail());
+        companyToUpdate.setCompanyPhone(updateCompanyDTO.companyPhone());
+        companyToUpdate.setCompanyAddress(updateCompanyDTO.companyAddress());
+        companyToUpdate.setUrlCompanyLogo(updateCompanyDTO.urlCompanyLogo());
+        companyToUpdate.setNumberOfTables(updateCompanyDTO.numberOfTables());
+
+        return companyRepo.save(companyToUpdate);
     }
 }

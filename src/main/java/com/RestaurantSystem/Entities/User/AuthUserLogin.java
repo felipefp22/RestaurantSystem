@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Entities.User;
 
 
+import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.ENUMs.Role;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.RegisterAuthUserDTO;
 import jakarta.persistence.*;
@@ -29,6 +30,9 @@ public class AuthUserLogin implements UserDetails {
     @Column(length = 512)
     private String urlProfilePhoto;
 
+    @OneToMany
+    private List<CompaniesCompound> companiesCompounds;
+
     private String companyId;
 
     private String ownAdministrativePassword;
@@ -44,9 +48,9 @@ public class AuthUserLogin implements UserDetails {
 //        this.username = username;
         this.password = new BCryptPasswordEncoder().encode(password);
 //        this.kindOfUser = kindOfUser;
+        this.companiesCompounds = new ArrayList<>();
         this.role = Role.USER;
         this.emailConfirmed = emailConfirmed;
-
     }
 
     public AuthUserLogin(RegisterAuthUserDTO registerAuthUserDTO) {
@@ -55,6 +59,7 @@ public class AuthUserLogin implements UserDetails {
         this.password = new BCryptPasswordEncoder().encode(registerAuthUserDTO.password());
 //        this.kindOfUser = KindOfUser.valueOf(registerAuthUserDTO.kindOfUser().toUpperCase());
         this.name = registerAuthUserDTO.name();
+        this.companiesCompounds = new ArrayList<>();
         this.role = Role.USER;
         this.emailConfirmed = false;
     }
@@ -159,6 +164,10 @@ public class AuthUserLogin implements UserDetails {
     }
     public void setUrlProfilePhoto(String urlProfilePhoto) {
         this.urlProfilePhoto = urlProfilePhoto;
+    }
+
+    public List<CompaniesCompound> getCompaniesCompounds() {
+        return companiesCompounds;
     }
 
     public String getCompanyId() {

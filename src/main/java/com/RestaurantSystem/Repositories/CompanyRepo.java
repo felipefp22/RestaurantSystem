@@ -10,7 +10,5 @@ import java.util.UUID;
 @Repository
 public interface CompanyRepo extends JpaRepository<Company, UUID> {
 
-    Optional<Company> findByOwner(String requesterID);
-
     Optional<Company> findByCompanyName(String companyName);
 }

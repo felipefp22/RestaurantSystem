@@ -46,7 +46,7 @@ public class Company {
     public Company() {
     }
 
-    public Company(CreateCompanyDTO createCompanyDTO, CompaniesCompound ownerCompound){
+    public Company(CompaniesCompound ownerCompound, CreateCompanyDTO createCompanyDTO){
         this.ownerCompound = ownerCompound;
         this.companyName = createCompanyDTO.companyName();
         this.companyEmail = createCompanyDTO.companyEmail();

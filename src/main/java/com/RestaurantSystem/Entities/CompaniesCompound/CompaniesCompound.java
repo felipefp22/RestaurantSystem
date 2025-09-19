@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Entities.CompaniesCompound;
 
+import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.CreateOrUpdateCompoundDTO;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import jakarta.persistence.*;
@@ -16,6 +17,8 @@ public class CompaniesCompound {
 
     @ManyToOne
     private AuthUserLogin owner;
+    private String compoundName;
+    private String compoundDescription;
 
     @OneToMany
     private List<Company> companies;
@@ -24,9 +27,11 @@ public class CompaniesCompound {
     private CompaniesCompound() {
     }
 
-    public CompaniesCompound(AuthUserLogin owner, List<Company> companies) {
+    public CompaniesCompound(AuthUserLogin owner, CreateOrUpdateCompoundDTO createOrUpdateCompoundDTO) {
         this.owner = owner;
-        this.companies = companies;
+        this.compoundName = createOrUpdateCompoundDTO.compoundName();
+        this.compoundDescription = createOrUpdateCompoundDTO.compoundDescription();
+        this.companies = List.of();
     }
 
     // <>------------ Getters and Setters ------------<>
@@ -37,6 +42,22 @@ public class CompaniesCompound {
 
     public AuthUserLogin getOwner() {
         return owner;
+    }
+
+    public String getCompoundName() {
+        return compoundName;
+    }
+
+    public void setCompoundName(String compoundName) {
+        this.compoundName = compoundName;
+    }
+
+    public String getCompoundDescription() {
+        return compoundDescription;
+    }
+
+    public void setCompoundDescription(String compoundDescription) {
+        this.compoundDescription = compoundDescription;
     }
 
     public void setOwner(AuthUserLogin owner) {
