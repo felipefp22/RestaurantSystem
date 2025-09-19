@@ -82,7 +82,7 @@ public class CustomerService {
         Customer existingCustomer = customerRepo.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
+        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
             throw new RuntimeException("You are not allowed to del a customer, ask to manager");
 
         customerRepo.deleteById(existingCustomer.getId());

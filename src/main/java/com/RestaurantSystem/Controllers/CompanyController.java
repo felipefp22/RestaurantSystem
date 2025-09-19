@@ -1,12 +1,16 @@
 package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.Company.Company;
+import com.RestaurantSystem.Entities.Company.CompanyEmployees;
+import com.RestaurantSystem.Entities.Company.DTOs.AddOrUpdateEmployeeDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.UpdateCompanyDTO;
 import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.CompanyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/company")
@@ -41,6 +45,39 @@ public class CompanyController {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = companyService.updateCompany(requesterID, updateCompanyDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/add-employee")
+    public ResponseEntity<List<CompanyEmployees>>  addEmployeeToCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                                        @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = companyService.addEmployeeToCompany(requesterID, employeeDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/remove-employee")
+    public ResponseEntity<List<CompanyEmployees>> removeEmployeeFromCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                                                            @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = companyService.removeEmployeeFromCompany(requesterID, employeeDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/update-employee-position")
+    public ResponseEntity<List<CompanyEmployees>>  updateEmployeePosition(@RequestHeader("Authorization") String authorizationHeader,
+                                                                   @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = companyService.updateEmployeePosition(requesterID, employeeDTO);
 
         return ResponseEntity.ok(response);
     }

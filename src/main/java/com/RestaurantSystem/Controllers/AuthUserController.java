@@ -112,6 +112,17 @@ public class AuthUserController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @DeleteMapping("/quit-company/{companyId}")
+    public ResponseEntity quitCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                      @PathVariable("companyId") UUID companyId) throws Exception {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        authUserService.quitCompany(requesterID, companyId);
+
+        return ResponseEntity.noContent().build();
+    }
+
     // <>--------------- Tokens Confimations ---------------<>
     @PatchMapping("/request-reset-password")
     public ResponseEntity forgetPassword(@RequestHeader("emailToResetPassword") String emailToResetPassword) throws Exception {

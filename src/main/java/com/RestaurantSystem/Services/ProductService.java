@@ -66,7 +66,7 @@ public class ProductService {
 
         ProductCategory productCategoryToAddProduct = productCategoryRepo.findById(UUID.fromString(productToCreate.productCategoryID()))
                 .orElseThrow(() -> new RuntimeException("Category not found"));
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
+        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product, ask to manager");
 
         Product product = new Product(productToCreate, productCategoryToAddProduct);
@@ -83,7 +83,7 @@ public class ProductService {
         Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
+        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product, ask to manager");
 
         Product productToUpdate = productRepo.findById(productToUpdateDTO.id())
@@ -112,7 +112,7 @@ public class ProductService {
         Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
+        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product, ask to manager");
 
         Product productToDelete = productRepo.findById(productId)

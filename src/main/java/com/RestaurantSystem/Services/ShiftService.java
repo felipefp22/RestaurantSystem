@@ -44,7 +44,7 @@ public class ShiftService {
         Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
+        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product, ask to manager");
 
         company.getShifts().stream()
@@ -67,7 +67,7 @@ public class ShiftService {
         Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
+        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product, ask to manager");
 
         Shift shift = company.getShifts().stream()

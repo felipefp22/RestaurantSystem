@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Services;
 
+import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.ENUMs.Role;
 import com.RestaurantSystem.Entities.User.AdmDTOs.IsAdmDTO;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
@@ -9,11 +10,13 @@ import com.RestaurantSystem.Infra.Exceptions.ExceptionsToThrow.EmailAlreadyConfi
 import com.RestaurantSystem.Infra.auth.RefreshTokenRepository;
 import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
+import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,12 +27,14 @@ public class AuthUserService {
     private final RefreshTokenRepository refreshTokenRepo;
     private final TokenServiceOur tokenServiceOur;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final CompanyEmployeesRepo companyEmployeesRepo;
 
 
-    public AuthUserService(AuthUserRepository authUserRepository, RefreshTokenRepository refreshTokenRepo, TokenServiceOur tokenServiceOur) {
+    public AuthUserService(AuthUserRepository authUserRepository, RefreshTokenRepository refreshTokenRepo, TokenServiceOur tokenServiceOur, CompanyEmployeesRepo companyEmployeesRepo) {
         this.authUserRepository = authUserRepository;
         this.refreshTokenRepo = refreshTokenRepo;
         this.tokenServiceOur = tokenServiceOur;
+        this.companyEmployeesRepo = companyEmployeesRepo;
     }
 
     // <>--------------- Methodos ---------------<>
@@ -118,6 +123,15 @@ public class AuthUserService {
 
         authUserLogin.setOwnAdministrativePassword(setOwnAdministrativePasswordDTO.newAdministrativePassword());
         authUserRepository.save(authUserLogin);
+    }
+
+    public void quitCompany(String requesterID, UUID companyId) {
+        AuthUserLogin authUserLogin = findUsuarioByEmail(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+
+        CompanyEmployees companiesToQuit = authUserLogin.getWorksAtCompanies().stream().filter(c -> c.getCompany().getId().equals(companyId))
+                .findFirst().orElseThrow(() -> new NoSuchElementException("You don't work at this company"));
+
+        companyEmployeesRepo.delete(companiesToQuit);
     }
 
 //    public String updateRole(String role, AuthUser authUser) {

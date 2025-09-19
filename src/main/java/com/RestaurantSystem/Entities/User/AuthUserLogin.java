@@ -2,6 +2,8 @@ package com.RestaurantSystem.Entities.User;
 
 
 import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
+import com.RestaurantSystem.Entities.Company.Company;
+import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.ENUMs.Role;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.RegisterAuthUserDTO;
 import jakarta.persistence.*;
@@ -33,7 +35,8 @@ public class AuthUserLogin implements UserDetails {
     @OneToMany
     private List<CompaniesCompound> companiesCompounds;
 
-    private String companyId;
+    @ManyToMany
+    private List<CompanyEmployees> worksAtCompanies;
 
     private String ownAdministrativePassword;
 
@@ -170,12 +173,8 @@ public class AuthUserLogin implements UserDetails {
         return companiesCompounds;
     }
 
-    public String getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(String companyId) {
-        this.companyId = companyId;
+    public List<CompanyEmployees> getWorksAtCompanies() {
+        return worksAtCompanies;
     }
 
     public String getOwnAdministrativePassword() {

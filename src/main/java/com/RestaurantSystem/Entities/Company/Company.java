@@ -3,10 +3,8 @@ package com.RestaurantSystem.Entities.Company;
 import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Customer.Customer;
-import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.Shift;
-import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -28,8 +26,8 @@ public class Company {
     private String companyAddress;
     private String urlCompanyLogo;
 
-    private List<String> managers;
-    private List<String> employees;
+    @OneToMany
+    private List<CompanyEmployees> employees;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductCategory> productsCategories;
@@ -53,7 +51,6 @@ public class Company {
         this.companyPhone = createCompanyDTO.companyPhone();
         this.companyAddress = createCompanyDTO.companyAddress();
         this.urlCompanyLogo = createCompanyDTO.urlCompanyLogo();
-        this.managers = List.of();
         this.employees = List.of();
         this.productsCategories = List.of();
         this.customers = List.of();
@@ -67,7 +64,7 @@ public class Company {
         return id;
     }
 
-    public CompaniesCompound getOwner() {
+    public CompaniesCompound getOwnerCompound() {
         return ownerCompound;
     }
 
@@ -115,34 +112,13 @@ public class Company {
         this.urlCompanyLogo = urlCompanyLogo;
     }
 
-    public List<String> getManagers() {
-        return managers;
-    }
-    public List<String> addManager(String managerEmail) {
-        this.managers.add(managerEmail);
-        return this.managers;
-    }
-    public List<String> removeManager(String managerEmail) {
-        this.managers.remove(managerEmail);
-        return this.managers;
-    }
-
-    public List<String> getEmployees() {
+    public List<CompanyEmployees> getEmployees() {
         return employees;
-    }
-    public List<String> addEmployee(String employeeEmail) {
-        this.employees.add(employeeEmail);
-        return this.employees;
-    }
-    public List<String> removeEmployee(String employeeEmail) {
-        this.employees.remove(employeeEmail);
-        return this.employees;
     }
 
     public List<ProductCategory> getProductsCategories() {
         return productsCategories;
     }
-
 
     public List<Customer> getCustomers() {
         return customers;

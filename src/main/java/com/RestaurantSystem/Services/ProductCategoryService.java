@@ -44,7 +44,7 @@ public class ProductCategoryService {
         Company company = companyRepo.findById(UUID.fromString(requester.getCompanyId()))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
+        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product category, ask to manager");
 
         company.getProductsCategories().forEach(x -> {
@@ -68,7 +68,7 @@ public class ProductCategoryService {
         ProductCategory categoryToUpdate = productCategoryRepo.findById(updateDTO.id())
                 .orElseThrow(() -> new RuntimeException("Categories not found"));
 
-        if (!company.getManagers().contains(requesterID) && !company.getOwner().equals(requesterID))
+        if (!company.getManagers().contains(requesterID) && !company.getOwnerCompound().equals(requesterID))
             throw new RuntimeException("You are not allowed to add a product category, ask to manager");
 
         company.getProductsCategories().forEach(x ->{
