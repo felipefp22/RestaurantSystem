@@ -11,6 +11,7 @@ import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
+import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,11 +22,13 @@ public class CompanyService {
     private final CompanyRepo companyRepo;
     private final AuthUserRepository authUserRepository;
     private final CompanyEmployeesRepo companyEmployeesRepo;
+    private final VerificationsServices verificationsServices;
 
-    public CompanyService(CompanyRepo companyRepo, AuthUserRepository authUserRepository, CompanyEmployeesRepo companyEmployeesRepo) {
+    public CompanyService(CompanyRepo companyRepo, AuthUserRepository authUserRepository, CompanyEmployeesRepo companyEmployeesRepo, VerificationsServices verificationsServices) {
         this.companyRepo = companyRepo;
         this.authUserRepository = authUserRepository;
         this.companyEmployeesRepo = companyEmployeesRepo;
+        this.verificationsServices = verificationsServices;
     }
 
     // <> ------------- Methods ------------- <>
@@ -54,15 +57,8 @@ public class CompanyService {
         Company company = companyRepo.findById(updateCompanyDTO.id())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        Boolean requesterHavePermission = false;
+        if (!verificationsServices.isOwnerOrManager(company, requester)) throw new RuntimeException("Just Owner or Manager can add employees to a company");
 
-        if (company.getOwnerCompound().getOwner().equals(requester)) {
-            requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.MANAGER))) {
-            requesterHavePermission = true;
-        }
-
-        if (!requesterHavePermission) throw new RuntimeException("Just Owner or Manager can add employees to a company");
 
         List<Company> companies = requester.getCompaniesCompounds().stream()
                 .flatMap(compound -> compound.getCompanies().stream())
@@ -92,16 +88,8 @@ public class CompanyService {
         Company company = companyRepo.findById(employeeDTO.companyId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        Boolean requesterHavePermission = false;
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
-        if (company.getOwnerCompound().getOwner().equals(requester)) {
-            requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.MANAGER))
-                || company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.SUPERVISOR))) {
-            requesterHavePermission = true;
-        }
-
-        if (!requesterHavePermission) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
         AuthUserLogin employeeToAdd = authUserRepository.findById(employeeDTO.employeeEmail())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
@@ -122,16 +110,7 @@ public class CompanyService {
         Company company = companyRepo.findById(employeeDTO.companyId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        Boolean requesterHavePermission = false;
-
-        if (company.getOwnerCompound().getOwner().equals(requester)) {
-            requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.MANAGER))
-                || company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.SUPERVISOR))) {
-            requesterHavePermission = true;
-        }
-
-        if (!requesterHavePermission) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
         CompanyEmployees companyEmployeeToRemove = company.getEmployees().stream()
                 .filter(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail()))
@@ -150,16 +129,7 @@ public class CompanyService {
         Company company = companyRepo.findById(employeeDTO.companyId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        Boolean requesterHavePermission = false;
-
-        if (company.getOwnerCompound().getOwner().equals(requester)) {
-            requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.MANAGER))
-                || company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(requester) && e.getPosition().equals(EmployeePosition.SUPERVISOR))) {
-            requesterHavePermission = true;
-        }
-
-        if (!requesterHavePermission) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
         CompanyEmployees companyEmployeeToUpdate = company.getEmployees().stream()
                 .filter(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail()))
