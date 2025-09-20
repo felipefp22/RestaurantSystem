@@ -14,7 +14,8 @@ public record AuthUserDTO(
         String phone,
         String urlProfilePhoto,
         List<CompaniesCompoundDTO> companiesCompounds,
-        List<CompanyEmployeesDTO> worksAtCompanies
+        List<CompanyEmployeesDTO> worksAtCompanies,
+        Boolean hasOwnAdministrativePassword
 
 ) {
     public AuthUserDTO(AuthUserLogin user) {
@@ -26,7 +27,8 @@ public record AuthUserDTO(
                 user.getCompaniesCompounds().stream().map(CompaniesCompoundDTO::new).toList(),
                 user.getWorksAtCompanies().stream()
                         .map(CompanyEmployeesDTO::new)
-                        .toList()
+                        .toList(),
+                user.getOwnAdministrativePassword() != null
         );
     }
 

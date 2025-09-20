@@ -77,7 +77,7 @@ public class ProductCategoryService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         company.getProductsCategories().forEach(x ->{
-            if (x.getCategoryName().equalsIgnoreCase(updateDTO.categoryName())) throw new RuntimeException("Category already exists");
+            if (x.getCategoryName().equalsIgnoreCase(updateDTO.categoryName())) throw new RuntimeException("Category with name: [" + updateDTO.categoryName() +"} already exists");
         });
 
         categoryToUpdate.setCategoryName(updateDTO.categoryName());

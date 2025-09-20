@@ -34,7 +34,7 @@ public class ProductCategoryController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/create-product-category/{categoryName}")
+    @PostMapping("/create-product-category")
     public ResponseEntity<List<ProductCategory>> createProductCategory(@RequestHeader("Authorization") String authorizationHeader,
                                                                        @RequestBody CreateProductCategoryDTO createDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
@@ -44,7 +44,7 @@ public class ProductCategoryController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/update-category/{categoryName}/new-name-toward/{newCategoryName}")
+    @PutMapping("/update-category")
     public ResponseEntity<List<ProductCategory>> updateCategory(@RequestHeader("Authorization") String authorizationHeader,
                                                                 @RequestBody UpdateProductCategoryDTO updateDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);

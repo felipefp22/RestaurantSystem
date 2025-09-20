@@ -1,0 +1,601 @@
+{
+	"info": {
+		"_postman_id": "9c496dde-5ba2-40da-8220-7b7e669ea2d2",
+		"name": "RestaurantSystem",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26229272",
+		"_collection_link": "https://wiimove-9618.postman.co/workspace/DeliverySystem~cfd97807-4c8c-4635-8338-cfd66c10357b/collection/26229272-9c496dde-5ba2-40da-8220-7b7e669ea2d2?action=share&source=collection_link&creator=26229272"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{name}}\",\r\n    \"email\": \"{{email}}\",\r\n    \"password\":\"{{password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/register",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Save Env\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.environment.set(\"access_token\", responseBody.access_token);\r",
+									"    pm.environment.set(\"refresh_token\", responseBody.refresh_token);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"emailOrUsername\":\"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "quitCompany",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/user-actions/quit-company/317b2f9e-4a43-4a1d-8725-0f7aeffd436b",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user-actions",
+								"quit-company",
+								"317b2f9e-4a43-4a1d-8725-0f7aeffd436b"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CompaniesCompound",
+			"item": [
+				{
+					"name": "createCompound",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"compoundName\":\"{{email}} - Compound\",\r\n    \"compoundDescription\":\"{{email}} - Compound\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/companies-compound/create-compound",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"companies-compound",
+								"create-compound"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Company",
+			"item": [
+				{
+					"name": "createCompany",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companiesCompoundID\": \"4df2aeca-cb2f-48a1-8724-e5d8b5b5fa2c\",\r\n    \"companyName\":\"felipefp2 company\",\r\n    \"companyEmail\":\"felipefp2 company\",\r\n    \"companyPhone\":\"+5511947315319\",\r\n    \"companyAddress\":\"Rua Jorge Bastião, 315\",\r\n    \"urlCompanyLogo\":\"xpto.com.br\",\r\n    \"numberOfTables\": 20\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/company/create-company",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"company",
+								"create-company"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getCompany",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/company/get-company/28899f13-854e-4cdf-9ba8-9113b8b78086",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"company",
+								"get-company",
+								"28899f13-854e-4cdf-9ba8-9113b8b78086"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer",
+			"item": [
+				{
+					"name": "getAllCustomers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/customer/get-all-customers",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"customer",
+								"get-all-customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createCustomer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"customerName\": \"Jorge\",\r\n    \"phone\": \"5511988887777\",\r\n    \"address\": \"\",\r\n    \"addressNumber\": \"\",\r\n    \"city\": \"\",\r\n    \"state\": \"\",\r\n    \"zipCode\": \"\",\r\n    \"lat\": \"\",\r\n    \"lng\": \"\",\r\n    \"complement\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/customer/create-customer",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"customer",
+								"create-customer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateCustomer",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"000f2887-916e-4a33-9ed1-6446c3d07295\",\r\n    \"customerName\": \"Jorge\",\r\n    \"phone\": \"5511988887776\",\r\n    \"address\": \"\",\r\n    \"addressNumber\": \"\",\r\n    \"city\": \"\",\r\n    \"state\": \"\",\r\n    \"zipCode\": \"\",\r\n    \"lat\": \"\",\r\n    \"lng\": \"\",\r\n    \"complement\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/customer/update-customer",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"customer",
+								"update-customer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delCustomer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/customer/delete-customer/",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"customer",
+								"delete-customer",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ProductCategory",
+			"item": [
+				{
+					"name": "getAllCategories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/product-category/get-all-categories-of-company/317b2f9e-4a43-4a1d-8725-0f7aeffd436b",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product-category",
+								"get-all-categories-of-company",
+								"317b2f9e-4a43-4a1d-8725-0f7aeffd436b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createProductCategory",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companyID\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"categoryName\":\"Foods\",\r\n    \"description\": \"Foods\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/product-category/create-product-category",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product-category",
+								"create-product-category"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateProductCategory",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companyID\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"categoryID\": \"0dee3628-09b8-4932-a379-b9c2611b75b5\",\r\n    \"categoryName\": \"Foods\",\r\n    \"description\": \"Foods\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/product-category/update-category",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product-category",
+								"update-category"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "getAllProducts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/product/get-all-products",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product",
+								"get-all-products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getProductsByCategory",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/product/get-products-by-category/{category}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product",
+								"get-products-by-category",
+								"{category}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getProductsByID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/product/get-products-by-id/{productId}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product",
+								"get-products-by-id",
+								"{productId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createProduct",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Pizza\",\r\n    \"price\": 64.99,\r\n    \"description\": \"Pizza de comer\",\r\n    \"imagePath\": \"xpto.com.br\",\r\n    \"productCategoryID\": \"7cf9d78b-c8c0-4b6d-b3a8-2b1bd9d439b5\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/product/create-product",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product",
+								"create-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateProduct",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Pizza\",\r\n    \"price\": 64.99,\r\n    \"description\": \"Pizza de comer\",\r\n    \"imagePath\": \"xpto.com.br\",\r\n    \"category\": \"Foods\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/product/update-product",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product",
+								"update-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteProduct",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/product/delete-product/{productId}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"product",
+								"delete-product",
+								"{productId}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Shift",
+			"item": [
+				{
+					"name": "getAllShift",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/shifts/get-all-shifts",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"shifts",
+								"get-all-shifts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "openShift",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/shifts/create-shift",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"shifts",
+								"create-shift"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "openShift Copy",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/shifts/close-shift",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"shifts",
+								"close-shift"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Order",
+			"item": []
+		},
+		{
+			"name": "UserActions",
+			"item": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
