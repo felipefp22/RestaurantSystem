@@ -59,7 +59,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/move-to-another-table/{orderID}/table-number-toward/{newTableNumber}")
+    @PutMapping("/move-to-another-table")
     public ResponseEntity<Order> moveToAnotherTable(@RequestHeader("Authorization") String authorizationHeader,
                                                     @RequestBody ChangeOrderTableDTO changeOrderTableDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
@@ -69,9 +69,9 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/close-order/{orderID}")
+    @PutMapping("/close-order")
     public ResponseEntity<Order> closeOrder(@RequestHeader("Authorization") String authorizationHeader,
-                                            @PathVariable OrderToCloseDTO orderToCloseDTO) {
+                                            @RequestBody OrderToCloseDTO orderToCloseDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = orderService.closeOrder(requesterID, orderToCloseDTO);
@@ -79,7 +79,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/confirm-paid-order/{orderID}")
+    @PutMapping("/confirm-paid-order")
     public ResponseEntity<Order> confirmPaidOrder(@RequestHeader("Authorization") String authorizationHeader,
                                                   @RequestBody FindOrderDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
@@ -89,9 +89,9 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/cancel-order/{orderID}")
+    @DeleteMapping("/cancel-order")
     public ResponseEntity<Order> cancelOrder(@RequestHeader("Authorization") String authorizationHeader,
-                                             @PathVariable ConfirmOrCancelOrderDTO confirmOrCancelOrderDTO) {
+                                             @RequestBody ConfirmOrCancelOrderDTO confirmOrCancelOrderDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = orderService.cancelOrder(requesterID, confirmOrCancelOrderDTO);

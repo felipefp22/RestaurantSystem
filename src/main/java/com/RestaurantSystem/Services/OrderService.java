@@ -75,7 +75,7 @@ public class OrderService {
             isTableAvailable(company, orderToCreate.tableNumberOrDeliveryOrPickup());
         }
 
-        Order order = new Order(currentShift, (currentShift.getOrders().size() + 1), orderToCreate, customer);
+        Order order = new Order(requester, currentShift, (currentShift.getOrders().size() + 1), orderToCreate, customer);
         Order orderCreated = orderRepo.save(order);
 
         List<OrdersItems> ordersItems = new ArrayList<>();
@@ -111,7 +111,7 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-        Order order = currentShift.getOrders().stream().filter(x -> x.getId() == notesAndOrderID.orderId()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+        Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(notesAndOrderID.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't add notes to no open orders.");
 
         order.setNotes(notesAndOrderID.notes());
@@ -220,7 +220,7 @@ public class OrderService {
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-            Order order = currentShift.getOrders().stream().filter(x -> x.getId() == changeOrderTableDTO.orderID()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+            Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(changeOrderTableDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
             if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
                 throw new RuntimeException("Can't change table of no open or waiting payment orders.");
 
@@ -282,7 +282,7 @@ public class OrderService {
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-            Order order = currentShift.getOrders().stream().filter(x -> x.getId() == orderToCloseDTO.orderID()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+            Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(orderToCloseDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
             if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't close to no open orders.");
 
             calculateTotalPriceTaxAndDiscount(order, orderToCloseDTO);
@@ -307,8 +307,8 @@ public class OrderService {
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-            Order order = currentShift.getOrders().stream().filter(x -> x.getId() == dto.orderID()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
-            if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't close to no open orders.");
+            Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(dto.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+            if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT) throw new RuntimeException("Can't confirm payment for no closed waiting payment orders.");
 
             if (order.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT) {
                 order.setStatus(OrderStatus.PAID);
@@ -340,8 +340,7 @@ public class OrderService {
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("No active shift found for the company."));
 
-            Order order = currentShift.getOrders().stream().filter(x -> x.getId() == cancelOrderDTO.orderID()).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
-            if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't close to no open orders.");
+            Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(cancelOrderDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
             if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
                 throw new RuntimeException("Only orders with status 'CLOSEDWAITINGPAYMENT' can be cancelled.");
 
@@ -360,14 +359,14 @@ public class OrderService {
         }
 
         // <> ---------- Aux Methods ---------- <>
-        public void calculateTotalPriceTaxAndDiscount (Order order, OrderToCloseDTO orderToCloseDTO){
+        private void calculateTotalPriceTaxAndDiscount (Order order, OrderToCloseDTO orderToCloseDTO){
             order.setPrice(0.0);
 
             order.getOrderItems().forEach(product -> {
                 order.setPrice(order.getPrice() + product.getPrice());
             });
 
-            order.setServiceTax(orderToCloseDTO.clientSaidNoTax() ? 0.0 : order.getPrice() * defaultTaxPercentage);
+            order.setServiceTax(orderToCloseDTO.clientSaidNoTax() ? 0.0 : order.getPrice() * defaultTaxPercentage / 100);
             order.setDiscount(orderToCloseDTO.discountValue() != null ? -Math.abs(orderToCloseDTO.discountValue()) : 0.0);
 
             order.setTotalPrice(order.getPrice() + order.getServiceTax() + order.getDiscount());

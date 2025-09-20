@@ -40,6 +40,9 @@ public class Order {
     private LocalDateTime completedOrderDateUtc;
 
     @ManyToOne
+    private AuthUserLogin openedByUser;
+
+    @ManyToOne
     private AuthUserLogin completedByUser;
 
     @ManyToOne
@@ -61,13 +64,14 @@ public class Order {
     public Order() {
     }
 
-    public Order(Shift shift, int orderNumberOnShift, CreateOrderDTO createOrderDTO, Customer customer) {
+    public Order(AuthUserLogin requester, Shift shift, int orderNumberOnShift, CreateOrderDTO createOrderDTO, Customer customer) {
         this.shift = shift;
         this.orderNumberOnShift = orderNumberOnShift;
         this.tableNumberOrDeliveryOrPickup = createOrderDTO.tableNumberOrDeliveryOrPickup();
         this.customer = customer;
         this.pickupName = createOrderDTO.pickupName();
         this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
+        this.openedByUser = requester;
         this.notes = createOrderDTO.notes();
         this.status = OrderStatus.OPEN;
     }
@@ -121,6 +125,10 @@ public class Order {
 
     public void setCompletedOrderDateUtc(LocalDateTime completedOrderDateUtc) {
         this.completedOrderDateUtc = completedOrderDateUtc;
+    }
+
+    public AuthUserLogin getOpenedByUser() {
+        return openedByUser;
     }
 
     public AuthUserLogin getCompletedByUser() {

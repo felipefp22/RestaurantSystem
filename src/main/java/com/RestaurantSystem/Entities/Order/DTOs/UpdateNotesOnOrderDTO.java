@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public record UpdateNotesOnOrderDTO(
         UUID companyID,
-        UUID orderId,
+        UUID orderID,
         String notes
 ) {
 }
