@@ -5,6 +5,7 @@ import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.Shift;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -17,7 +18,9 @@ public class Company {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @JsonIgnore
     @ManyToOne
+    @JoinColumn(name = "compound_id")
     private CompaniesCompound ownerCompound;
 
     private String companyName;
@@ -26,16 +29,16 @@ public class Company {
     private String companyAddress;
     private String urlCompanyLogo;
 
-    @OneToMany
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CompanyEmployees> employees;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductCategory> productsCategories;
 
-    @OneToMany(mappedBy = "company")
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Customer> customers;
 
-    @OneToMany(mappedBy = "company")
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Shift> shifts;
 
     private int numberOfTables;

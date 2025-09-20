@@ -38,6 +38,11 @@ public class AuthUserService {
     }
 
     // <>--------------- Methodos ---------------<>
+    public AuthUserDTO getUserDatas(String requesterID) {
+        AuthUserLogin authUserLogin = findUsuarioByEmail(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+
+        return new AuthUserDTO(authUserLogin);
+    }
 
     public IsAdmDTO isAdmin(String requesterID) throws Exception {
         AuthUserLogin requesterUser = authUserRepository.findById(requesterID).orElseThrow(() -> new Exception("User not found"));

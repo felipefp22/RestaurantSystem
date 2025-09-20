@@ -30,6 +30,12 @@ public class AuthUserController {
 
 
     // <>--------------- Methodos ---------------<>
+    @GetMapping("/me")
+    public ResponseEntity<AuthUserDTO> getUserDatas(@RequestHeader("Authorization") String authorizationHeader) throws Exception {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        return ResponseEntity.ok(authUserService.getUserDatas(requesterID));
+    }
 
     @GetMapping("/is-admin")
     public ResponseEntity<IsAdmDTO> isAdmin(@RequestHeader("Authorization") String authorizationHeader) throws Exception {

@@ -3,6 +3,7 @@ package com.RestaurantSystem.Entities.CompaniesCompound;
 import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.CreateOrUpdateCompoundDTO;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -15,12 +16,14 @@ public class CompaniesCompound {
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.AUTO)
     private UUID id;
 
+    @JsonIgnore
     @ManyToOne
+    @JoinColumn(name = "owner_email")
     private AuthUserLogin owner;
     private String compoundName;
     private String compoundDescription;
 
-    @OneToMany
+    @OneToMany(mappedBy = "ownerCompound", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Company> companies;
 
     // <>------------ Constructors ------------<>

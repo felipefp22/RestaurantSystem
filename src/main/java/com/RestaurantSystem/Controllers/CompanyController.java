@@ -26,6 +26,16 @@ public class CompanyController {
 
 
     // <> ------------- Methods ------------- <>
+    @GetMapping("/get-company/{companyID}")
+    public ResponseEntity<Company> getCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                              @PathVariable String companyID) {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = companyService.getCompany(requesterID, companyID);
+
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping("/create-company")
     public ResponseEntity<Company> createCompany(@RequestHeader("Authorization") String authorizationHeader,
@@ -49,9 +59,19 @@ public class CompanyController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/add-employee")
-    public ResponseEntity<List<CompanyEmployees>>  addEmployeeToCompany(@RequestHeader("Authorization") String authorizationHeader,
-                                                        @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+    @GetMapping("/get-employees/{companyID}")
+    public ResponseEntity<List<CompanyEmployees>> getEmployees(@RequestHeader("Authorization") String authorizationHeader,
+                                                         @PathVariable String companyID) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = companyService.getEmployees(requesterID, companyID);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/add-employees")
+    public ResponseEntity<List<CompanyEmployees>> addEmployeeToCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                                                       @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
@@ -72,8 +92,8 @@ public class CompanyController {
     }
 
     @PutMapping("/update-employee-position")
-    public ResponseEntity<List<CompanyEmployees>>  updateEmployeePosition(@RequestHeader("Authorization") String authorizationHeader,
-                                                                   @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+    public ResponseEntity<List<CompanyEmployees>> updateEmployeePosition(@RequestHeader("Authorization") String authorizationHeader,
+                                                                         @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 

@@ -15,6 +15,7 @@ import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CompanyService {
@@ -32,9 +33,22 @@ public class CompanyService {
     }
 
     // <> ------------- Methods ------------- <>
+    public Company getCompany(String requesterID, String companyID) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
+
+        Company company = companyRepo.findById(UUID.fromString(companyID)).orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You don't have permission to access this company");
+
+        return company;
+    }
 
     public Company createCompany(String requesterID, CreateCompanyDTO createCompanyDTO) {
         AuthUserLogin owner = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (owner.getCompaniesCompounds().isEmpty())
+            throw new RuntimeException("You need to have at least one Companies Compound to create a company");
+
         CompaniesCompound companiesCompound = owner.getCompaniesCompounds().stream()
                 .filter(x -> x.getId().equals(createCompanyDTO.companiesCompoundID()))
                 .findFirst()
@@ -54,22 +68,16 @@ public class CompanyService {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(updateCompanyDTO.id())
+        Company company = companyRepo.findById(updateCompanyDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
         if (!verificationsServices.isOwnerOrManager(company, requester)) throw new RuntimeException("Just Owner or Manager can add employees to a company");
 
-
-        List<Company> companies = requester.getCompaniesCompounds().stream()
+        Company companyToUpdate = requester.getCompaniesCompounds().stream()
                 .flatMap(compound -> compound.getCompanies().stream())
-                .filter(c -> c.getId().equals(updateCompanyDTO.id()))
-                .toList();
-
-        if (companies.isEmpty())
-            throw new RuntimeException("No Company found in your compounds");
-
-        Company companyToUpdate = companies.stream().filter(c -> c.getId().equals(updateCompanyDTO.id())).findFirst()
-                .orElseThrow(() -> new RuntimeException("Company not found in your compounds"));
+                .filter(c -> c.getId().equals(updateCompanyDTO.companyID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("You are not part of this Companies Compound"));
 
         companyToUpdate.setCompanyName(updateCompanyDTO.companyName());
         companyToUpdate.setCompanyEmail(updateCompanyDTO.companyEmail());
@@ -79,6 +87,18 @@ public class CompanyService {
         companyToUpdate.setNumberOfTables(updateCompanyDTO.numberOfTables());
 
         return companyRepo.save(companyToUpdate);
+    }
+
+    public List<CompanyEmployees> getEmployees(String requesterID, String companyID) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(UUID.fromString(companyID))
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+
+        return company.getEmployees();
     }
 
     public List<CompanyEmployees> addEmployeeToCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {

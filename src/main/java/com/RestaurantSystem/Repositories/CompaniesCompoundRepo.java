@@ -1,12 +1,15 @@
 package com.RestaurantSystem.Repositories;
 
 import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
+import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface CompaniesCompoundRepo extends JpaRepository<CompaniesCompound, UUID> {
 
+    List<CompaniesCompound> findByOwnerEmail(String ownerID);
 }

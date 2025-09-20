@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Entities.Company;
 
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -12,10 +13,14 @@ public class CompanyEmployees {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @JsonIgnore
     @ManyToOne
+    @JoinColumn(name = "company_id")
     private Company company;
 
+    @JsonIgnore
     @ManyToOne
+    @JoinColumn(name = "employee_email")
     private AuthUserLogin employee;
 
     @Enumerated(EnumType.STRING)

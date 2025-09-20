@@ -6,6 +6,7 @@ import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.ENUMs.Role;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.RegisterAuthUserDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,10 +33,11 @@ public class AuthUserLogin implements UserDetails {
     @Column(length = 512)
     private String urlProfilePhoto;
 
-    @OneToMany
+    @JsonIgnore
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CompaniesCompound> companiesCompounds;
 
-    @ManyToMany
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CompanyEmployees> worksAtCompanies;
 
     private String ownAdministrativePassword;

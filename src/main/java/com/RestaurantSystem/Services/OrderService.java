@@ -28,9 +28,6 @@ public class OrderService {
     @Value("${default.tax.percentage}")
     private Double defaultTaxPercentage;
 
-    @Value("${cancel.order.admin.password}")
-    private String adminPassword;
-
     private final OrderRepo orderRepo;
     private final OrdersItemsRepo ordersItemsRepo;
     private final AuthUserRepository authUserRepository;
@@ -338,7 +335,7 @@ public class OrderService {
             throw new RuntimeException("Only orders with status 'CLOSEDWAITINGPAYMENT' can be cancelled.");
 
 
-        if (new BCryptPasswordEncoder().matches(cancelOrderDTO.adminPassword(), adminPassword)) {
+        if (new BCryptPasswordEncoder().matches(cancelOrderDTO.adminPassword(), manager.getOwnAdministrativePassword())) {
             order.setStatus(OrderStatus.CANCELLED);
             order.setCompletedByUser(requester);
             order.setIfCanceledAuthorizedByUser(manager);

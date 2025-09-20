@@ -2,12 +2,14 @@ package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.CreateOrUpdateCompoundDTO;
+import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompaniesCompoundRepo;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,7 +24,6 @@ public class CompaniesCompoundService {
     }
 
     // <> ------------- Methods ------------- <>
-
     public CompaniesCompound createCompaniesCompound(String requesterID, CreateOrUpdateCompoundDTO createCompoundDTO) {
         AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
 
