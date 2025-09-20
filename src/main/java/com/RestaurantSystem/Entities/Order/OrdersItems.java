@@ -2,6 +2,7 @@ package com.RestaurantSystem.Entities.Order;
 
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -13,6 +14,7 @@ public class OrdersItems {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @JsonIgnore
     @ManyToOne
     private Order order;
 

@@ -6,6 +6,7 @@ import com.RestaurantSystem.Entities.Order.DTOs.CreateOrderDTO;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @JsonIgnore
     @ManyToOne
     private Shift shift;
 
@@ -52,7 +54,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersItems> orderItems = new ArrayList<>();
 
     // <>------------ Constructors ------------<>

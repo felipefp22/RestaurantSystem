@@ -24,32 +24,6 @@ public class ProductsController {
     }
 
     // <>------------ Methods ------------<>
-//    @GetMapping("/get-all-products")
-//    public ResponseEntity<List<Product>> getAllProducts(@RequestHeader("Authorization") String authorizationHeader) {
-//        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-//
-//        var response = productService.getAllProducts(requesterID);
-//
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    @GetMapping("/get-products-by-category/{category}")
-//    public ResponseEntity<List<Product>> getProductsByCategory(@RequestHeader("Authorization") String authorizationHeader,
-//                                                              @PathVariable String category) {
-//        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-//        var response = productService.getProductsByCategory(requesterID, category);
-//
-//        return ResponseEntity.ok(response);
-//    }
-
-//    @GetMapping("/get-products-by-category")
-//    public ResponseEntity<Product> getProductById(@RequestHeader("Authorization") String authorizationHeader,
-//                                                  @RequestBody FindProductDTO dto) {
-//        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-//        var response = productService.getProductById(requesterID, dto);
-//
-//        return ResponseEntity.ok(response);
-//    }
 
     @PostMapping("/create-product")
     public ResponseEntity<Product> createProduct(@RequestHeader("Authorization") String authorizationHeader,
@@ -69,7 +43,7 @@ public class ProductsController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/delete-product/{productId}")
+    @DeleteMapping("/delete-product/{productID}")
     public ResponseEntity deleteProduct(@RequestHeader("Authorization") String authorizationHeader,
                                         @RequestBody FindProductDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);

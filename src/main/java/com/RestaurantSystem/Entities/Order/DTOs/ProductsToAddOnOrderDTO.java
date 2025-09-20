@@ -5,11 +5,11 @@ import java.util.UUID;
 
 public record ProductsToAddOnOrderDTO(
         UUID companyID,
-        UUID orderId,
-        List<ProductsToAddDTO> products
+        UUID orderID,
+        List<ProductsToAddDTO> orderItemsIDs
 ) {
     public record ProductsToAddDTO(
-            UUID productId,
+            UUID productID,
             int quantity
     ) {
 

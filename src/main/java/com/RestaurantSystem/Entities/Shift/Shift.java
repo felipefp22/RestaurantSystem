@@ -4,10 +4,7 @@ import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Order.Order;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -28,7 +25,7 @@ public class Shift {
     private LocalDateTime startTimeUTC;
     private LocalDateTime endTimeUTC;
 
-    @OneToMany
+    @OneToMany(mappedBy = "shift", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders;
 
     private String employeeOpenedShift;

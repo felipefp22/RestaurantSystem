@@ -85,6 +85,74 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "UserActions",
+			"item": [
+				{
+					"name": "getUserInfos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/user-actions/me",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user-actions",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "isAdmin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/user-actions/is-admin",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user-actions",
+								"is-admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "setAdministrativePassword",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"newAdministrativePassword\": \"hello\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/user-actions/set-own-administrative-password",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user-actions",
+								"set-own-administrative-password"
+							]
+						}
+					},
+					"response": []
 				},
 				{
 					"name": "quitCompany",
@@ -143,6 +211,25 @@
 			"name": "Company",
 			"item": [
 				{
+					"name": "getCompany",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/company/get-company/28899f13-854e-4cdf-9ba8-9113b8b78086",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"company",
+								"get-company",
+								"28899f13-854e-4cdf-9ba8-9113b8b78086"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "createCompany",
 					"request": {
 						"method": "POST",
@@ -170,19 +257,127 @@
 					"response": []
 				},
 				{
-					"name": "getCompany",
+					"name": "updateCompany",
 					"request": {
-						"method": "GET",
+						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companyID\": \"28899f13-854e-4cdf-9ba8-9113b8b78086\",\r\n    \"companyName\":\"felipefp2@gmail.com\",\r\n    \"companyEmail\":\"felipefp2@gmail.com\",\r\n    \"companyPhone\":\"+5511947315319\",\r\n    \"companyAddress\":\"Rua Jorge Bastião, 315\",\r\n    \"urlCompanyLogo\":\"xpto.com.br\",\r\n    \"numberOfTables\": 20\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{url}}/company/get-company/28899f13-854e-4cdf-9ba8-9113b8b78086",
+							"raw": "{{url}}/company/update-company",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"company",
-								"get-company",
-								"28899f13-854e-4cdf-9ba8-9113b8b78086"
+								"update-company"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getEmployess",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/company/get-employees/317b2f9e-4a43-4a1d-8725-0f7aeffd436b",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"company",
+								"get-employees",
+								"317b2f9e-4a43-4a1d-8725-0f7aeffd436b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "addEmployee",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companyId\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"employeeEmail\":\"arthur@gmail.com\",\r\n    \"position\":\"WAITER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/company/add-employees",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"company",
+								"add-employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateEmployeePosition",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companyId\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"employeeEmail\":\"arthur@gmail.com\",\r\n    \"position\":\"WAITER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/company/update-employee-position",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"company",
+								"update-employee-position"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "removeEmployee",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companyId\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"employeeEmail\":\"arthur@gmail.com\",\r\n    \"position\":\"WAITER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/company/remove-employee",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"company",
+								"remove-employee"
 							]
 						}
 					},
@@ -369,9 +564,21 @@
 			"item": [
 				{
 					"name": "getAllProducts",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companyID\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"productID\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{url}}/product/get-all-products",
 							"host": [
@@ -430,7 +637,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Pizza\",\r\n    \"price\": 64.99,\r\n    \"description\": \"Pizza de comer\",\r\n    \"imagePath\": \"xpto.com.br\",\r\n    \"productCategoryID\": \"7cf9d78b-c8c0-4b6d-b3a8-2b1bd9d439b5\"\r\n}",
+							"raw": "{\r\n    \"companyID\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"name\": \"Pizza\",\r\n    \"price\": 64.99,\r\n    \"description\": \"Pizza de comer\",\r\n    \"imagePath\": \"xpto.com.br\",\r\n    \"productCategoryID\": \"0dee3628-09b8-4932-a379-b9c2611b75b5\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -457,7 +664,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Pizza\",\r\n    \"price\": 64.99,\r\n    \"description\": \"Pizza de comer\",\r\n    \"imagePath\": \"xpto.com.br\",\r\n    \"category\": \"Foods\"\r\n}",
+							"raw": "{\r\n    \"companyID\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"productID\": \"9170924f-c23b-4f73-9b4c-eeeafafa4e17\",\r\n    \"name\": \"Pizza\",\r\n    \"price\": 74.99,\r\n    \"description\": \"Pizza de comer\",\r\n    \"imagePath\": \"xpto.com.br\",\r\n    \"productCategoryID\": \"0dee3628-09b8-4932-a379-b9c2611b75b5\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -507,13 +714,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/shifts/get-all-shifts",
+							"raw": "{{url}}/shifts/get-all-shifts/317b2f9e-4a43-4a1d-8725-0f7aeffd436b",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"shifts",
-								"get-all-shifts"
+								"get-all-shifts",
+								"317b2f9e-4a43-4a1d-8725-0f7aeffd436b"
 							]
 						}
 					},
@@ -525,13 +733,14 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/shifts/create-shift",
+							"raw": "{{url}}/shifts/create-shift/317b2f9e-4a43-4a1d-8725-0f7aeffd436b",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"shifts",
-								"create-shift"
+								"create-shift",
+								"317b2f9e-4a43-4a1d-8725-0f7aeffd436b"
 							]
 						}
 					},
@@ -559,11 +768,35 @@
 		},
 		{
 			"name": "Order",
-			"item": []
-		},
-		{
-			"name": "UserActions",
-			"item": []
+			"item": [
+				{
+					"name": "createOrder",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"companyID\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"tableNumberOrDeliveryOrPickup\": \"14\",\r\n    \"customerID\": \"\",\r\n    \"pickupName\": \"\",\r\n    \"orderItemsIDs\": [\r\n        {\r\n            \"productID\": \"9170924f-c23b-4f73-9b4c-eeeafafa4e17\",\r\n            \"quantity\": 3\r\n        }\r\n    ],\r\n    \"notes\": \"Hello\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/order/create-order",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"order",
+								"create-order"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"auth": {
