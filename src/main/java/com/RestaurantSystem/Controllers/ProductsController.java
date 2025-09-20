@@ -42,14 +42,14 @@ public class ProductsController {
 //        return ResponseEntity.ok(response);
 //    }
 
-    @GetMapping("/get-products-by-categoryID/{productId}")
-    public ResponseEntity<Product> getProductById(@RequestHeader("Authorization") String authorizationHeader,
-                                                  @RequestBody FindProductDTO dto) {
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-        var response = productService.getProductById(requesterID, dto);
-
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping("/get-products-by-category")
+//    public ResponseEntity<Product> getProductById(@RequestHeader("Authorization") String authorizationHeader,
+//                                                  @RequestBody FindProductDTO dto) {
+//        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+//        var response = productService.getProductById(requesterID, dto);
+//
+//        return ResponseEntity.ok(response);
+//    }
 
     @PostMapping("/create-product")
     public ResponseEntity<Product> createProduct(@RequestHeader("Authorization") String authorizationHeader,

@@ -54,20 +54,20 @@ public class ProductService {
 //        return company.getProducts().stream().filter(x -> x.getCategory().equals(category)).toList();
 //    }
 
-    public Product getProductById(String requesterID, FindProductDTO dto) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(dto.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
-
-        List<Product> allProducts = company.getProductsCategories().stream().flatMap(pc -> pc.getProducts().stream()).toList();
-
-        return allProducts.stream().filter(p -> p.getId().equals(dto.productID())).findFirst()
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-    }
+//    public Product getProductById(String requesterID, FindProductDTO dto) {
+//        AuthUserLogin requester = authUserRepository.findById(requesterID)
+//                .orElseThrow(() -> new RuntimeException("Requester not found"));
+//
+//        Company company = companyRepo.findById(dto.companyID())
+//                .orElseThrow(() -> new RuntimeException("Company not found"));
+//
+//        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
+//
+//        List<Product> allProducts = company.getProductsCategories().stream().flatMap(pc -> pc.getProducts().stream()).toList();
+//
+//        return allProducts.stream().filter(p -> p.getId().equals(dto.productID())).findFirst()
+//                .orElseThrow(() -> new RuntimeException("Product not found"));
+//    }
 
     public Product createProduct(String requesterID, CreateOrUpdateProductDTO productToCreate) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
@@ -102,7 +102,9 @@ public class ProductService {
         Product productToUpdate = allProducts.stream().filter(p -> p.getId().equals(productToUpdateDTO.productID())).findFirst()
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        ProductCategory productCategoryToAddProduct = productCategoryRepo.findById(UUID.fromString(productToUpdateDTO.productCategoryID()))
+        ProductCategory productCategoryToAddProduct = company.getProductsCategories().stream()
+                .filter(pc -> pc.getId().equals(UUID.fromString(productToUpdateDTO.productCategoryID())))
+                .findFirst()
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         productToUpdate.setName(productToUpdateDTO.name());

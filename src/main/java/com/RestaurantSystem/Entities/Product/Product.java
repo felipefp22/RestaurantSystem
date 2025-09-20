@@ -31,6 +31,7 @@ public class Product {
         this.name = productToCreate.name();
         this.price = productToCreate.price();
         this.description = productToCreate.description();
+        this.imagePath = productToCreate.imagePath();
     }
 
     // <>------------ Getters and Setters ------------<>
