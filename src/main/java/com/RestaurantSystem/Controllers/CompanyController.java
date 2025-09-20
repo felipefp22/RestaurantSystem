@@ -3,6 +3,7 @@ package com.RestaurantSystem.Controllers;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.Company.DTOs.AddOrUpdateEmployeeDTO;
+import com.RestaurantSystem.Entities.Company.DTOs.CompanyEmployeesDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.UpdateCompanyDTO;
 import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
@@ -60,7 +61,7 @@ public class CompanyController {
     }
 
     @GetMapping("/get-employees/{companyID}")
-    public ResponseEntity<List<CompanyEmployees>> getEmployees(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<List<CompanyEmployeesDTO>> getEmployees(@RequestHeader("Authorization") String authorizationHeader,
                                                          @PathVariable String companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
@@ -71,22 +72,11 @@ public class CompanyController {
 
     @PutMapping("/add-employees")
     public ResponseEntity<List<CompanyEmployees>> addEmployeeToCompany(@RequestHeader("Authorization") String authorizationHeader,
-                                                                       @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+                                                                          @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = companyService.addEmployeeToCompany(requesterID, employeeDTO);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("/remove-employee")
-    public ResponseEntity<List<CompanyEmployees>> removeEmployeeFromCompany(@RequestHeader("Authorization") String authorizationHeader,
-                                                                            @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
-
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-
-        var response = companyService.removeEmployeeFromCompany(requesterID, employeeDTO);
 
         return ResponseEntity.ok(response);
     }
@@ -98,6 +88,17 @@ public class CompanyController {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = companyService.updateEmployeePosition(requesterID, employeeDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/remove-employee")
+    public ResponseEntity<List<CompanyEmployees>> removeEmployeeFromCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                                                            @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = companyService.removeEmployeeFromCompany(requesterID, employeeDTO);
 
         return ResponseEntity.ok(response);
     }

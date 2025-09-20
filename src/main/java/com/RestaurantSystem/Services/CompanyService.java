@@ -4,6 +4,7 @@ import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.Company.DTOs.AddOrUpdateEmployeeDTO;
+import com.RestaurantSystem.Entities.Company.DTOs.CompanyEmployeesDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.UpdateCompanyDTO;
 import com.RestaurantSystem.Entities.Company.EmployeePosition;
@@ -89,7 +90,7 @@ public class CompanyService {
         return companyRepo.save(companyToUpdate);
     }
 
-    public List<CompanyEmployees> getEmployees(String requesterID, String companyID) {
+    public List<CompanyEmployeesDTO> getEmployees(String requesterID, String companyID) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
@@ -98,7 +99,7 @@ public class CompanyService {
 
         if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
-        return company.getEmployees();
+        return company.getEmployees().stream().map(CompanyEmployeesDTO::new).toList();
     }
 
     public List<CompanyEmployees> addEmployeeToCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
@@ -123,25 +124,6 @@ public class CompanyService {
         return company.getEmployees();
     }
 
-    public List<CompanyEmployees> removeEmployeeFromCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(employeeDTO.companyId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
-
-        CompanyEmployees companyEmployeeToRemove = company.getEmployees().stream()
-                .filter(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("This employee is not part of this company"));
-
-        companyEmployeesRepo.delete(companyEmployeeToRemove);
-        company = companyRepo.findById(company.getId()).orElse(null);
-        return company.getEmployees();
-    }
-
     public List<CompanyEmployees> updateEmployeePosition(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
@@ -156,9 +138,33 @@ public class CompanyService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("This employee is not part of this company"));
 
+        if (companyEmployeeToUpdate.getPosition().equals(EmployeePosition.valueOf(employeeDTO.position())))
+            throw new RuntimeException("This employee already has this position " + employeeDTO.position());
+
         companyEmployeeToUpdate.setPosition(EmployeePosition.valueOf(employeeDTO.position()));
 
         companyEmployeesRepo.save(companyEmployeeToUpdate);
+        company = companyRepo.findById(company.getId()).orElse(null);
+        return company.getEmployees();
+    }
+
+    public List<CompanyEmployees> removeEmployeeFromCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(employeeDTO.companyId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+
+        CompanyEmployees companyEmployeeToRemove = company.getEmployees().stream()
+                .filter(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("This employee is not part of this company"));
+
+        company.getEmployees().remove(companyEmployeeToRemove);
+        companyEmployeesRepo.deleteById(companyEmployeeToRemove.getId());
+
         company = companyRepo.findById(company.getId()).orElse(null);
         return company.getEmployees();
     }

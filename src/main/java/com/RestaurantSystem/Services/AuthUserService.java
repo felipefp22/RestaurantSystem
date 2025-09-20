@@ -136,6 +136,7 @@ public class AuthUserService {
         CompanyEmployees companiesToQuit = authUserLogin.getWorksAtCompanies().stream().filter(c -> c.getCompany().getId().equals(companyId))
                 .findFirst().orElseThrow(() -> new NoSuchElementException("You don't work at this company"));
 
+        authUserLogin.getWorksAtCompanies().remove(companiesToQuit);
         companyEmployeesRepo.delete(companiesToQuit);
     }
 

@@ -30,22 +30,6 @@ public class AuthUserController {
 
 
     // <>--------------- Methodos ---------------<>
-    @GetMapping("/me")
-    public ResponseEntity<AuthUserDTO> getUserDatas(@RequestHeader("Authorization") String authorizationHeader) throws Exception {
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-
-        return ResponseEntity.ok(authUserService.getUserDatas(requesterID));
-    }
-
-    @GetMapping("/is-admin")
-    public ResponseEntity<IsAdmDTO> isAdmin(@RequestHeader("Authorization") String authorizationHeader) throws Exception {
-
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-
-        return ResponseEntity.ok(authUserService.isAdmin(requesterID));
-    }
-
-
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid AuthenticationDTO authenticationDTO) {
 
@@ -105,28 +89,6 @@ public class AuthUserController {
     @GetMapping("/loginFailure")
     public String loginFailure() {
         return "Login failed!";
-    }
-
-    @PutMapping("/set-own-administrative-password")
-    public ResponseEntity setOwnAdministrativePassword(@RequestHeader("Authorization") String authorizationHeader,
-                                                      @RequestBody SetOwnAdministrativePasswordDTO setOwnAdministrativePasswordDTO) throws Exception {
-
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-
-        authUserService.setOwnAdministrativePassword(requesterID, setOwnAdministrativePasswordDTO);
-
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
-
-    @DeleteMapping("/quit-company/{companyId}")
-    public ResponseEntity quitCompany(@RequestHeader("Authorization") String authorizationHeader,
-                                      @PathVariable("companyId") UUID companyId) throws Exception {
-
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-
-        authUserService.quitCompany(requesterID, companyId);
-
-        return ResponseEntity.noContent().build();
     }
 
     // <>--------------- Tokens Confimations ---------------<>
