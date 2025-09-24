@@ -2,7 +2,7 @@ package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.Order.DTOs.*;
 import com.RestaurantSystem.Entities.Order.Order;
-import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
+import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -85,6 +85,16 @@ public class OrderController {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = orderService.confirmPaidOrder(requesterID, dto);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/reopen-order")
+    public ResponseEntity<Order> reopenOrder(@RequestHeader("Authorization") String authorizationHeader,
+                                             @RequestBody FindOrderDTO dto) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = orderService.reopenOrder(requesterID, dto);
 
         return ResponseEntity.ok(response);
     }

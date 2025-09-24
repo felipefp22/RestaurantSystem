@@ -5,19 +5,11 @@ import com.RestaurantSystem.Entities.ENUMs.Role;
 import com.RestaurantSystem.Entities.User.AdmDTOs.IsAdmDTO;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
-import com.RestaurantSystem.Entities.User.RefreshToken;
-import com.RestaurantSystem.Infra.Exceptions.ExceptionsToThrow.EmailAlreadyConfirmedException;
-import com.RestaurantSystem.Infra.auth.RefreshTokenRepository;
-import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
-import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

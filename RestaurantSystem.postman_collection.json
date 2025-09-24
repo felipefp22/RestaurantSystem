@@ -776,7 +776,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"companyID\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"tableNumberOrDeliveryOrPickup\": \"14\",\r\n    \"customerID\": \"\",\r\n    \"pickupName\": \"\",\r\n    \"orderItemsIDs\": [\r\n        {\r\n            \"productID\": \"9170924f-c23b-4f73-9b4c-eeeafafa4e17\",\r\n            \"quantity\": 3\r\n        }\r\n    ],\r\n    \"notes\": \"Hello\"\r\n}",
+							"raw": "{\r\n    \"companyID\": \"317b2f9e-4a43-4a1d-8725-0f7aeffd436b\",\r\n    \"tableNumberOrDeliveryOrPickup\": \"12\",\r\n    \"customerID\": \"\",\r\n    \"pickupName\": \"\",\r\n    \"orderItemsIDs\": [\r\n        {\r\n            \"productID\": \"9170924f-c23b-4f73-9b4c-eeeafafa4e17\",\r\n            \"quantity\": 3\r\n        }\r\n    ],\r\n    \"notes\": \"Hello\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

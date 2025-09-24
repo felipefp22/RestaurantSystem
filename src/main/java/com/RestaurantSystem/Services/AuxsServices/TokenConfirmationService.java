@@ -7,7 +7,6 @@ import com.RestaurantSystem.Entities.User.AuthUserDTOs.TokenToResetPasswordFromC
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Entities.User.RefreshToken;
 import com.RestaurantSystem.Entities.User.TokenConfirmation;
-import com.RestaurantSystem.Infra.auth.RefreshTokenRepository;
 import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.TokenConfirmationRepository;
@@ -27,11 +26,11 @@ public class TokenConfirmationService {
     private final TokenConfirmationRepository tokenConfirmationRepository;
     private final AuthUserRepository authUserRepository;
     private final EmailService emailService;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthUserRepository.RefreshTokenRepository refreshTokenRepository;
     private final TokenServiceOur tokenServiceOur;
 
     public TokenConfirmationService(TokenConfirmationRepository tokenConfirmationRepository, AuthUserRepository authUserRepository, EmailService emailService,
-                                     RefreshTokenRepository refreshTokenRepository, TokenServiceOur tokenServiceOur) {
+                                    AuthUserRepository.RefreshTokenRepository refreshTokenRepository, TokenServiceOur tokenServiceOur) {
         this.tokenConfirmationRepository = tokenConfirmationRepository;
         this.authUserRepository = authUserRepository;
         this.emailService = new EmailService();

@@ -2,7 +2,7 @@ package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.User.AdmDTOs.IsAdmDTO;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
-import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
+import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.AUserActionsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

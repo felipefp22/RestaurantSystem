@@ -2,6 +2,7 @@ package com.RestaurantSystem.Infra.auth;
 
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
+import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

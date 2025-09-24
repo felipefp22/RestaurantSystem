@@ -3,14 +3,10 @@ package com.RestaurantSystem.Controllers;
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
 import com.RestaurantSystem.Entities.Product.DTOs.FindProductDTO;
 import com.RestaurantSystem.Entities.Product.Product;
-import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
+import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/product")

@@ -1,5 +1,6 @@
-package com.RestaurantSystem.Infra.auth;
+package com.RestaurantSystem.Services.AuxsServices;
 
+import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import org.springframework.stereotype.Service;
 
 @Service

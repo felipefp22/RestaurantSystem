@@ -30,6 +30,8 @@ public class AuthUserLogin implements UserDetails {
     private String name;
     private String phone;
 
+    private Boolean phoneConfirmed;
+
     @Column(length = 512)
     private String urlProfilePhoto;
 
@@ -56,6 +58,7 @@ public class AuthUserLogin implements UserDetails {
         this.companiesCompounds = new ArrayList<>();
         this.role = Role.USER;
         this.emailConfirmed = emailConfirmed;
+        this.phoneConfirmed = false;
     }
 
     public AuthUserLogin(RegisterAuthUserDTO registerAuthUserDTO) {
@@ -67,6 +70,7 @@ public class AuthUserLogin implements UserDetails {
         this.companiesCompounds = new ArrayList<>();
         this.role = Role.USER;
         this.emailConfirmed = false;
+        this.phoneConfirmed = false;
     }
 
     // <>------------ Getters and setters ------------<>
@@ -162,6 +166,10 @@ public class AuthUserLogin implements UserDetails {
     }
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public Boolean isPhoneConfirmed() {
+        return phoneConfirmed;
     }
 
     public String getUrlProfilePhoto() {

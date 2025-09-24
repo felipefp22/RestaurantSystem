@@ -7,7 +7,6 @@ import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Entities.User.RefreshToken;
 import com.RestaurantSystem.Infra.Exceptions.ExceptionsToThrow.EmailAlreadyConfirmedException;
-import com.RestaurantSystem.Infra.auth.RefreshTokenRepository;
 import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
@@ -16,7 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,13 +22,13 @@ import java.util.UUID;
 @Service
 public class AuthUserService {
     private final AuthUserRepository authUserRepository;
-    private final RefreshTokenRepository refreshTokenRepo;
+    private final AuthUserRepository.RefreshTokenRepository refreshTokenRepo;
     private final TokenServiceOur tokenServiceOur;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final CompanyEmployeesRepo companyEmployeesRepo;
 
 
-    public AuthUserService(AuthUserRepository authUserRepository, RefreshTokenRepository refreshTokenRepo, TokenServiceOur tokenServiceOur, CompanyEmployeesRepo companyEmployeesRepo) {
+    public AuthUserService(AuthUserRepository authUserRepository, AuthUserRepository.RefreshTokenRepository refreshTokenRepo, TokenServiceOur tokenServiceOur, CompanyEmployeesRepo companyEmployeesRepo) {
         this.authUserRepository = authUserRepository;
         this.refreshTokenRepo = refreshTokenRepo;
         this.tokenServiceOur = tokenServiceOur;

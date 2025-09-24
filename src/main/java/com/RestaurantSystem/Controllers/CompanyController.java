@@ -6,7 +6,7 @@ import com.RestaurantSystem.Entities.Company.DTOs.AddOrUpdateEmployeeDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.CompanyEmployeesDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.UpdateCompanyDTO;
-import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
+import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.CompanyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

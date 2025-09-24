@@ -1,14 +1,12 @@
 package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
-import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.CompaniesCompoundDTO;
 import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.CreateOrUpdateCompoundDTO;
-import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
+import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.CompaniesCompoundService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController

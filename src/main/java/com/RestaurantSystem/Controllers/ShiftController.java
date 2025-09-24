@@ -1,7 +1,7 @@
 package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.Shift.Shift;
-import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
+import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.ShiftService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

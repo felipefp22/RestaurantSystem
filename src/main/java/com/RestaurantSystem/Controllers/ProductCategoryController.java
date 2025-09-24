@@ -3,13 +3,12 @@ package com.RestaurantSystem.Controllers;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.UpdateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
-import com.RestaurantSystem.Infra.auth.RetriveAuthInfosService;
+import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.ProductCategoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/product-category")

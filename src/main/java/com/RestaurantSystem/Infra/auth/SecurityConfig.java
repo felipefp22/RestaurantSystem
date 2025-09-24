@@ -81,7 +81,6 @@ public class SecurityConfig {
 
                     auth.requestMatchers("/webhook-receives/mp-payments").permitAll();
 
-
                     // Internal use, just to communicate with HiringMP (Our payment API)
                     //auth.requestMatchers("/credits-internal-use/get-credits-by-payments-ids").hasRole("HIRINGPAYMENTSADMIN");
                     //auth.requestMatchers("/credits-internal-use/create-credits-paid").hasRole("HIRINGPAYMENTSADMIN");
