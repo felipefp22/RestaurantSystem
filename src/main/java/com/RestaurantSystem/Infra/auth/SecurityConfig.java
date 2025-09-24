@@ -30,14 +30,11 @@ import java.util.UUID;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    @Value("${oauth.jwt.secret}")
-    private String secret;
     private final SecurityFilter securityFilter;
     private final AuthUserRepository authUserRepository;
     private final TokenServiceOur tokenServiceOur;
     private final ClientRegistrationRepository clientRegistrationRepository;
-
-
+    
     @Autowired
     public SecurityConfig(SecurityFilter securityFilter, AuthUserRepository authUserRepository, TokenServiceOur tokenServiceOur, ClientRegistrationRepository clientRegistrationRepository) {
         this.securityFilter = securityFilter;

@@ -10,6 +10,7 @@ import com.RestaurantSystem.Infra.Exceptions.ExceptionsToThrow.EmailAlreadyConfi
 import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
+import com.RestaurantSystem.Repositories.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,13 +23,13 @@ import java.util.UUID;
 @Service
 public class AuthUserService {
     private final AuthUserRepository authUserRepository;
-    private final AuthUserRepository.RefreshTokenRepository refreshTokenRepo;
+    private final RefreshTokenRepository refreshTokenRepo;
     private final TokenServiceOur tokenServiceOur;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final CompanyEmployeesRepo companyEmployeesRepo;
 
 
-    public AuthUserService(AuthUserRepository authUserRepository, AuthUserRepository.RefreshTokenRepository refreshTokenRepo, TokenServiceOur tokenServiceOur, CompanyEmployeesRepo companyEmployeesRepo) {
+    public AuthUserService(AuthUserRepository authUserRepository, RefreshTokenRepository refreshTokenRepo, TokenServiceOur tokenServiceOur, CompanyEmployeesRepo companyEmployeesRepo) {
         this.authUserRepository = authUserRepository;
         this.refreshTokenRepo = refreshTokenRepo;
         this.tokenServiceOur = tokenServiceOur;

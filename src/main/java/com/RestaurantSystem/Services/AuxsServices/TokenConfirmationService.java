@@ -9,6 +9,7 @@ import com.RestaurantSystem.Entities.User.RefreshToken;
 import com.RestaurantSystem.Entities.User.TokenConfirmation;
 import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
+import com.RestaurantSystem.Repositories.RefreshTokenRepository;
 import com.RestaurantSystem.Repositories.TokenConfirmationRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,11 +27,11 @@ public class TokenConfirmationService {
     private final TokenConfirmationRepository tokenConfirmationRepository;
     private final AuthUserRepository authUserRepository;
     private final EmailService emailService;
-    private final AuthUserRepository.RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final TokenServiceOur tokenServiceOur;
 
     public TokenConfirmationService(TokenConfirmationRepository tokenConfirmationRepository, AuthUserRepository authUserRepository, EmailService emailService,
-                                    AuthUserRepository.RefreshTokenRepository refreshTokenRepository, TokenServiceOur tokenServiceOur) {
+                                    RefreshTokenRepository refreshTokenRepository, TokenServiceOur tokenServiceOur) {
         this.tokenConfirmationRepository = tokenConfirmationRepository;
         this.authUserRepository = authUserRepository;
         this.emailService = new EmailService();

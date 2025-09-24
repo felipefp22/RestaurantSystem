@@ -4,6 +4,7 @@ import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Entities.User.JWKS;
 import com.RestaurantSystem.Entities.User.RefreshToken;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
+import com.RestaurantSystem.Repositories.RefreshTokenRepository;
 import com.RestaurantSystem.Services.JwksService;
 import com.RestaurantSystem.Services.Utils.PemUtils;
 import com.auth0.jwt.JWT;
@@ -26,16 +27,14 @@ import java.util.UUID;
 
 @Service
 public class TokenServiceOur {
-    @Value("${oauth.jwt.secret}")
-    private String secretKey;
 
     @Value("${how.many.devices.can.be.logged}")
     private int howManyDevicesCanBeLogged;
 
-    private final AuthUserRepository.RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final JwksService jwksService;
 
-    public TokenServiceOur(AuthUserRepository.RefreshTokenRepository refreshTokenRepository, JwksService jwksService) {
+    public TokenServiceOur(RefreshTokenRepository refreshTokenRepository, JwksService jwksService) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwksService = jwksService;
     }
