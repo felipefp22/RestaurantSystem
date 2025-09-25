@@ -5,8 +5,8 @@ import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.CreateOrUpdateCompou
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Company.DTOs.UpdateCompanyDTO;
+import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
-import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
@@ -53,6 +53,8 @@ public class DemonstrationSiteService {
         );
         Company company = companyService.createCompany(user.getEmail(), createCompanyDTO);
 
+        setCompanyGeolocationAndCreateDemonstrationCustomers(user, company, 33.715831, -117.989569);
+
         //create demonstration products categories
         List<CreateProductCategoryDTO> productCategoriesDTOs = List.of(
                 new CreateProductCategoryDTO(company.getId(), "Beverages", "Beverages"),
@@ -83,14 +85,10 @@ public class DemonstrationSiteService {
             productService.createProduct(user.getEmail(), dto);
         });
 
-
-        //create demonstration customer
-        Double lat = 33.715831;
-        Double lon = -117.989569;
-        customerService.createCustomer(user.getEmail(), company.getId(), user.getEmail().split("@")[0] + " Customer", "(212) 555-1234", user.getEmail());
+        setCompanyGeolocationAndCreateDemonstrationCustomers(user, company, 40.712776, -74.005974);
     }
 
-    public boolean setCompanyGeolocationAndCreateDemonstrationCustomers(AuthUserLogin user, Company company, Double lat, Double lng){
+    public void setCompanyGeolocationAndCreateDemonstrationCustomers(AuthUserLogin user, Company company, Double lat, Double lng){
         companyService.setCompanyGeoLocation(user.getEmail(), new UpdateCompanyDTO(
                 company.getId(),
                 null,
@@ -104,14 +102,36 @@ public class DemonstrationSiteService {
         ));
 
         //create demonstration customers
+        List<PointDTO> demoPoints = generateRandomPoints(lat, lng, 3.0, 10);
+        demoPoints.addAll(List.of(demoPoints.get(0), demoPoints.get(0)));
+        List<String> demoNames = List.of("Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Hannah", "Ian", "Jack", "Liam", "Mia");
 
-
+        for (int i = 0; i < demoPoints.size(); i++) {
+            PointDTO point = demoPoints.get(i);
+            String name = demoNames.get(i);
+            CreateOrUpdateCustomerDTO CreateOrUpdateCustomerDTO = new CreateOrUpdateCustomerDTO(
+                    company.getId(),
+                    null,
+                    name,
+                    "(212) 555-1234",
+                    name + "Address",
+                    String.valueOf(new Random().nextInt(1, 9999)),
+                    "Company City",
+                    "Company State",
+                    "10001",
+                    point.lat,
+                    point.lng,
+                    name + " Apt"
+            );
+            customerService.createCustomer(user.getEmail(), CreateOrUpdateCustomerDTO);
+        }
     }
 
-    public static List<double[]> generateRandomPoints(double lat, double lng, double radiusKm, int count) {
+
+    private static List<PointDTO> generateRandomPoints(double lat, double lng, double radiusKm, int count) {
         double EARTH_RADIUS_KM = 6371.0;
 
-        List<double[]> points = new ArrayList<>();
+        List<PointDTO> pointDTOS = new ArrayList<>();
         Random random = new Random();
 
         for (int i = 0; i < count; i++) {
@@ -138,9 +158,11 @@ public class DemonstrationSiteService {
             // normalize longitude (-180 to 180)
             newLng = ((newLng + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
 
-            points.add(new double[]{Math.toDegrees(newLat), Math.toDegrees(newLng)});
+            pointDTOS.add(new PointDTO(Math.toDegrees(newLat), Math.toDegrees(newLng)));
         }
 
-        return points;
+        return pointDTOS;
     }
+
+    public record PointDTO(double lat, double lng) {}
 }
