@@ -11,6 +11,7 @@ import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.RefreshTokenRepository;
 import com.RestaurantSystem.Repositories.TokenConfirmationRepository;
+import com.RestaurantSystem.Services.TemporaryServices.DemonstrationSiteService;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,10 +31,13 @@ public class TokenConfirmationService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenServiceOur tokenServiceOur;
 
+    private final DemonstrationSiteService demonstrationSiteService;
+
     public TokenConfirmationService(TokenConfirmationRepository tokenConfirmationRepository, AuthUserRepository authUserRepository, EmailService emailService,
-                                    RefreshTokenRepository refreshTokenRepository, TokenServiceOur tokenServiceOur) {
+                                    RefreshTokenRepository refreshTokenRepository, TokenServiceOur tokenServiceOur, DemonstrationSiteService demonstrationSiteService) {
         this.tokenConfirmationRepository = tokenConfirmationRepository;
         this.authUserRepository = authUserRepository;
+        this.demonstrationSiteService = demonstrationSiteService;
         this.emailService = new EmailService();
         this.refreshTokenRepository = refreshTokenRepository;
         this.tokenServiceOur = tokenServiceOur;
@@ -158,6 +162,8 @@ public class TokenConfirmationService {
             userToChange.comfirmEmail();
             authUserRepository.save(userToChange);
             tokenConfirmationRepository.delete(token);
+            demonstrationSiteService.createACompoundAndCompany(userToChange);
+
             return new IsEmailConfirmedDTO(userToChange.isEmailConfirmed());
         }
         return null;

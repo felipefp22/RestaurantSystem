@@ -3,6 +3,7 @@ package com.RestaurantSystem.Infra.auth;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Entities.User.RefreshToken;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
+import com.RestaurantSystem.Services.TemporaryServices.DemonstrationSiteService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +35,17 @@ public class SecurityConfig {
     private final AuthUserRepository authUserRepository;
     private final TokenServiceOur tokenServiceOur;
     private final ClientRegistrationRepository clientRegistrationRepository;
+
+    private final DemonstrationSiteService demonstrationSiteService;
     
     @Autowired
-    public SecurityConfig(SecurityFilter securityFilter, AuthUserRepository authUserRepository, TokenServiceOur tokenServiceOur, ClientRegistrationRepository clientRegistrationRepository) {
+    public SecurityConfig(SecurityFilter securityFilter, AuthUserRepository authUserRepository, TokenServiceOur tokenServiceOur, ClientRegistrationRepository clientRegistrationRepository, DemonstrationSiteService demonstrationSiteService) {
         this.securityFilter = securityFilter;
         this.authUserRepository = authUserRepository;
         this.tokenServiceOur = tokenServiceOur;
         this.clientRegistrationRepository = clientRegistrationRepository;
+
+        this.demonstrationSiteService = demonstrationSiteService;
     }
 
     @Bean
@@ -172,6 +177,7 @@ public class SecurityConfig {
 
         authUserRepository.save(user);
 
+        demonstrationSiteService.createACompoundAndCompany(user);
         // Generate refreshToken for login after OAuth2
         RefreshToken refreshToken = tokenServiceOur.createRefreshToken(user, "SocialLogin");
 

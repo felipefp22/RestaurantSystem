@@ -27,6 +27,9 @@ public class Company {
     private String companyEmail;
     private String companyPhone;
     private String companyAddress;
+    private Double companyLat;
+    private Double companyLng;
+
     private String urlCompanyLogo;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -105,6 +108,19 @@ public class Company {
 
     public void setCompanyAddress(String companyAddress) {
         this.companyAddress = companyAddress;
+    }
+
+    public Double getCompanyLat() {
+        return companyLat;
+    }
+    public void setCompanyLat(Double companyLat) {
+        this.companyLat = companyLat;
+    }
+    public Double getCompanyLng() {
+        return companyLng;
+    }
+    public void setCompanyLng(Double companyLng) {
+        this.companyLng = companyLng;
     }
 
     public String getUrlCompanyLogo() {

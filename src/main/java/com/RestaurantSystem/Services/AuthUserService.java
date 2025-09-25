@@ -11,6 +11,7 @@ import com.RestaurantSystem.Infra.auth.TokenServiceOur;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
 import com.RestaurantSystem.Repositories.RefreshTokenRepository;
+import com.RestaurantSystem.Services.TemporaryServices.DemonstrationSiteService;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,7 +30,7 @@ public class AuthUserService {
     private final CompanyEmployeesRepo companyEmployeesRepo;
 
 
-    public AuthUserService(AuthUserRepository authUserRepository, RefreshTokenRepository refreshTokenRepo, TokenServiceOur tokenServiceOur, CompanyEmployeesRepo companyEmployeesRepo) {
+    public AuthUserService(AuthUserRepository authUserRepository, RefreshTokenRepository refreshTokenRepo, TokenServiceOur tokenServiceOur, CompanyEmployeesRepo companyEmployeesRepo, DemonstrationSiteService demonstrationSiteService) {
         this.authUserRepository = authUserRepository;
         this.refreshTokenRepo = refreshTokenRepo;
         this.tokenServiceOur = tokenServiceOur;

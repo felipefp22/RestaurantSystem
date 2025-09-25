@@ -60,6 +60,17 @@ public class CompanyController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/set-company-geo-location")
+    public ResponseEntity<Company> setCompanyGeoLocation(@RequestHeader("Authorization") String authorizationHeader,
+                                                         @RequestBody UpdateCompanyDTO updateCompanyDTO) {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = companyService.setCompanyGeoLocation(requesterID, updateCompanyDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/get-employees/{companyID}")
     public ResponseEntity<List<CompanyEmployeesDTO>> getEmployees(@RequestHeader("Authorization") String authorizationHeader,
                                                          @PathVariable String companyID) {

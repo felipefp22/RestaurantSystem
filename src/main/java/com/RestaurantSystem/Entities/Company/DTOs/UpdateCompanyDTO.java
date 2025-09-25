@@ -8,6 +8,8 @@ public record UpdateCompanyDTO(
         String companyEmail,
         String companyPhone,
         String companyAddress,
+        Double companyLat,
+        Double companyLng,
         String urlCompanyLogo,
         int numberOfTables
 ) {

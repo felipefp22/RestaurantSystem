@@ -90,6 +90,27 @@ public class CompanyService {
         return companyRepo.save(companyToUpdate);
     }
 
+    public Company setCompanyGeoLocation(String requesterID, UpdateCompanyDTO updateCompanyDTO) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(updateCompanyDTO.companyID())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.isOwnerOrManager(company, requester)) throw new RuntimeException("Just Owner or Manager can add employees to a company");
+
+        Company companyToUpdate = requester.getCompaniesCompounds().stream()
+                .flatMap(compound -> compound.getCompanies().stream())
+                .filter(c -> c.getId().equals(updateCompanyDTO.companyID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("You are not part of this Companies Compound"));
+
+        companyToUpdate.setCompanyLat(updateCompanyDTO.companyLat());
+        companyToUpdate.setCompanyLng(updateCompanyDTO.companyLng());
+
+        return companyRepo.save(companyToUpdate);
+    }
+
     public List<CompanyEmployeesDTO> getEmployees(String requesterID, String companyID) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));

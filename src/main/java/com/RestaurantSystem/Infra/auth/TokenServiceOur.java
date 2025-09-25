@@ -64,6 +64,7 @@ public class TokenServiceOur {
                     .withClaim("isPhoneConfirmed", authUserLogin.isPhoneConfirmed())
                     .withClaim("phone", authUserLogin.getPhone())
                     .withArrayClaim("roles", roles.toArray(new String[0]))
+                    .withKeyId(currentKey.getKid().toString())
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
 
