@@ -6,6 +6,7 @@ import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ public class CompaniesCompound {
     @ManyToOne
     @JoinColumn(name = "owner_email")
     private AuthUserLogin owner;
+
     private String compoundName;
     private String compoundDescription;
 
@@ -34,7 +36,7 @@ public class CompaniesCompound {
         this.owner = owner;
         this.compoundName = createOrUpdateCompoundDTO.compoundName();
         this.compoundDescription = createOrUpdateCompoundDTO.compoundDescription();
-        this.companies = List.of();
+        this.companies = new ArrayList<>();;
     }
 
     // <>------------ Getters and Setters ------------<>

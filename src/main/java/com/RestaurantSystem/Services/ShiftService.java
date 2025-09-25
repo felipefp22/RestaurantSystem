@@ -37,7 +37,7 @@ public class ShiftService {
         Company company = companyRepo.findById(UUID.fromString(companyID))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to see the shifts of this company");
 
         return company.getShifts();
     }

@@ -23,6 +23,7 @@ public class CompaniesCompoundController {
 
     // <> ------------- Methods ------------- <>
 
+
     @PostMapping("/create-compound")
     public ResponseEntity<CompaniesCompound> createCompaniesCompound(@RequestHeader("Authorization") String authorizationHeader,
                                                                     @RequestBody CreateOrUpdateCompoundDTO createCompoundDTO) {

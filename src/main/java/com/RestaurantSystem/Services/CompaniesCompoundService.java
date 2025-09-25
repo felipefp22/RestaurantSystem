@@ -33,9 +33,7 @@ public class CompaniesCompoundService {
 
         CompaniesCompound companiesCompound = new CompaniesCompound(requester, createCompoundDTO);
 
-        companiesCompoundRepo.save(companiesCompound);
-
-        return companiesCompound;
+        return companiesCompoundRepo.save(companiesCompound);
     }
 
     public CompaniesCompound updateCompaniesCompound(String requesterID, UUID compoundID, CreateOrUpdateCompoundDTO updateCompoundDTO) {

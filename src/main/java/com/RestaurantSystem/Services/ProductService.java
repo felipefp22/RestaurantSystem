@@ -78,7 +78,9 @@ public class ProductService {
 
         if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to add a product, ask to manager or supervisor");
 
-        ProductCategory productCategoryToAddProduct = productCategoryRepo.findById(UUID.fromString(productToCreate.productCategoryID()))
+        ProductCategory productCategoryToAddProduct = company.getProductsCategories().stream()
+                .filter(pc -> pc.getId().equals(UUID.fromString(productToCreate.productCategoryID())))
+                .findFirst()
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         Product product = new Product(productToCreate, productCategoryToAddProduct);

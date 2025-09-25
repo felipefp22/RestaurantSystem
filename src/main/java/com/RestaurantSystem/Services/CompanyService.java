@@ -60,9 +60,8 @@ public class CompanyService {
             throw new RuntimeException("This Companies Compound already has a company with this name");
 
         Company company = new Company(companiesCompound, createCompanyDTO);
-        companyRepo.save(company);
 
-        return company;
+        return companyRepo.save(company);
     }
 
     public Company updateCompany(String requesterID, UpdateCompanyDTO updateCompanyDTO) {
@@ -99,16 +98,10 @@ public class CompanyService {
 
         if (!verificationsServices.isOwnerOrManager(company, requester)) throw new RuntimeException("Just Owner or Manager can add employees to a company");
 
-        Company companyToUpdate = requester.getCompaniesCompounds().stream()
-                .flatMap(compound -> compound.getCompanies().stream())
-                .filter(c -> c.getId().equals(updateCompanyDTO.companyID()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("You are not part of this Companies Compound"));
+        company.setCompanyLat(updateCompanyDTO.companyLat());
+        company.setCompanyLng(updateCompanyDTO.companyLng());
 
-        companyToUpdate.setCompanyLat(updateCompanyDTO.companyLat());
-        companyToUpdate.setCompanyLng(updateCompanyDTO.companyLng());
-
-        return companyRepo.save(companyToUpdate);
+        return companyRepo.save(company);
     }
 
     public List<CompanyEmployeesDTO> getEmployees(String requesterID, String companyID) {

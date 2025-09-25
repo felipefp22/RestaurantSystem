@@ -40,6 +40,7 @@ public class DemonstrationSiteService {
                 "This is a " + user.getEmail().split("@")[0] + " group."
         );
         CompaniesCompound compound = companiesCompoundService.createCompaniesCompound(user.getEmail(), createOrUpdateCompoundDTO);
+        user.getCompaniesCompounds().add(compound);
 
         //create demonstration company
         CreateCompanyDTO createCompanyDTO = new CreateCompanyDTO(
@@ -52,6 +53,7 @@ public class DemonstrationSiteService {
                 25
         );
         Company company = companyService.createCompany(user.getEmail(), createCompanyDTO);
+        user.getCompaniesCompounds().getFirst().getCompanies().add(company);
 
         setCompanyGeolocationAndCreateDemonstrationCustomers(user, company, 33.715831, -117.989569);
 
@@ -84,8 +86,6 @@ public class DemonstrationSiteService {
         productDTOS.forEach(dto -> {
             productService.createProduct(user.getEmail(), dto);
         });
-
-        setCompanyGeolocationAndCreateDemonstrationCustomers(user, company, 40.712776, -74.005974);
     }
 
     public void setCompanyGeolocationAndCreateDemonstrationCustomers(AuthUserLogin user, Company company, Double lat, Double lng){

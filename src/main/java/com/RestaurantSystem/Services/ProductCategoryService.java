@@ -58,7 +58,7 @@ public class ProductCategoryService {
 
         ProductCategory categoryToCreate = new ProductCategory(createDTO, company);
         productCategoryRepo.save(categoryToCreate);
-
+        company.getProductsCategories().add(categoryToCreate);
         return getAllProductAndProductCategories(requesterID, createDTO.companyID().toString());
     }
 

@@ -147,7 +147,6 @@ public class TokenConfirmationService {
         }
     }
 
-    @Transactional
     public IsEmailConfirmedDTO confirmationCreatedAccountViaToken(String tokenID) throws Exception {
         TokenConfirmation token = tokenConfirmationRepository.findById(UUID.fromString(tokenID))
                 .orElseThrow(() -> new RuntimeException("Token não encontrado ou expirado"));

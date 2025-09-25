@@ -8,6 +8,7 @@ import com.RestaurantSystem.Entities.Shift.Shift;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,16 +33,16 @@ public class Company {
 
     private String urlCompanyLogo;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CompanyEmployees> employees;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProductCategory> productsCategories;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Customer> customers;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Shift> shifts;
 
     private int numberOfTables;
@@ -57,10 +58,10 @@ public class Company {
         this.companyPhone = createCompanyDTO.companyPhone();
         this.companyAddress = createCompanyDTO.companyAddress();
         this.urlCompanyLogo = createCompanyDTO.urlCompanyLogo();
-        this.employees = List.of();
-        this.productsCategories = List.of();
-        this.customers = List.of();
-        this.shifts = List.of();
+        this.employees = new ArrayList<>();;
+        this.productsCategories = new ArrayList<>();;
+        this.customers = new ArrayList<>();;
+        this.shifts = new ArrayList<>();;
         this.numberOfTables = createCompanyDTO.numberOfTables();
     }
 
