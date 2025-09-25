@@ -2,10 +2,7 @@ package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
-import com.RestaurantSystem.Entities.Company.DTOs.AddOrUpdateEmployeeDTO;
-import com.RestaurantSystem.Entities.Company.DTOs.CompanyEmployeesDTO;
-import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
-import com.RestaurantSystem.Entities.Company.DTOs.UpdateCompanyDTO;
+import com.RestaurantSystem.Entities.Company.DTOs.*;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.CompanyService;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +24,13 @@ public class CompanyController {
 
 
     // <> ------------- Methods ------------- <>
-    @GetMapping("/get-company/{companyID}")
-    public ResponseEntity<Company> getCompany(@RequestHeader("Authorization") String authorizationHeader,
-                                              @PathVariable String companyID) {
+    @GetMapping("/get-company-operation/{companyID}")
+    public ResponseEntity<CompanyOperationDTO> getCompanyOperation(@RequestHeader("Authorization") String authorizationHeader,
+                                                                   @PathVariable String companyID) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = companyService.getCompany(requesterID, companyID);
+        var response = companyService.getCompanyOperation(requesterID, companyID);
 
         return ResponseEntity.ok(response);
     }
@@ -73,7 +70,7 @@ public class CompanyController {
 
     @GetMapping("/get-employees/{companyID}")
     public ResponseEntity<List<CompanyEmployeesDTO>> getEmployees(@RequestHeader("Authorization") String authorizationHeader,
-                                                         @PathVariable String companyID) {
+                                                                  @PathVariable String companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = companyService.getEmployees(requesterID, companyID);
@@ -83,7 +80,7 @@ public class CompanyController {
 
     @PutMapping("/add-employees")
     public ResponseEntity<List<CompanyEmployees>> addEmployeeToCompany(@RequestHeader("Authorization") String authorizationHeader,
-                                                                          @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+                                                                       @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 

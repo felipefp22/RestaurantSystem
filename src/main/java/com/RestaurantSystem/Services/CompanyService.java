@@ -3,18 +3,18 @@ package com.RestaurantSystem.Services;
 import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
-import com.RestaurantSystem.Entities.Company.DTOs.AddOrUpdateEmployeeDTO;
-import com.RestaurantSystem.Entities.Company.DTOs.CompanyEmployeesDTO;
-import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
-import com.RestaurantSystem.Entities.Company.DTOs.UpdateCompanyDTO;
+import com.RestaurantSystem.Entities.Company.DTOs.*;
 import com.RestaurantSystem.Entities.Company.EmployeePosition;
+import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
+import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,23 +25,38 @@ public class CompanyService {
     private final AuthUserRepository authUserRepository;
     private final CompanyEmployeesRepo companyEmployeesRepo;
     private final VerificationsServices verificationsServices;
+    private final ShiftRepo shiftRepo;
 
-    public CompanyService(CompanyRepo companyRepo, AuthUserRepository authUserRepository, CompanyEmployeesRepo companyEmployeesRepo, VerificationsServices verificationsServices) {
+    public CompanyService(CompanyRepo companyRepo, AuthUserRepository authUserRepository, CompanyEmployeesRepo companyEmployeesRepo, VerificationsServices verificationsServices, ShiftRepo shiftRepo) {
         this.companyRepo = companyRepo;
         this.authUserRepository = authUserRepository;
         this.companyEmployeesRepo = companyEmployeesRepo;
         this.verificationsServices = verificationsServices;
+        this.shiftRepo = shiftRepo;
     }
 
     // <> ------------- Methods ------------- <>
-    public Company getCompany(String requesterID, String companyID) {
+    public CompanyOperationDTO getCompanyOperation(String requesterID, String companyID) {
         AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
 
         Company company = companyRepo.findById(UUID.fromString(companyID)).orElseThrow(() -> new RuntimeException("Company not found"));
 
         if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You don't have permission to access this company");
 
-        return company;
+        List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
+        if(openedShift.isEmpty()){
+            throw new RuntimeException("No active shift found");
+        }
+        Shift currentShift = null;
+        if(openedShift.size() > 1){
+            Shift lastShift = openedShift.stream()
+                    .max(Comparator.comparing(Shift::getStartTimeUTC))
+                    .orElse(null);
+        } else {
+            currentShift = openedShift.get(0);
+        };
+
+        return new CompanyOperationDTO(company, currentShift);
     }
 
     public Company createCompany(String requesterID, CreateCompanyDTO createCompanyDTO) {

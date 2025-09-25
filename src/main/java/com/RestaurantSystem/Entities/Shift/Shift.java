@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,7 +27,7 @@ public class Shift {
     private LocalDateTime endTimeUTC;
 
     @OneToMany(mappedBy = "shift", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Order> orders;
+    private List<Order> orders = new ArrayList<>();
 
     private String employeeOpenedShift;
 
@@ -41,7 +42,6 @@ public class Shift {
         this.shiftNumber = shiftNumber;
         this.startTimeUTC = LocalDateTime.now(ZoneOffset.UTC);
         this.endTimeUTC = null;
-        this.orders = List.of();
         this.employeeOpenedShift = manager.getEmail();
     }
 

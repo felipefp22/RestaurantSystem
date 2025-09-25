@@ -9,10 +9,7 @@ import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
-import com.RestaurantSystem.Repositories.AuthUserRepository;
-import com.RestaurantSystem.Repositories.CompanyRepo;
-import com.RestaurantSystem.Repositories.OrderRepo;
-import com.RestaurantSystem.Repositories.OrdersItemsRepo;
+import com.RestaurantSystem.Repositories.*;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,13 +29,15 @@ public class OrderService {
     private final OrdersItemsRepo ordersItemsRepo;
     private final AuthUserRepository authUserRepository;
     private final CompanyRepo companyRepo;
+    private final ShiftRepo shiftRepo;
     private final VerificationsServices verificationsServices;
 
-    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, VerificationsServices verificationsServices) {
+    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, ShiftRepo shiftRepo, VerificationsServices verificationsServices) {
         this.orderRepo = orderRepo;
         this.ordersItemsRepo = ordersItemsRepo;
         this.authUserRepository = authUserRepository;
         this.companyRepo = companyRepo;
+        this.shiftRepo = shiftRepo;
         this.verificationsServices = verificationsServices;
     }
 

@@ -1,6 +1,9 @@
 package com.RestaurantSystem.Services;
 
+import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.CompoundResumeDTO;
+import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
+import com.RestaurantSystem.Entities.Company.DTOs.CompanyResumeDTO;
 import com.RestaurantSystem.Entities.ENUMs.Role;
 import com.RestaurantSystem.Entities.User.AdmDTOs.IsAdmDTO;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
@@ -17,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,26 +58,29 @@ public class AuthUserService {
 
     @Transactional
     public LoginResponseDTO login(AuthenticationDTO authenticationDTO, String fcmToken) {
-        AuthUserLogin authUserLogin;
+        AuthUserLogin user;
         if (isEmail(authenticationDTO.emailOrUsername())) {
-            authUserLogin = authUserRepository.findById(authenticationDTO.emailOrUsername())
+            user = authUserRepository.findById(authenticationDTO.emailOrUsername())
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         } else {
             throw new RuntimeException("Usuário não encontrado");
         }
 //        else {
-//            authUserLogin = authUserRepository.findByUsernameIgnoreCase(authenticationDTO.emailOrUsername())
+//            user = authUserRepository.findByUsernameIgnoreCase(authenticationDTO.emailOrUsername())
 //                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 //        }
 
-        if (!new BCryptPasswordEncoder().matches(authenticationDTO.password(), authUserLogin.getPassword())) {
+        if (!new BCryptPasswordEncoder().matches(authenticationDTO.password(), user.getPassword())) {
             throw new RuntimeException("Login informations incorrect");
         }
 
-        String token = tokenServiceOur.generateToken(authUserLogin);
+        String token = tokenServiceOur.generateToken(user);
 
-        return new LoginResponseDTO(authUserLogin, tokenServiceOur.generateToken(authUserLogin),
-                tokenServiceOur.createRefreshToken(authUserLogin, token).getId(), authUserLogin.isEmailConfirmed(), false);
+        List<CompoundResumeDTO> coumpoundsYouAreOwner = user.getCompaniesCompounds().stream().map(CompoundResumeDTO::new).toList();
+        List<CompanyResumeDTO> companiesYouWorks = user.getWorksAtCompanies().stream().map(CompanyEmployees::getCompany).toList().stream().map(CompanyResumeDTO::new).toList();
+
+        return new LoginResponseDTO(user, token,
+                tokenServiceOur.createRefreshToken(user, token).getId(), user.isEmailConfirmed(), false, coumpoundsYouAreOwner, companiesYouWorks);
     }
 
     @Transactional
@@ -94,17 +101,19 @@ public class AuthUserService {
     @Transactional
     public LoginResponseDTO refreshToken(RefreshTokenDTO refreshTokenDTO) {
         RefreshToken refreshToken = tokenServiceOur.findRefreshTokenByToken(refreshTokenDTO.refreshToken());
-        AuthUserLogin authUserLogin = refreshToken.getUser();
+        AuthUserLogin user = refreshToken.getUser();
 
         tokenServiceOur.deleteRefreshToken(refreshTokenDTO.refreshToken());
 
         if (refreshToken.getAssociatedToken().equals(refreshTokenDTO.associatedToken())) {
 
-            String token = tokenServiceOur.generateToken(authUserLogin);
+            String token = tokenServiceOur.generateToken(user);
 
+            List<CompoundResumeDTO> coumpoundsYouAreOwner = user.getCompaniesCompounds().stream().map(CompoundResumeDTO::new).toList();
+            List<CompanyResumeDTO> companiesYouWorks = user.getWorksAtCompanies().stream().map(CompanyEmployees::getCompany).toList().stream().map(CompanyResumeDTO::new).toList();
 
-            return new LoginResponseDTO(authUserLogin, tokenServiceOur.generateToken(authUserLogin),
-                    tokenServiceOur.createRefreshToken(authUserLogin, token).getId(), authUserLogin.isEmailConfirmed(), false);
+            return new LoginResponseDTO(user, token,
+                    tokenServiceOur.createRefreshToken(user, token).getId(), user.isEmailConfirmed(), false, coumpoundsYouAreOwner, companiesYouWorks);
         }
 
         return null;

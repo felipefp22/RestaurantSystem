@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Controllers;
 
+import com.RestaurantSystem.Entities.Shift.DTOs.ShiftOperationDTO;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.ShiftService;
@@ -20,6 +21,15 @@ public class ShiftController {
     }
 
     //<>------------ Methods ------------<>
+    @GetMapping("/get-shift-operation/{companyID}")
+    public ResponseEntity<ShiftOperationDTO> getShiftOperation(@RequestHeader("Authorization") String authorizationHeader,
+                                                               @PathVariable String companyID) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = shiftService.getShiftOperation(requesterID, companyID);
+
+        return ResponseEntity.ok(response);
+    }
     @GetMapping("/get-all-shifts/{companyID}")
     public ResponseEntity<List<Shift>> getAllShifts(@RequestHeader("Authorization") String authorizationHeader,
                                                     @PathVariable String companyID) {
