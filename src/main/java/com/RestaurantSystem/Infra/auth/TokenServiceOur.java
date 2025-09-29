@@ -116,7 +116,6 @@ public class TokenServiceOur {
     }
 
     public Algorithm decodeJwtAndCompareKidsGetAlgorithm(String token) {
-        try {
             DecodedJWT decoded = JWT.decode(token);
             String kid = decoded.getKeyId();
             if (kid == null)  throw new RuntimeException("Token does not contain kid");
@@ -125,10 +124,6 @@ public class TokenServiceOur {
             RSAPublicKey publicKey = PemUtils.parseRSAPublicKey(matchingKey.getPublicPem());
 
             return Algorithm.RSA256(publicKey, null);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error while validating token", e);
-        }
     }
 
     @Transactional

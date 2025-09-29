@@ -16,4 +16,5 @@ public record CreateOrUpdateCustomerDTO(
         Double lng,
         String complement
 ) {
+
 }

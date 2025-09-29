@@ -45,7 +45,7 @@ public class CompanyService {
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
         if(openedShift.isEmpty()){
-            throw new RuntimeException("No active shift found");
+            throw new RuntimeException("noActiveShift");
         }
         Shift currentShift = null;
         if(openedShift.size() > 1){

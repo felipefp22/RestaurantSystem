@@ -20,6 +20,7 @@ public class Customer {
     @ManyToOne
     private Company company;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private List<Order> orders;
 
