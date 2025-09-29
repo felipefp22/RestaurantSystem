@@ -19,7 +19,7 @@ jobs:
           service: "caring-cat"   # replace with your Railway service name
           detach: true
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_KEY }}
+          RAILWAY_TOKEN: ${{ secrets.PROJECT_TOKEN }}
           DATABASE_PASSWORD: ${{ secrets.PROD_DATABASE_PASSWORD }}
           DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
           DATABASE_USERNAME: ${{ secrets.PROD_DATABASE_USERNAME }}
