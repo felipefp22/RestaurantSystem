@@ -16,7 +16,7 @@ jobs:
       - name: Deploy to Railway
         uses: bervProject/railway-deploy@main
         with:
-          service: "RestaurantSystem"   # replace with your Railway service name
+          service: "caring-cat"   # replace with your Railway service name
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_KEY }}
           DATABASE_PASSWORD: ${{ secrets.PROD_DATABASE_PASSWORD }}
