@@ -17,6 +17,7 @@ jobs:
         uses: bervProject/railway-deploy@main
         with:
           service: "caring-cat"   # replace with your Railway service name
+          detach: true
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_KEY }}
           DATABASE_PASSWORD: ${{ secrets.PROD_DATABASE_PASSWORD }}
