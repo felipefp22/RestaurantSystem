@@ -68,6 +68,7 @@ public class AuthUserLogin implements UserDetails {
 //        this.kindOfUser = KindOfUser.valueOf(registerAuthUserDTO.kindOfUser().toUpperCase());
         this.name = registerAuthUserDTO.name();
         this.companiesCompounds = new ArrayList<>();
+        this.worksAtCompanies = new ArrayList<>();
         this.role = Role.USER;
         this.emailConfirmed = false;
         this.phoneConfirmed = false;
