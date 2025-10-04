@@ -326,6 +326,7 @@ public class OrderService {
 
         calculateTotalPriceTaxAndDiscount(order, orderToCloseDTO);
         order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
+        order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
         order.setCompletedByUser(requester);
 
         return orderRepo.save(order);

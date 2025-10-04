@@ -38,6 +38,7 @@ public class Order {
     private String pickupName;
 
     private LocalDateTime openOrderDateUtc;
+    private LocalDateTime closedWaitingPaymentAtUtc;
     private LocalDateTime completedOrderDateUtc;
 
     @ManyToOne
@@ -118,6 +119,13 @@ public class Order {
 
     public LocalDateTime getOpenOrderDateUtc() {
         return openOrderDateUtc;
+    }
+
+    public LocalDateTime getClosedWaitingPaymentAtUtc() {
+        return closedWaitingPaymentAtUtc;
+    }
+    public void setClosedWaitingPaymentAtUtc(LocalDateTime closedWaitingPaymentAtUtc) {
+        this.closedWaitingPaymentAtUtc = closedWaitingPaymentAtUtc;
     }
 
     public LocalDateTime getCompletedOrderDateUtc() {
