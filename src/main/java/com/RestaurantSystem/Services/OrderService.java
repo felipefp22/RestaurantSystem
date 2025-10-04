@@ -433,8 +433,8 @@ public class OrderService {
         List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company( List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
         Order order = orderOpened.stream().filter(x -> x.getId().equals(cancelOrderDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
 
-        if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
-            throw new RuntimeException("Only orders with status 'CLOSEDWAITINGPAYMENT' can be cancelled.");
+        if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT && order.getStatus() != OrderStatus.OPEN)
+            throw new RuntimeException("Only orders with status 'OPEN or CLOSEDWAITINGPAYMENT' can be cancelled.");
 
         if (new BCryptPasswordEncoder().matches(cancelOrderDTO.adminPassword(), manager.getOwnAdministrativePassword())) {
             order.setStatus(OrderStatus.CANCELLED);

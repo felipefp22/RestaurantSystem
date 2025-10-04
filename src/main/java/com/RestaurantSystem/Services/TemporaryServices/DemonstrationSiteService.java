@@ -9,6 +9,7 @@ import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
+import com.RestaurantSystem.Entities.User.AuthUserDTOs.SetOwnAdministrativePasswordDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Services.*;
 import org.springframework.stereotype.Service;
@@ -17,13 +18,15 @@ import java.util.*;
 
 @Service
 public class DemonstrationSiteService {
+    private final AuthUserService authUserService;
     private final CompaniesCompoundService companiesCompoundService;
     private final CompanyService companyService;
     private final ProductService productService;
     private final ProductCategoryService productCategoryService;
     private final CustomerService customerService;
 
-    public DemonstrationSiteService(CompaniesCompoundService companiesCompoundService, CompanyService companyService, ProductService productService, ProductCategoryService productCategoryService, CustomerService customerService) {
+    public DemonstrationSiteService(AuthUserService authUserService, CompaniesCompoundService companiesCompoundService, CompanyService companyService, ProductService productService, ProductCategoryService productCategoryService, CustomerService customerService) {
+        this.authUserService = authUserService;
         this.companiesCompoundService = companiesCompoundService;
         this.companyService = companyService;
         this.productService = productService;
@@ -86,6 +89,8 @@ public class DemonstrationSiteService {
         productDTOS.forEach(dto -> {
             productService.createProduct(user.getEmail(), dto);
         });
+
+        authUserService.setOwnAdministrativePassword(user.getEmail(), new SetOwnAdministrativePasswordDTO("1234"));
     }
 
     public void setCompanyGeolocationAndCreateDemonstrationCustomers(AuthUserLogin user, Company company, Double lat, Double lng){
