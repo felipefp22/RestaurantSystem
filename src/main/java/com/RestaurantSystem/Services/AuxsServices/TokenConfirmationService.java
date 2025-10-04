@@ -38,7 +38,7 @@ public class TokenConfirmationService {
         this.tokenConfirmationRepository = tokenConfirmationRepository;
         this.authUserRepository = authUserRepository;
         this.demonstrationSiteService = demonstrationSiteService;
-        this.emailService = new EmailService();
+        this.emailService = emailService;
         this.refreshTokenRepository = refreshTokenRepository;
         this.tokenServiceOur = tokenServiceOur;
     }
@@ -64,12 +64,12 @@ public class TokenConfirmationService {
 
         tokenConfirmationRepository.save(token);
 
-        emailService.sendSimpleEmailNoReply(
+        emailService.sendSimpleEmailResendsite(
                 userToChangeID,
-                "DeliverySystem - Redefinição de senha",
+                "Restaurant Delivery - Reset Password",
                 "EmailsTemplate/CodeEmailTemplate.html",
-                Map.of("title", "DeliverySystem - Redefinição de senha",
-                        "body", "Codigo de redefinição de senha: \n\n" + token.getConfirmationCode(),
+                Map.of("title", "Restaurant Delivery - Reset Password",
+                        "body", "Reset Password Code: \n\n" + token.getConfirmationCode(),
                         "buttonUrl", " ",
                         "buttonText", "click"));
     }
@@ -96,12 +96,12 @@ public class TokenConfirmationService {
         tokenConfirmationRepository.save(token);
 
         try {
-            emailService.sendSimpleEmailNoReply(
+            emailService.sendSimpleEmailResendsite(
                     userToChangeID,
-                    "DeliverySystem - Confirmar cadastro",
+                    "Restaurant Delivery - Email Confirmation",
                     "EmailsTemplate/CodeEmailTemplate.html",
-                    Map.of("title", "DeliverySystem - Confirmar cadastro",
-                            "body", "Codigo de confirmação: \n\n" + token.getConfirmationCode(),
+                    Map.of("title", "Restaurant Delivery - Email Confirmation",
+                            "body", "Confirmation Code: \n\n" + token.getConfirmationCode(),
                             "buttonUrl", " ",
                             "buttonText", "click"));
         } catch (Exception e) {
@@ -216,12 +216,12 @@ public class TokenConfirmationService {
 
         tokenConfirmationRepository.save(token);
 
-        emailService.sendSimpleEmailNoReply(
+        emailService.sendSimpleEmailResendsite(
                 userToDel.getEmail(),
-                "DeliverySystem - Deleção de Conta",
+                "Restaurant Delivery - Deleção de Conta",
                 "EmailsTemplate/CodeEmailTemplate.html",
-                Map.of("title", "DeliverySystem - Deletar conta",
-                        "body", "Codigo de deleção de conta: \n\n" + token.getConfirmationCode(),
+                Map.of("title", "Restaurant Delivery - Delete Account",
+                        "body", "Deletion code: \n\n" + token.getConfirmationCode(),
                         "buttonUrl", " ",
                         "buttonText", "click"));
     }
