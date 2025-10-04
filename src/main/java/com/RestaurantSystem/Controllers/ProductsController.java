@@ -39,7 +39,7 @@ public class ProductsController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/delete-product/{productID}")
+    @PutMapping("/delete-product")
     public ResponseEntity deleteProduct(@RequestHeader("Authorization") String authorizationHeader,
                                         @RequestBody FindProductDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);

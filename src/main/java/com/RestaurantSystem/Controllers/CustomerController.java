@@ -63,7 +63,7 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/delete-customer/{customerId}")
+    @PutMapping("/delete-customer/{customerId}")
     public ResponseEntity<String> deleteCustomer(@RequestHeader("Authorization") String authorizationHeader,
                                                  @RequestBody FindCustomerDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);

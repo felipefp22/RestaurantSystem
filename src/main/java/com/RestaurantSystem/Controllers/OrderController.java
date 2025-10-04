@@ -50,7 +50,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/remove-products-on-order")
+    @PutMapping("/remove-products-on-order")
     public ResponseEntity<Order> removeProductsOnOrder(@RequestHeader("Authorization") String authorizationHeader,
                                                        @RequestBody ProductsToAddOnOrderDTO products) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
@@ -100,7 +100,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/cancel-order")
+    @PutMapping("/cancel-order")
     public ResponseEntity<Order> cancelOrder(@RequestHeader("Authorization") String authorizationHeader,
                                              @RequestBody ConfirmOrCancelOrderDTO confirmOrCancelOrderDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);

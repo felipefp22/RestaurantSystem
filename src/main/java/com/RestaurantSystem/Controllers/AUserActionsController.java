@@ -49,7 +49,7 @@ public class AUserActionsController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @DeleteMapping("/quit-company/{companyId}")
+    @PutMapping("/quit-company/{companyId}")
     public ResponseEntity quitCompany(@RequestHeader("Authorization") String authorizationHeader,
                                       @PathVariable("companyId") UUID companyId) throws Exception {
 
