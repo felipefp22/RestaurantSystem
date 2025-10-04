@@ -186,6 +186,7 @@ public class TokenConfirmationService {
                 userToChange.comfirmEmail();
                 authUserRepository.save(userToChange);
                 tokenConfirmationRepository.delete(token);
+                demonstrationSiteService.createACompoundAndCompany(userToChange);
                 return new IsEmailConfirmedDTO(userToChange.isEmailConfirmed());
             }
         }
