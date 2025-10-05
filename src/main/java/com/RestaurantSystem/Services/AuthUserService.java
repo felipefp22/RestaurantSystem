@@ -159,7 +159,7 @@ public class AuthUserService {
 
     public void verifyIfUserExists(RegisterAuthUserDTO registerAuthUserDTO) {
         authUserRepository.findById(registerAuthUserDTO.email()).ifPresent(user -> {
-            throw new EmailAlreadyConfirmedException("Email on use");
+            throw new EmailAlreadyConfirmedException("EmailAlreadyOnUse");
         });
 //        authUserRepository.findByUsernameIgnoreCase(registerAuthUserDTO.username()).ifPresent(usuario -> {
 //            throw new RuntimeException("Username is not available");
