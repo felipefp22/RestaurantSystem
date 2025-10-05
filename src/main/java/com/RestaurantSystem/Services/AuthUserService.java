@@ -88,7 +88,7 @@ public class AuthUserService {
         verifyIfUserExists(registerAuthUserDTO);
         if (authUserRepository.existsById(registerAuthUserDTO.email())
 //                || authUserRepository.existsByUsername(registerAuthUserDTO.username())
-        ) throw new EmailAlreadyConfirmedException("Email on use");
+        ) throw new EmailAlreadyConfirmedException("EmailAlreadyOnUse");
 
         AuthUserLogin authUserLogin = new AuthUserLogin(registerAuthUserDTO);
         AuthUserLogin newUserRegistered = authUserRepository.save(authUserLogin);
