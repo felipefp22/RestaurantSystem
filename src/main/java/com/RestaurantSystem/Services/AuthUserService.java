@@ -61,9 +61,9 @@ public class AuthUserService {
         AuthUserLogin user;
         if (isEmail(authenticationDTO.emailOrUsername())) {
             user = authUserRepository.findById(authenticationDTO.emailOrUsername())
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                    .orElseThrow(() -> new RuntimeException("LoginDataWrong"));
         } else {
-            throw new RuntimeException("Usuário não encontrado");
+            throw new RuntimeException("LoginDataWrong");
         }
 //        else {
 //            user = authUserRepository.findByUsernameIgnoreCase(authenticationDTO.emailOrUsername())
@@ -71,7 +71,7 @@ public class AuthUserService {
 //        }
 
         if (!new BCryptPasswordEncoder().matches(authenticationDTO.password(), user.getPassword())) {
-            throw new RuntimeException("Login informations incorrect");
+            throw new RuntimeException("LoginDataWrong");
         }
 
         String token = tokenServiceOur.generateToken(user);
