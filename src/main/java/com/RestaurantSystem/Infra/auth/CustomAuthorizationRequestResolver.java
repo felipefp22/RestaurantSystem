@@ -30,7 +30,7 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     private OAuth2AuthorizationRequest customize(OAuth2AuthorizationRequest request, HttpServletRequest httpRequest) {
         if (request == null) return null;
-
+        System.out.println(httpRequest.getHeader("Referer"));
         String platform =
                 httpRequest.getHeader("Referer").contains("https://felipefp22.github.io/FelipeFPortfolio") ? "prod" :
                         httpRequest.getHeader("Referer").contains("xpto.com.br") ? "dev" :
