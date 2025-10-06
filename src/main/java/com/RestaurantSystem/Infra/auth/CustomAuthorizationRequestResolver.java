@@ -32,7 +32,7 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
         if (request == null) return null;
 
         String platform =
-                httpRequest.getHeader("Referer").contains("deliverysystem.com.br") ? "prod" :
+                httpRequest.getHeader("Referer").contains("https://felipefp22.github.io/FelipeFPortfolio") ? "prod" :
                         httpRequest.getHeader("Referer").contains("xpto.com.br") ? "dev" :
                                 httpRequest.getHeader("Referer").contains("localhost:5173") ? "localhost" : null;
 
