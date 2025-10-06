@@ -47,7 +47,7 @@ public class TokenConfirmationService {
     public void createResetPasswordToken(String userToChangeID) throws Exception {
 
         AuthUserLogin userToChange = authUserRepository.findById(userToChangeID)
-                .orElseThrow(() -> new Exception("User not found"));
+                .orElseThrow(() -> new Exception("EmailNotFound"));
 
         List<TokenConfirmation> tokensAntigosDeletar = tokenConfirmationRepository.findAllByUserToChangeID(userToChangeID);
         tokensAntigosDeletar.forEach(x -> {
