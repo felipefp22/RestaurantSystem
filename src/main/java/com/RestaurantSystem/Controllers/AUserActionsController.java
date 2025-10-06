@@ -4,6 +4,7 @@ import com.RestaurantSystem.Entities.User.AdmDTOs.IsAdmDTO;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.AUserActionsService;
+import com.RestaurantSystem.Services.TemporaryServices.DemonstrationSiteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +17,12 @@ public class AUserActionsController {
     private final AUserActionsService aUserActionsService;
     private final RetriveAuthInfosService retriveAuthInfosService;
 
-    public AUserActionsController(AUserActionsService aUserActionsService, RetriveAuthInfosService retriveAuthInfosService) {
+    private final DemonstrationSiteService demonstrationSiteService;
+
+    public AUserActionsController(AUserActionsService aUserActionsService, RetriveAuthInfosService retriveAuthInfosService, DemonstrationSiteService demonstrationSiteService) {
         this.aUserActionsService = aUserActionsService;
         this.retriveAuthInfosService = retriveAuthInfosService;
+        this.demonstrationSiteService = demonstrationSiteService;
     }
 
 
@@ -56,6 +60,16 @@ public class AUserActionsController {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         aUserActionsService.quitCompany(requesterID, companyId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/create-default-api-demonstration")
+    public ResponseEntity createDefaultApiDemonstration(@RequestHeader("Authorization") String authorizationHeader) throws Exception {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        demonstrationSiteService.createACompoundAndCompany(requesterID);
 
         return ResponseEntity.noContent().build();
     }

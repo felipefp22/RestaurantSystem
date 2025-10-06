@@ -36,16 +36,12 @@ public class SecurityConfig {
     private final TokenServiceOur tokenServiceOur;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
-    private final DemonstrationSiteService demonstrationSiteService;
-    
     @Autowired
-    public SecurityConfig(SecurityFilter securityFilter, AuthUserRepository authUserRepository, TokenServiceOur tokenServiceOur, ClientRegistrationRepository clientRegistrationRepository, DemonstrationSiteService demonstrationSiteService) {
+    public SecurityConfig(SecurityFilter securityFilter, AuthUserRepository authUserRepository, TokenServiceOur tokenServiceOur, ClientRegistrationRepository clientRegistrationRepository) {
         this.securityFilter = securityFilter;
         this.authUserRepository = authUserRepository;
         this.tokenServiceOur = tokenServiceOur;
         this.clientRegistrationRepository = clientRegistrationRepository;
-
-        this.demonstrationSiteService = demonstrationSiteService;
     }
 
     @Bean
@@ -177,7 +173,6 @@ public class SecurityConfig {
 
         authUserRepository.save(user);
 
-        demonstrationSiteService.createACompoundAndCompany(user);
         // Generate refreshToken for login after OAuth2
         RefreshToken refreshToken = tokenServiceOur.createRefreshToken(user, "SocialLogin");
 

@@ -31,13 +31,10 @@ public class TokenConfirmationService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenServiceOur tokenServiceOur;
 
-    private final DemonstrationSiteService demonstrationSiteService;
-
     public TokenConfirmationService(TokenConfirmationRepository tokenConfirmationRepository, AuthUserRepository authUserRepository, EmailService emailService,
-                                    RefreshTokenRepository refreshTokenRepository, TokenServiceOur tokenServiceOur, DemonstrationSiteService demonstrationSiteService) {
+                                    RefreshTokenRepository refreshTokenRepository, TokenServiceOur tokenServiceOur) {
         this.tokenConfirmationRepository = tokenConfirmationRepository;
         this.authUserRepository = authUserRepository;
-        this.demonstrationSiteService = demonstrationSiteService;
         this.emailService = emailService;
         this.refreshTokenRepository = refreshTokenRepository;
         this.tokenServiceOur = tokenServiceOur;
@@ -113,10 +110,10 @@ public class TokenConfirmationService {
     @Transactional
     public TokenToResetPasswordFromCodeDTO getTokenResetPasswordFromCode(String emailToResetPassword, int confirmationCode) {
         TokenConfirmation token = tokenConfirmationRepository.findByConfirmationCode(confirmationCode)
-                .orElseThrow(() -> new RuntimeException("Codigo não encontrado ou expirado"));
+                .orElseThrow(() -> new RuntimeException("expiredToken"));
 
         if (!isTokenValid(token)) throw new RuntimeException("expiredToken");
-        if (!token.getAction().equals("resetPassword")) throw new RuntimeException("invalidToken");
+        if (!token.getAction().equals("resetPassword")) throw new RuntimeException("expiredToken");
         if (!token.getUserToChangeID().equals(emailToResetPassword))
             throw new RuntimeException("Email não corresponde ao token");
 
@@ -161,8 +158,6 @@ public class TokenConfirmationService {
             userToChange.comfirmEmail();
             authUserRepository.save(userToChange);
             tokenConfirmationRepository.delete(token);
-            demonstrationSiteService.createACompoundAndCompany(userToChange);
-
             return new IsEmailConfirmedDTO(userToChange.isEmailConfirmed());
         }
         return null;
@@ -186,7 +181,6 @@ public class TokenConfirmationService {
                 userToChange.comfirmEmail();
                 authUserRepository.save(userToChange);
                 tokenConfirmationRepository.delete(token);
-                demonstrationSiteService.createACompoundAndCompany(userToChange);
                 return new IsEmailConfirmedDTO(userToChange.isEmailConfirmed());
             }
         }

@@ -173,9 +173,9 @@ public class AuthUserController {
 
         if (loginResponseDTO != null) {
             String uriToReturn = "deliverysystem//auth/callback?";
-            if (platform != null && platform.equals("prod")) uriToReturn = "https://deliverysystem.com.br/oauthredirect?";
+            if (platform != null && platform.equals("prod")) uriToReturn = "https://felipefp22.github.io//FelipeFPortfolio/delivery/oauthredirect?";
 //            if (platform != null && platform.equals("dev")) uriToReturn = "https://desenvolvimento.deliverysystem.com.br/auth/callback?";
-            if (platform != null && platform.equals("localhost")) uriToReturn = "http://localhost:5173/oauthredirect?";
+            if (platform != null && platform.equals("localhost")) uriToReturn = "http://localhost:5173/FelipeFPortfolio/delivery/oauthredirect?";
 
 
             String redirectUrl =

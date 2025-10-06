@@ -10,6 +10,7 @@ import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
+import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Services.*;
 import org.springframework.stereotype.Service;
 
@@ -22,18 +23,22 @@ public class DemonstrationSiteService {
     private final ProductService productService;
     private final ProductCategoryService productCategoryService;
     private final CustomerService customerService;
+    private final AuthUserRepository authUserRepository;
 
-    public DemonstrationSiteService(CompaniesCompoundService companiesCompoundService, CompanyService companyService, ProductService productService, ProductCategoryService productCategoryService, CustomerService customerService) {
+    public DemonstrationSiteService(CompaniesCompoundService companiesCompoundService, CompanyService companyService, ProductService productService, ProductCategoryService productCategoryService, CustomerService customerService, AuthUserRepository authUserRepository) {
         this.companiesCompoundService = companiesCompoundService;
         this.companyService = companyService;
         this.productService = productService;
         this.productCategoryService = productCategoryService;
         this.customerService = customerService;
+        this.authUserRepository = authUserRepository;
     }
 
     // <>--------------- Methodos ---------------<>
 
-    public void createACompoundAndCompany(AuthUserLogin user) {
+    public void createACompoundAndCompany(String requesterID) {
+        AuthUserLogin user = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+
         //create demonstration compound
         CreateOrUpdateCompoundDTO createOrUpdateCompoundDTO = new CreateOrUpdateCompoundDTO(
                 user.getEmail().split("@")[0] + " - Companies",
