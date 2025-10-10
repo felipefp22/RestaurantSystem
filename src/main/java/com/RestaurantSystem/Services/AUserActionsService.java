@@ -2,6 +2,7 @@ package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.ENUMs.Role;
+import com.RestaurantSystem.Entities.ENUMs.Theme;
 import com.RestaurantSystem.Entities.User.AdmDTOs.IsAdmDTO;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
@@ -52,5 +53,10 @@ public class AUserActionsService {
 
         authUserLogin.getWorksAtCompanies().remove(companiesToQuit);
         companyEmployeesRepo.delete(companiesToQuit);
+    }
+
+    public void setTheme(String requesterID, String themeName) {
+        AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+        authUserLogin.setTheme(Theme.valueOf(themeName));
     }
 }

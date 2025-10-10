@@ -5,6 +5,7 @@ import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.ENUMs.Role;
+import com.RestaurantSystem.Entities.ENUMs.Theme;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.RegisterAuthUserDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -43,6 +44,9 @@ public class AuthUserLogin implements UserDetails {
     private List<CompanyEmployees> worksAtCompanies;
 
     private String ownAdministrativePassword;
+
+    @Enumerated(EnumType.ORDINAL)
+    private Theme theme = Theme.LIGHT;
 
     // <>------------ Constructors ------------<>
 
@@ -193,5 +197,13 @@ public class AuthUserLogin implements UserDetails {
     }
     public void setOwnAdministrativePassword(String ownAdministrativePassword) {
         this.ownAdministrativePassword = new BCryptPasswordEncoder().encode(ownAdministrativePassword);
+    }
+
+    public Theme getTheme() {
+        return theme;
+    }
+
+    public void setTheme(Theme theme) {
+        this.theme = theme;
     }
 }

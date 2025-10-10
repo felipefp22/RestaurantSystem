@@ -64,6 +64,17 @@ public class AUserActionsController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/set-theme/{themeName}")
+    public ResponseEntity setTheme(@RequestHeader("Authorization") String authorizationHeader,
+                                   @PathVariable("themeName") String themeName) throws Exception {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        aUserActionsService.setTheme(requesterID, themeName);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/create-default-api-demonstration")
     public ResponseEntity createDefaultApiDemonstration(@RequestHeader("Authorization") String authorizationHeader) throws Exception {
 
@@ -73,4 +84,5 @@ public class AUserActionsController {
 
         return ResponseEntity.noContent().build();
     }
+
 }
