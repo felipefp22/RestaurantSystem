@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Controllers;
 
+import com.RestaurantSystem.Entities.ENUMs.Theme;
 import com.RestaurantSystem.Entities.User.AdmDTOs.IsAdmDTO;
 import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
@@ -65,14 +66,14 @@ public class AUserActionsController {
     }
 
     @PutMapping("/set-theme/{themeName}")
-    public ResponseEntity setTheme(@RequestHeader("Authorization") String authorizationHeader,
-                                   @PathVariable("themeName") String themeName) throws Exception {
+    public ResponseEntity<Theme> setTheme(@RequestHeader("Authorization") String authorizationHeader,
+                                          @PathVariable("themeName") String themeName) throws Exception {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        aUserActionsService.setTheme(requesterID, themeName);
+        var response = aUserActionsService.setTheme(requesterID, themeName);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/create-default-api-demonstration")

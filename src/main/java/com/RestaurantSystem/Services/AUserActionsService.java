@@ -55,9 +55,11 @@ public class AUserActionsService {
         companyEmployeesRepo.delete(companiesToQuit);
     }
 
-    public void setTheme(String requesterID, String themeName) {
+    public Theme setTheme(String requesterID, String themeName) {
         AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
         authUserLogin.setTheme(Theme.valueOf(themeName));
         authUserRepository.save(authUserLogin);
+
+        return authUserLogin.getTheme();
     }
 }
