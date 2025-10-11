@@ -24,7 +24,7 @@ public class AuthUserLogin implements UserDetails {
 
     private String password;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private Role role;
     private Boolean emailConfirmed;
 
@@ -45,7 +45,7 @@ public class AuthUserLogin implements UserDetails {
 
     private String ownAdministrativePassword;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private Theme theme = Theme.LIGHT;
 
     // <>------------ Constructors ------------<>
