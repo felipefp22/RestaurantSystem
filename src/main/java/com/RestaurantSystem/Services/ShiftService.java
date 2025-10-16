@@ -44,7 +44,7 @@ public class ShiftService {
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
         if(openedShift.isEmpty()){
-            throw new RuntimeException("No active shift found");
+            return null;
         }
         Shift currentShift = null;
         if(openedShift.size() > 1){
@@ -53,7 +53,7 @@ public class ShiftService {
                     .orElse(null);
         } else {
             currentShift = openedShift.get(0);
-        };
+        }
         Shift previousShift = shiftRepo.findById(company.getId().toString() + "_" + (Integer.parseInt(openedShift.get(0).getShiftNumber()) - 1))
                 .orElse(null);
 
@@ -97,6 +97,9 @@ public class ShiftService {
 
         String shiftNumber = String.valueOf(company.getShifts().size() + 1);
         Shift shift = new Shift(company, shiftNumber, requester);
+
+        company.setLastOrOpenShift(shift);
+        companyRepo.save(company);
 
         return shiftRepo.save(shift);
     }

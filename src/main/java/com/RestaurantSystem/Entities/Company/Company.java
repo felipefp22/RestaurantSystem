@@ -45,6 +45,10 @@ public class Company {
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Shift> shifts;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_or_open_shift")
+    private Shift lastOrOpenShift;
+
     private int numberOfTables;
 
     //<>------------ Constructors ------------<>
@@ -146,6 +150,13 @@ public class Company {
 
     public List<Shift> getShifts() {
         return shifts;
+    }
+
+    public Shift getLastOrOpenShift() {
+        return lastOrOpenShift;
+    }
+    public void setLastOrOpenShift(Shift lastOrOpenShift) {
+        this.lastOrOpenShift = lastOrOpenShift;
     }
 
     public int getNumberOfTables() {

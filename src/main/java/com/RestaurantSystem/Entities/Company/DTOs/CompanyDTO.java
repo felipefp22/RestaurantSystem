@@ -19,7 +19,7 @@ public record CompanyDTO(
         List<CompanyEmployeesDTO> employees,
         List<ProductCategory> productsCategories,
         List<Customer> customers,
-        List<Shift> shifts,
+        Shift lastOrOpenShift,
         int numberOfTables
 ) {
     public CompanyDTO(Company company) {
@@ -33,7 +33,7 @@ public record CompanyDTO(
                 company.getEmployees().stream().map(CompanyEmployeesDTO::new).toList(),
                 company.getProductsCategories(),
                 company.getCustomers(),
-                company.getShifts(),
+                company.getLastOrOpenShift(),
                 company.getNumberOfTables()
         );
     }

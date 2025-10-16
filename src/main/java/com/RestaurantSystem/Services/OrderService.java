@@ -63,17 +63,18 @@ public class OrderService {
         }
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
+        if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
         }
         Shift currentShift = null;
-        if(openedShift.size() > 1){
+        if (openedShift.size() > 1) {
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
         } else {
             currentShift = openedShift.get(0);
-        };
+        }
+        ;
 
         if (orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && customer == null) {
             throw new RuntimeException("Customer is required for delivery orders.");
@@ -115,17 +116,18 @@ public class OrderService {
             throw new RuntimeException("You are not allowed to see the categories of this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
+        if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
         }
         Shift currentShift = null;
-        if(openedShift.size() > 1){
+        if (openedShift.size() > 1) {
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
         } else {
             currentShift = openedShift.get(0);
-        };
+        }
+        ;
 
         Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(notesAndOrderID.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't add notes to no open orders.");
@@ -146,17 +148,18 @@ public class OrderService {
             throw new RuntimeException("You are not allowed to see the categories of this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
+        if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
         }
         Shift currentShift = null;
-        if(openedShift.size() > 1){
+        if (openedShift.size() > 1) {
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
         } else {
             currentShift = openedShift.get(0);
-        };
+        }
+        ;
 
         Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(productsToAdd.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN)
@@ -184,6 +187,9 @@ public class OrderService {
             }
         });
 
+        calculateTotalPriceTaxAndDiscount(order, null);
+        orderRepo.save(order);
+
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
     }
 
@@ -198,18 +204,19 @@ public class OrderService {
             throw new RuntimeException("You are not allowed to see the categories of this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
+        if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
         }
 
         Shift currentShift = null;
-        if(openedShift.size() > 1){
+        if (openedShift.size() > 1) {
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
         } else {
             currentShift = openedShift.get(0);
-        };
+        }
+        ;
 
         Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(productsToRemove.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN)
@@ -235,6 +242,9 @@ public class OrderService {
             ordersItemsRepo.delete(item);
         });
 
+        calculateTotalPriceTaxAndDiscount(order, null);
+        orderRepo.save(order);
+
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing orderItemsIDs."));
     }
 
@@ -249,17 +259,17 @@ public class OrderService {
             throw new RuntimeException("You are not allowed to see the categories of this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
+        if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
         }
         Shift currentShift = null;
-        if(openedShift.size() > 1){
+        if (openedShift.size() > 1) {
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
         } else {
             currentShift = openedShift.get(0);
-        };
+        }
 
         Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(changeOrderTableDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
@@ -318,7 +328,7 @@ public class OrderService {
         if (!verificationsServices.worksOnCompany(company, requester))
             throw new RuntimeException("You are not allowed to see the categories of this company");
 
-        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company( List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
+        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
         Order order = orderOpened.stream().filter(x -> x.getId().equals(orderToCloseDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
 
         if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
@@ -343,21 +353,23 @@ public class OrderService {
             throw new RuntimeException("You are not allowed to see the categories of this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
+        if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
         }
 
         Shift currentShift = null;
-        if(openedShift.size() > 1){
+        if (openedShift.size() > 1) {
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
         } else {
             currentShift = openedShift.get(0);
-        };
+        }
+        ;
 
-        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company( List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
-        Order order = orderOpened.stream().filter(x -> x.getId().equals(dto.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));        if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
+        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
+        Order order = orderOpened.stream().filter(x -> x.getId().equals(dto.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
+        if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
             throw new RuntimeException("Can't confirm payment for no closed waiting payment orders.");
 
         if (order.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT) {
@@ -384,11 +396,11 @@ public class OrderService {
             throw new RuntimeException("You are not allowed to see the categories of this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
+        if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
         }
 
-        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company( List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
+        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
         Order order = orderOpened.stream().filter(x -> x.getId().equals(orderToReopen.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
 
         if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
@@ -417,20 +429,21 @@ public class OrderService {
             throw new RuntimeException("You are not allowed to see the categories of this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
+        if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
         }
 
         Shift currentShift = null;
-        if(openedShift.size() > 1){
+        if (openedShift.size() > 1) {
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
         } else {
             currentShift = openedShift.get(0);
-        };
+        }
+        ;
 
-        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company( List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
+        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
         Order order = orderOpened.stream().filter(x -> x.getId().equals(cancelOrderDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
 
         if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT && order.getStatus() != OrderStatus.OPEN)
@@ -457,10 +470,12 @@ public class OrderService {
             order.setPrice(order.getPrice() + product.getPrice());
         });
 
-        order.setServiceTax(orderToCloseDTO.clientSaidNoTax() ? 0.0 : order.getPrice() * defaultTaxPercentage / 100);
-        order.setDiscount(orderToCloseDTO.discountValue() != null ? -Math.abs(orderToCloseDTO.discountValue()) : 0.0);
+        if (orderToCloseDTO != null) {
+            order.setServiceTax(orderToCloseDTO.clientSaidNoTax() ? 0.0 : order.getPrice() * defaultTaxPercentage / 100);
+            order.setDiscount(orderToCloseDTO.discountValue() != null ? -Math.abs(orderToCloseDTO.discountValue()) : 0.0);
 
-        order.setTotalPrice(order.getPrice() + order.getServiceTax() + order.getDiscount());
+            order.setTotalPrice(order.getPrice() + order.getServiceTax() + order.getDiscount());
+        }
     }
 
     private Integer isTableAvailable(Company company, String tableNumberOrDeliveryOrPickup) {

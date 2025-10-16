@@ -17,14 +17,16 @@ import java.util.UUID;
 public class AUserActionsService {
     private final AuthUserRepository authUserRepository;
     private final CompanyEmployeesRepo companyEmployeesRepo;
+    private final ShiftService shiftService;
 
-    public AUserActionsService(AuthUserRepository authUserRepository, CompanyEmployeesRepo companyEmployeesRepo) {
+    public AUserActionsService(AuthUserRepository authUserRepository, CompanyEmployeesRepo companyEmployeesRepo, ShiftService shiftService) {
         this.authUserRepository = authUserRepository;
         this.companyEmployeesRepo = companyEmployeesRepo;
+        this.shiftService = shiftService;
     }
 
     // <>--------------- Methodos ---------------<>
-    public AuthUserDTO getUserDatas(String requesterID) {
+    public AuthUserDTO getUserData(String requesterID) {
         AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
 
         return new AuthUserDTO(authUserLogin);

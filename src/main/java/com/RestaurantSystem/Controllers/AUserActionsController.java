@@ -29,10 +29,10 @@ public class AUserActionsController {
 
     // <>--------------- Methodos ---------------<>
     @GetMapping("/me")
-    public ResponseEntity<AuthUserDTO> getUserDatas(@RequestHeader("Authorization") String authorizationHeader) throws Exception {
+    public ResponseEntity<AuthUserDTO> getUserData(@RequestHeader("Authorization") String authorizationHeader) throws Exception {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        return ResponseEntity.ok(aUserActionsService.getUserDatas(requesterID));
+        return ResponseEntity.ok(aUserActionsService.getUserData(requesterID));
     }
 
     @GetMapping("/is-admin")
