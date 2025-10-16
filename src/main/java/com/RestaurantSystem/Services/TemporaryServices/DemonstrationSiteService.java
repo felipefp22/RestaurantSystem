@@ -179,18 +179,5 @@ public class DemonstrationSiteService {
 
     public record PointDTO(double lat, double lng) {
     }
-
-    @Scheduled(fixedRate = 100000) // 24 hours
-    public void putLastShiftToAllCompanies() {
-        List<Company> allCompanies = companyRepo.findAll();
-        allCompanies.forEach(company -> {
-            if (company.getLastOrOpenShift() == null) {
-                List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-                if (!openedShift.isEmpty()) {
-                    company.setLastOrOpenShift(openedShift.get(0));
-                    companyRepo.save(company);
-                }
-            }
-        });
-    }
+    
 }
