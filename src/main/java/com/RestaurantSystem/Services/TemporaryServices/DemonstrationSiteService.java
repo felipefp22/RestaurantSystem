@@ -9,9 +9,13 @@ import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
+import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
+import com.RestaurantSystem.Repositories.CompanyRepo;
+import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,14 +28,18 @@ public class DemonstrationSiteService {
     private final ProductCategoryService productCategoryService;
     private final CustomerService customerService;
     private final AuthUserRepository authUserRepository;
+    private final CompanyRepo companyRepo;
+    private final ShiftRepo shiftRepo;
 
-    public DemonstrationSiteService(CompaniesCompoundService companiesCompoundService, CompanyService companyService, ProductService productService, ProductCategoryService productCategoryService, CustomerService customerService, AuthUserRepository authUserRepository) {
+    public DemonstrationSiteService(CompaniesCompoundService companiesCompoundService, CompanyService companyService, ProductService productService, ProductCategoryService productCategoryService, CustomerService customerService, AuthUserRepository authUserRepository, CompanyRepo companyRepo, ShiftRepo shiftRepo) {
         this.companiesCompoundService = companiesCompoundService;
         this.companyService = companyService;
         this.productService = productService;
         this.productCategoryService = productCategoryService;
         this.customerService = customerService;
         this.authUserRepository = authUserRepository;
+        this.companyRepo = companyRepo;
+        this.shiftRepo = shiftRepo;
     }
 
     // <>--------------- Methodos ---------------<>
@@ -83,9 +91,9 @@ public class DemonstrationSiteService {
                 new CreateOrUpdateProductDTO(company.getId(), null, "Coca-Cola 20oz", 5.00, "Coca-Cola 20oz", "xpto.com.br", String.valueOf(pCategoryBeveragesID)),
                 new CreateOrUpdateProductDTO(company.getId(), null, "Pepsi 20oz", 5.00, "Pepsi 20oz", "xpto.com.br", String.valueOf(pCategoryBeveragesID)),
                 new CreateOrUpdateProductDTO(company.getId(), null, "Burger", 20.00, "Cheeseburger with fries", "xpto.com.br", String.valueOf(pCategoryFoodsID)),
-                new CreateOrUpdateProductDTO(company.getId(), null, "Pizza",30.00, "Pepperoni Pizza", "xpto.com.br", String.valueOf(pCategoryFoodsID)),
-                new CreateOrUpdateProductDTO(company.getId(), null, "Tiramisù", 10.00,"Vanilla Ice Cream", "xpto.com.br", String.valueOf(pCategoryDessertsID)),
-                new CreateOrUpdateProductDTO(company.getId(), null, "Cake", 15.00,"Chocolate Cake", "xpto.com.br", String.valueOf(pCategoryDessertsID))
+                new CreateOrUpdateProductDTO(company.getId(), null, "Pizza", 30.00, "Pepperoni Pizza", "xpto.com.br", String.valueOf(pCategoryFoodsID)),
+                new CreateOrUpdateProductDTO(company.getId(), null, "Tiramisù", 10.00, "Vanilla Ice Cream", "xpto.com.br", String.valueOf(pCategoryDessertsID)),
+                new CreateOrUpdateProductDTO(company.getId(), null, "Cake", 15.00, "Chocolate Cake", "xpto.com.br", String.valueOf(pCategoryDessertsID))
         );
 
         productDTOS.forEach(dto -> {
@@ -93,7 +101,7 @@ public class DemonstrationSiteService {
         });
     }
 
-    public void setCompanyGeolocationAndCreateDemonstrationCustomers(AuthUserLogin user, Company company, Double lat, Double lng){
+    public void setCompanyGeolocationAndCreateDemonstrationCustomers(AuthUserLogin user, Company company, Double lat, Double lng) {
         companyService.setCompanyGeoLocation(user.getEmail(), new UpdateCompanyDTO(
                 company.getId(),
                 null,
@@ -169,5 +177,20 @@ public class DemonstrationSiteService {
         return pointDTOS;
     }
 
-    public record PointDTO(double lat, double lng) {}
+    public record PointDTO(double lat, double lng) {
+    }
+
+    @Scheduled(fixedRate = 100000) // 24 hours
+    public void putLastShiftToAllCompanies() {
+        List<Company> allCompanies = companyRepo.findAll();
+        allCompanies.forEach(company -> {
+            if (company.getLastOrOpenShift() == null) {
+                List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
+                if (!openedShift.isEmpty()) {
+                    company.setLastOrOpenShift(openedShift.get(0));
+                    companyRepo.save(company);
+                }
+            }
+        });
+    }
 }
