@@ -98,10 +98,11 @@ public class ShiftService {
         String shiftNumber = String.valueOf(company.getShifts().size() + 1);
         Shift shift = new Shift(company, shiftNumber, requester);
 
+        Shift shiftSaved = shiftRepo.save(shift);
         company.setLastOrOpenShift(shift);
         companyRepo.save(company);
 
-        return shiftRepo.save(shift);
+        return shiftSaved;
     }
 
     public Shift closeShift(String requesterID, String companyID) {

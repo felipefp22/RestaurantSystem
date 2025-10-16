@@ -50,7 +50,7 @@ public class DemonstrationSiteService {
         //create demonstration company
         CreateCompanyDTO createCompanyDTO = new CreateCompanyDTO(
                 compound.getId(),
-                user.getEmail().split("@")[0] + " - Company.",
+                user.getEmail().split("@")[0] + " - Company",
                 user.getEmail(),
                 "(212) 555-1234",
                 "Brooksfield 1544, New York, NY 10001",

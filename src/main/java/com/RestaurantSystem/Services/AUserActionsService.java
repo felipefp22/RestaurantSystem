@@ -8,6 +8,7 @@ import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -26,6 +27,7 @@ public class AUserActionsService {
     }
 
     // <>--------------- Methodos ---------------<>
+    @Transactional
     public AuthUserDTO getUserData(String requesterID) {
         AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
 
