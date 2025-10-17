@@ -32,7 +32,7 @@ public record LoginResponseDTO(
                 isEmailConfirmed,
                 isPhoneConfirmed,
                 (user.getRole() == Role.ADMIN || user.getRole() == Role.MASTERADMIN),
-                user.getTheme() != null ? user.getTheme() : Theme.LIGHT,
+                user.getTheme() != null ? user.getTheme() : Theme.DARK,
                 compoundsYouAreOwner,
                 companiesYouWorks
                 );
