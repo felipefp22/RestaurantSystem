@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Controllers;
 
+import com.RestaurantSystem.Entities.Shift.DTOs.CloseShiftDTO;
 import com.RestaurantSystem.Entities.Shift.DTOs.ShiftOperationDTO;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
@@ -51,12 +52,12 @@ public class ShiftController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/close-shift/{companyID}")
+    @PutMapping("/close-shift")
     private ResponseEntity<Shift> closeShift(@RequestHeader("Authorization") String authorizationHeader,
-                                             @PathVariable String companyID) {
+                                             @RequestBody CloseShiftDTO closeShiftDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = shiftService.closeShift(requesterID, companyID);
+        var response = shiftService.closeShift(requesterID, closeShiftDTO);
 
         return ResponseEntity.ok(response);
     }

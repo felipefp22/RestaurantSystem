@@ -63,6 +63,7 @@ public class AuthUserLogin implements UserDetails {
         this.role = Role.USER;
         this.emailConfirmed = emailConfirmed;
         this.phoneConfirmed = false;
+        this.ownAdministrativePassword = "1234";
     }
 
     public AuthUserLogin(RegisterAuthUserDTO registerAuthUserDTO) {
@@ -76,6 +77,7 @@ public class AuthUserLogin implements UserDetails {
         this.role = Role.USER;
         this.emailConfirmed = false;
         this.phoneConfirmed = false;
+        this.ownAdministrativePassword = "1234";
     }
 
     // <>------------ Getters and setters ------------<>

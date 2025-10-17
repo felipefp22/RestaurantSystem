@@ -2,6 +2,7 @@ package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Order.Order;
+import com.RestaurantSystem.Entities.Shift.DTOs.CloseShiftDTO;
 import com.RestaurantSystem.Entities.Shift.DTOs.ShiftOperationDTO;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
@@ -9,6 +10,7 @@ import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -105,23 +107,29 @@ public class ShiftService {
         return shiftSaved;
     }
 
-    public Shift closeShift(String requesterID, String companyID) {
+    public Shift closeShift(String requesterID, CloseShiftDTO closeShiftDTO) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
-        Company company = companyRepo.findById(UUID.fromString(companyID))
+        Company company = companyRepo.findById(UUID.fromString(closeShiftDTO.companyID()))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
         if (!verificationsServices.isOwnerOrManager(company, requester)) throw new RuntimeException("You are not allowed to add a product, ask to manager");
 
-        Shift shift = company.getShifts().stream()
-                .filter(s -> s.getEndTimeUTC() == null)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No active shift found"));
+        if (new BCryptPasswordEncoder().matches(closeShiftDTO.adminPassword(), requester.getOwnAdministrativePassword())) {
+            Shift shift = company.getShifts().stream()
+                    .filter(s -> s.getEndTimeUTC() == null)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No active shift found"));
 
-        shift.setEndTimeUTC(LocalDateTime.now(ZoneOffset.UTC));
-        shift.setEmployeeClosedShift(requester.getEmail());
+            if (!shift.getId().equals(closeShiftDTO.shiftID())) throw new RuntimeException("invalidShiftID");
 
-        return shiftRepo.save(shift);
+            shift.setEndTimeUTC(LocalDateTime.now(ZoneOffset.UTC));
+            shift.setEmployeeClosedShift(requester.getEmail());
+
+            return shiftRepo.save(shift);
+        }else {
+            throw new RuntimeException("invalidAdminPassword");
+        }
     }
 }
