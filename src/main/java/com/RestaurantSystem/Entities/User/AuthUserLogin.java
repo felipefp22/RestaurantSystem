@@ -46,7 +46,7 @@ public class AuthUserLogin implements UserDetails {
     private String ownAdministrativePassword;
 
     @Enumerated(EnumType.STRING)
-    private Theme theme = Theme.LIGHT;
+    private Theme theme = Theme.DARK;
 
     // <>------------ Constructors ------------<>
 
