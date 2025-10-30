@@ -61,4 +61,3 @@ jobs:
             MAIL_PORT: ${{ secrets.PROD_MAIL_PORT }}
             MAIL_USERNAME: ${{ secrets.PROD_MAIL_USERNAME }}
             NO_REPLY_EMAIL: ${{ secrets.PROD_NO_REPLY_EMAIL }}
-
