@@ -45,7 +45,7 @@ jobs:
           imageToBuild: usgcrakitemtrampo.azurecr.io/ca-restaurantsystem-dev:${{ github.sha }}
           _buildArgumentsKey_: |
             _buildArgumentsValues_
-          environmentVariables:
+          environmentVariables: |
             DATABASE_PASSWORD: ${{ secrets.PROD_DATABASE_PASSWORD }}
             DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
             DATABASE_USERNAME: ${{ secrets.PROD_DATABASE_USERNAME }}
