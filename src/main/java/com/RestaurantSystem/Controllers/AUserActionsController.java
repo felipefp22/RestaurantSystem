@@ -40,6 +40,7 @@ public class AUserActionsController {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
+        
         return ResponseEntity.ok(aUserActionsService.isAdmin(requesterID));
     }
 
