@@ -44,15 +44,16 @@ public class CompanyService {
         if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You don't have permission to access this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
-            throw new RuntimeException("noActiveShift");
-        }
+//        if(openedShift.isEmpty()){
+//            throw new RuntimeException("noActiveShift");
+//        }
         Shift currentShift = null;
         if(openedShift.size() > 1){
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
-        } else {
+            currentShift = lastShift;
+        } else if(openedShift.size() > 0) {
             currentShift = openedShift.get(0);
         };
 
