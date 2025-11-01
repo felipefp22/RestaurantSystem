@@ -63,7 +63,7 @@ public class AuthUserLogin implements UserDetails {
         this.role = Role.USER;
         this.emailConfirmed = emailConfirmed;
         this.phoneConfirmed = false;
-        this.ownAdministrativePassword = "1234";
+        this.ownAdministrativePassword = "$2a$10$/8876QNAv.vmY5w0JJ5qnuju8HfIM/nTvOGQ89ne2mFGFuCrkNnWO";
     }
 
     public AuthUserLogin(RegisterAuthUserDTO registerAuthUserDTO) {
