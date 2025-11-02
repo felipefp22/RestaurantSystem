@@ -35,14 +35,13 @@ public class CompaniesCompoundController {
         return ResponseEntity.ok(companiesCompoundCreated);
     }
 
-    @PutMapping("/update-compound/{compoundID}")
+    @PutMapping("/update-compound")
     public ResponseEntity<CompaniesCompound> updateCompaniesCompound(@RequestHeader("Authorization") String authorizationHeader,
-                                                                    @PathVariable UUID compoundID,
                                                                     @RequestBody CreateOrUpdateCompoundDTO updateCompoundDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        CompaniesCompound companiesCompoundUpdated = companiesCompoundService.updateCompaniesCompound(requesterID, compoundID, updateCompoundDTO);
+        CompaniesCompound companiesCompoundUpdated = companiesCompoundService.updateCompaniesCompound(requesterID, updateCompoundDTO);
 
         return ResponseEntity.ok(companiesCompoundUpdated);
     }

@@ -1,7 +1,10 @@
 package com.RestaurantSystem.Entities.CompaniesCompound.DTOs;
 
+import java.util.UUID;
+
 public record CreateOrUpdateCompoundDTO(
-    String compoundName,
-    String compoundDescription
+        UUID compoundID,
+        String compoundName,
+        String compoundDescription
 ) {
 }

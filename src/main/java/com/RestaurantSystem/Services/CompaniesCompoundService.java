@@ -36,7 +36,7 @@ public class CompaniesCompoundService {
         return companiesCompoundRepo.save(companiesCompound);
     }
 
-    public CompaniesCompound updateCompaniesCompound(String requesterID, UUID compoundID, CreateOrUpdateCompoundDTO updateCompoundDTO) {
+    public CompaniesCompound updateCompaniesCompound(String requesterID, CreateOrUpdateCompoundDTO updateCompoundDTO) {
         AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
 
         if (requester.getCompaniesCompounds().stream()
@@ -44,7 +44,7 @@ public class CompaniesCompoundService {
             throw new RuntimeException("You already have a CompaniesCompound with this name");
 
         CompaniesCompound companiesCompound = requester.getCompaniesCompounds().stream()
-                .filter(c -> c.getId().equals(compoundID)).findFirst().orElseThrow(() -> new RuntimeException("Compound not found"));
+                .filter(c -> c.getId().equals(updateCompoundDTO.compoundID())).findFirst().orElseThrow(() -> new RuntimeException("Compound not found"));
 
         companiesCompound.setCompoundName(updateCompoundDTO.compoundName());
         companiesCompound.setCompoundDescription(updateCompoundDTO.compoundDescription());

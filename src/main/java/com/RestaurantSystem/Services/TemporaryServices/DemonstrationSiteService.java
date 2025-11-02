@@ -49,6 +49,7 @@ public class DemonstrationSiteService {
 
         //create demonstration compound
         CreateOrUpdateCompoundDTO createOrUpdateCompoundDTO = new CreateOrUpdateCompoundDTO(
+                null,
                 user.getEmail().split("@")[0] + "'s - Chain Group",
                 "This is a " + user.getEmail().split("@")[0] + " chain group."
         );
