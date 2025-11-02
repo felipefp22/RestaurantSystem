@@ -10,6 +10,16 @@ public class VerificationsServices {
 
     // <> ---------- Methods ---------- <>
 
+    public boolean isOwner(Company company, AuthUserLogin user) {
+        Boolean requesterHavePermission = false;
+
+        if (company.getOwnerCompound().getOwner().equals(user)) {
+            requesterHavePermission = true;
+        }
+
+        return requesterHavePermission;
+    }
+
     public boolean isOwnerOrManager(Company company, AuthUserLogin user) {
         Boolean requesterHavePermission = false;
 
