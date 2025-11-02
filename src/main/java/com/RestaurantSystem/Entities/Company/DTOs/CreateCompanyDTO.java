@@ -9,6 +9,8 @@ public record CreateCompanyDTO(
         String companyPhone,
         String companyAddress,
         String urlCompanyLogo,
+        Double lat,
+        Double lng,
         int numberOfTables
 ) {
 }

@@ -64,6 +64,8 @@ public class DemonstrationSiteService {
                 "(212) 555-1234",
                 "Brooksfield 1544, New York, NY 10001",
                 null,
+                null,
+                null,
                 25
         );
         Company company = companyService.createCompany(user.getEmail(), createCompanyDTO);

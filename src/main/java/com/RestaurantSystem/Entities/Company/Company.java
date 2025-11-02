@@ -62,6 +62,9 @@ public class Company {
         this.companyPhone = createCompanyDTO.companyPhone();
         this.companyAddress = createCompanyDTO.companyAddress();
         this.urlCompanyLogo = createCompanyDTO.urlCompanyLogo();
+
+        this.companyLat = createCompanyDTO.lat();
+        this.companyLng = createCompanyDTO.lng();
         this.employees = new ArrayList<>();;
         this.productsCategories = new ArrayList<>();;
         this.customers = new ArrayList<>();;
