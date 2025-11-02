@@ -47,14 +47,14 @@ public class CompanyController {
     }
 
     @PutMapping("/update-company")
-    public ResponseEntity<Company> updateCompany(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity updateCompany(@RequestHeader("Authorization") String authorizationHeader,
                                                  @RequestBody UpdateCompanyDTO updateCompanyDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = companyService.updateCompany(requesterID, updateCompanyDTO);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/set-company-geo-location")

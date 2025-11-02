@@ -49,8 +49,8 @@ public class DemonstrationSiteService {
 
         //create demonstration compound
         CreateOrUpdateCompoundDTO createOrUpdateCompoundDTO = new CreateOrUpdateCompoundDTO(
-                user.getEmail().split("@")[0] + " - Companies",
-                "This is a " + user.getEmail().split("@")[0] + " group."
+                user.getEmail().split("@")[0] + "'s - Chain Group",
+                "This is a " + user.getEmail().split("@")[0] + " chain group."
         );
         CompaniesCompound compound = companiesCompoundService.createCompaniesCompound(user.getEmail(), createOrUpdateCompoundDTO);
         user.getCompaniesCompounds().add(compound);
@@ -58,11 +58,11 @@ public class DemonstrationSiteService {
         //create demonstration company
         CreateCompanyDTO createCompanyDTO = new CreateCompanyDTO(
                 compound.getId(),
-                user.getEmail().split("@")[0] + " - Company",
+                user.getEmail().split("@")[0] + "'s - Restaurant",
                 user.getEmail(),
                 "(212) 555-1234",
                 "Brooksfield 1544, New York, NY 10001",
-                "xpto.com.br",
+                null,
                 25
         );
         Company company = companyService.createCompany(user.getEmail(), createCompanyDTO);
