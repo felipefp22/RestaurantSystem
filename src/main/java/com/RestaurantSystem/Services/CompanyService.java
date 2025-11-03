@@ -134,18 +134,18 @@ public class CompanyService {
 
     public List<CompanyEmployees> addEmployeeToCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
+                .orElseThrow(() -> new RuntimeException("requesterNotFound"));
 
         Company company = companyRepo.findById(employeeDTO.companyId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("companyNotFound"));
 
         if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
         AuthUserLogin employeeToAdd = authUserRepository.findById(employeeDTO.employeeEmail())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("emailNotFound"));
 
         if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail())))
-            throw new RuntimeException("This employee is already part of this company");
+            throw new RuntimeException("employeeAlreadyHired");
 
         CompanyEmployees companyEmployee = new CompanyEmployees(company, employeeToAdd, EmployeePosition.valueOf(employeeDTO.position()));
 
