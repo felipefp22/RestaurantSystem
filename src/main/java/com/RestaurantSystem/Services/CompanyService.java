@@ -57,6 +57,8 @@ public class CompanyService {
             currentShift = openedShift.get(0);
         };
 
+        if(currentShift == null) currentShift = company.getLastOrOpenShift();
+
         return new CompanyOperationDTO(company, currentShift);
     }
 

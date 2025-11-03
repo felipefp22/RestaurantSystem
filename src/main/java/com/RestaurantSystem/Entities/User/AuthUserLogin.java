@@ -77,7 +77,7 @@ public class AuthUserLogin implements UserDetails {
         this.role = Role.USER;
         this.emailConfirmed = false;
         this.phoneConfirmed = false;
-        this.ownAdministrativePassword = "1234";
+        this.ownAdministrativePassword = "$2a$10$/8876QNAv.vmY5w0JJ5qnuju8HfIM/nTvOGQ89ne2mFGFuCrkNnWO";
     }
 
     // <>------------ Getters and setters ------------<>
