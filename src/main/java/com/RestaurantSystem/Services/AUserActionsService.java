@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
+import com.RestaurantSystem.Entities.Company.EmployeeStatus;
 import com.RestaurantSystem.Entities.ENUMs.Role;
 import com.RestaurantSystem.Entities.ENUMs.Theme;
 import com.RestaurantSystem.Entities.User.AdmDTOs.IsAdmDTO;
@@ -47,6 +48,17 @@ public class AUserActionsService {
 
         authUserLogin.setOwnAdministrativePassword(setOwnAdministrativePasswordDTO.newAdministrativePassword());
         authUserRepository.save(authUserLogin);
+    }
+
+    public void acceptInviteCompany(String requesterID, UUID companyId) {
+        AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+
+        CompanyEmployees companiesToAccept = authUserLogin.getWorksAtCompanies().stream().filter(c -> c.getCompany().getId().equals(companyId))
+                .findFirst().orElseThrow(() -> new NoSuchElementException("You don't work at this company"));
+
+        companiesToAccept.setStatus(EmployeeStatus.ACTIVE);
+
+        companyEmployeesRepo.save(companiesToAccept);
     }
 
     public void quitCompany(String requesterID, UUID companyId) {

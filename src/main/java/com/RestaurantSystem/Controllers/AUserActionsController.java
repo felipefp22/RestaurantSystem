@@ -55,6 +55,17 @@ public class AUserActionsController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @PutMapping("/accept-invite-company/{companyId}")
+    public ResponseEntity acceptInviteCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                      @PathVariable("companyId") UUID companyId) throws Exception {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        aUserActionsService.acceptInviteCompany(requesterID, companyId);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/quit-company/{companyId}")
     public ResponseEntity quitCompany(@RequestHeader("Authorization") String authorizationHeader,
                                       @PathVariable("companyId") UUID companyId) throws Exception {

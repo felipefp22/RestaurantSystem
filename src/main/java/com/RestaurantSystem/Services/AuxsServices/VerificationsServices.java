@@ -23,9 +23,15 @@ public class VerificationsServices {
     public boolean isOwnerOrManager(Company company, AuthUserLogin user) {
         Boolean requesterHavePermission = false;
 
+//        AuthUserLogin employeeFound = company.getEmployees().stream()
+//                .filter(e -> e.getEmployee().equals(user))
+//                .map(e -> e.getEmployee())
+//                .findFirst()
+//                .orElse(null);
+
         if (company.getOwnerCompound().getOwner().equals(user)) {
             requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.MANAGER))) {
+        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.MANAGER ))) {
             requesterHavePermission = true;
         }
 

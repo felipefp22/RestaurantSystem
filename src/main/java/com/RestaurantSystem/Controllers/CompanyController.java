@@ -100,7 +100,7 @@ public class CompanyController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/remove-employee")
+    @PutMapping("/remove-employee")
     public ResponseEntity<List<CompanyEmployees>> removeEmployeeFromCompany(@RequestHeader("Authorization") String authorizationHeader,
                                                                             @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
 

@@ -87,7 +87,7 @@ public class CompanyService {
         Company company = companyRepo.findById(updateCompanyDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwner(company, requester)) throw new RuntimeException("Just Owner or Manager can add employees to a company");
+        if (!verificationsServices.isOwner(company, requester)) throw new RuntimeException("justOwnerCanEditCompany");
 
         Company companyToUpdate = requester.getCompaniesCompounds().stream()
                 .flatMap(compound -> compound.getCompanies().stream())

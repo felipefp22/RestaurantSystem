@@ -26,6 +26,8 @@ public class CompanyEmployees {
     @Enumerated(EnumType.STRING)
     private EmployeePosition position;
 
+    private EmployeeStatus status = EmployeeStatus.WAITING_ACCEPTANCE;
+
     // <>------------ Constructors ------------<>
     public CompanyEmployees() {
     }
@@ -55,5 +57,13 @@ public class CompanyEmployees {
 
     public void setPosition(EmployeePosition position) {
         this.position = position;
+    }
+
+    public EmployeeStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EmployeeStatus status) {
+        this.status = status;
     }
 }
