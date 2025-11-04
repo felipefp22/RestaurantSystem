@@ -146,7 +146,7 @@ public class CompanyService {
         AuthUserLogin employeeToAdd = authUserRepository.findById(employeeDTO.employeeEmail())
                 .orElseThrow(() -> new RuntimeException("emailNotFound"));
 
-        if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail())))
+        if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail())) || company.getOwnerCompound().getOwner().getEmail().equals(employeeDTO.employeeEmail()))
             throw new RuntimeException("employeeAlreadyHired");
 
         CompanyEmployees companyEmployee = new CompanyEmployees(company, employeeToAdd, EmployeePosition.valueOf(employeeDTO.position()));

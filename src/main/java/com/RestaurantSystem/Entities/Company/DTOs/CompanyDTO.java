@@ -20,7 +20,8 @@ public record CompanyDTO(
         List<ProductCategory> productsCategories,
         List<Customer> customers,
         Shift lastOrOpenShift,
-        int numberOfTables
+        int numberOfTables,
+        String ownerID
 ) {
     public CompanyDTO(Company company) {
         this(
@@ -34,7 +35,8 @@ public record CompanyDTO(
                 company.getProductsCategories(),
                 company.getCustomers(),
                 company.getLastOrOpenShift(),
-                company.getNumberOfTables()
+                company.getNumberOfTables(),
+                company.getOwnerCompound().getOwner().getEmail()
         );
     }
 

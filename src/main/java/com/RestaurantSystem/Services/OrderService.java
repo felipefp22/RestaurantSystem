@@ -426,7 +426,7 @@ public class OrderService {
         AuthUserLogin manager = authUserRepository.findById(cancelOrderDTO.managerID()).orElseThrow(() -> new RuntimeException("Manager not found"));
 
         if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, manager))
-            throw new RuntimeException("You are not allowed to see the categories of this company");
+            throw new RuntimeException("justOwnerManagerSupervisorCanCancelOrders");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
         if (openedShift.isEmpty()) {
