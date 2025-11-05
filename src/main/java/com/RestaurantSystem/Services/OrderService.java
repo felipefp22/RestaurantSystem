@@ -81,7 +81,7 @@ public class OrderService {
         }
 
         if (!orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && !orderToCreate.tableNumberOrDeliveryOrPickup().equals("pickup")) {
-            isTableAvailable(company, orderToCreate.tableNumberOrDeliveryOrPickup());
+            isTableAvailable(company, orderToCreate.tableNumberOrDeliveryOrPickup(), null);
         }
 
         Order order = new Order(requester, currentShift, (currentShift.getOrders().size() + 1), orderToCreate, customer);
@@ -301,7 +301,7 @@ public class OrderService {
                 throw new RuntimeException("Pickup name is required for pickup orders.");
             }
         } else {
-            int newTableNumber = isTableAvailable(company, changeOrderTableDTO.tableNumberOrDeliveryOrPickup());
+            int newTableNumber = isTableAvailable(company, changeOrderTableDTO.tableNumberOrDeliveryOrPickup(), order);
             order.setTableNumberOrDeliveryOrPickup(String.valueOf(newTableNumber));
             
             if (changeOrderTableDTO.customerID() != null) {
@@ -485,13 +485,14 @@ public class OrderService {
         }
     }
 
-    private Integer isTableAvailable(Company company, String tableNumberOrDeliveryOrPickup) {
-        int newTableNumber = Integer.parseInt(tableNumberOrDeliveryOrPickup);
+    private Integer isTableAvailable(Company company, String newTableNumberOrDeliveryOrPickup, Order order) {
+        int newTableNumber = Integer.parseInt(newTableNumberOrDeliveryOrPickup);
         if (newTableNumber > company.getNumberOfTables() || newTableNumber < 1)
             throw new RuntimeException("Invalid table number.");
 
         List<Order> openOrders = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
         if (openOrders.stream().anyMatch(o -> o.getTableNumberOrDeliveryOrPickup().equals(String.valueOf(newTableNumber)) && (o.getStatus() == OrderStatus.OPEN || o.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT))) {
+            if(order != null && newTableNumberOrDeliveryOrPickup.equals(order.getTableNumberOrDeliveryOrPickup())) return newTableNumber;
             throw new RuntimeException("Table is already occupied.");
         }
 
