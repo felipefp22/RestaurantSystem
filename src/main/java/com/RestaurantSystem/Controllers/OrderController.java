@@ -60,12 +60,12 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/edit-order")
-    public ResponseEntity<Order> moveToAnotherTable(@RequestHeader("Authorization") String authorizationHeader,
+    @PutMapping("/update-order")
+    public ResponseEntity<Order> updateOrder(@RequestHeader("Authorization") String authorizationHeader,
                                                     @RequestBody ChangeOrderTableDTO changeOrderTableDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = orderService.editOrder(requesterID, changeOrderTableDTO);
+        var response = orderService.updateOrder(requesterID, changeOrderTableDTO);
 
         return ResponseEntity.ok(response);
     }

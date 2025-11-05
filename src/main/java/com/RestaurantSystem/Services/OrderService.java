@@ -248,7 +248,7 @@ public class OrderService {
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing orderItemsIDs."));
     }
 
-    public Order editOrder(String requesterID, ChangeOrderTableDTO changeOrderTableDTO) {
+    public Order updateOrder(String requesterID, ChangeOrderTableDTO changeOrderTableDTO) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
