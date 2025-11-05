@@ -302,14 +302,21 @@ public class OrderService {
             }
         } else {
             int newTableNumber = isTableAvailable(company, changeOrderTableDTO.tableNumberOrDeliveryOrPickup());
-
             order.setTableNumberOrDeliveryOrPickup(String.valueOf(newTableNumber));
-            order.setCustomer(changeOrderTableDTO.customerID() != null ? company.getCustomers().stream()
-                    .filter(c -> c.getId().equals(changeOrderTableDTO.customerID()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Customer not found in the company.")) : null);
+            
+            if (changeOrderTableDTO.customerID() != null) {
+                Customer customerFound = company.getCustomers().stream()
+                        .filter(c -> c.getId().equals(changeOrderTableDTO.customerID()))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Customer not found in the company."));
 
-            order.setPickupName(null);
+                order.setCustomer(customerFound);
+                order.setPickupName(null);
+            }
+
+            if (order.getCustomer() == null && changeOrderTableDTO.pickupName() != null) {
+                order.setPickupName(changeOrderTableDTO.pickupName());
+            }
         }
 
         order.setNotes(changeOrderTableDTO.notes());
