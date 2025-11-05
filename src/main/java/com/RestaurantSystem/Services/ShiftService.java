@@ -114,7 +114,7 @@ public class ShiftService {
         Company company = companyRepo.findById(UUID.fromString(closeShiftDTO.companyID()))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwnerOrManager(company, requester)) throw new RuntimeException("You are not allowed to add a product, ask to manager");
+        if (!verificationsServices.isOwnerOrManager(company, requester)) throw new RuntimeException("justOwnerOrManagerCanCloseShift");
 
         if (new BCryptPasswordEncoder().matches(closeShiftDTO.adminPassword(), requester.getOwnAdministrativePassword())) {
             Shift shift = company.getShifts().stream()
