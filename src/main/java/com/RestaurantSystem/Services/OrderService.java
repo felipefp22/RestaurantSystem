@@ -533,6 +533,9 @@ public class OrderService {
         companies.forEach(x -> {
             if (x.getTaxServicePercentage() == null) {
                 x.setTaxServicePercentage(10);
+                x.setDeliveryHasServiceTax(false);
+                x.setPickupHasServiceTax(false);
+
                 companyRepo.save(x);
             }
         });
