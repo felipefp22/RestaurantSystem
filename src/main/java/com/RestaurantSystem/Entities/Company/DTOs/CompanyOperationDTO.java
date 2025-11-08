@@ -23,7 +23,8 @@ public record CompanyOperationDTO(
         List<Customer> customers,
         Shift currentShift,
         List<CompanyEmployeesDTO> employees,
-        int numberOfTables
+        int numberOfTables,
+        Integer taxServicePercentage
 
 ) {
 
@@ -42,7 +43,8 @@ public record CompanyOperationDTO(
                 company.getCustomers(),
                 currentShift,
                 company.getEmployees().stream().map(CompanyEmployeesDTO::new).toList(),
-                company.getNumberOfTables()
+                company.getNumberOfTables(),
+                company.getTaxServicePercentage()
         );
     }
 }

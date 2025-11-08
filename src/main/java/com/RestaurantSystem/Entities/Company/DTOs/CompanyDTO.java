@@ -21,7 +21,8 @@ public record CompanyDTO(
         List<Customer> customers,
         Shift lastOrOpenShift,
         int numberOfTables,
-        String ownerID
+        String ownerID,
+        Integer taxServicePercentage
 ) {
     public CompanyDTO(Company company) {
         this(
@@ -36,7 +37,8 @@ public record CompanyDTO(
                 company.getCustomers(),
                 company.getLastOrOpenShift(),
                 company.getNumberOfTables(),
-                company.getOwnerCompound().getOwner().getEmail()
+                company.getOwnerCompound().getOwner().getEmail(),
+                company.getTaxServicePercentage()
         );
     }
 

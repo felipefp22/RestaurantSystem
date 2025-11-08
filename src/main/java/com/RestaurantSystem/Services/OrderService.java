@@ -12,6 +12,7 @@ import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.*;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -100,6 +101,7 @@ public class OrderService {
         }
 
         orderCreated.getOrderItems().addAll(ordersItems);
+        calculateTotalPriceTaxAndDiscount(company, order, null);
         ordersItemsRepo.saveAll(ordersItems);
 
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
@@ -192,7 +194,7 @@ public class OrderService {
             }
         });
 
-        calculateTotalPriceTaxAndDiscount(order, null);
+        calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
 
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
@@ -247,7 +249,7 @@ public class OrderService {
             ordersItemsRepo.delete(item);
         });
 
-        calculateTotalPriceTaxAndDiscount(order, null);
+        calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
 
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing orderItemsIDs."));
@@ -281,6 +283,9 @@ public class OrderService {
             throw new RuntimeException("Can't change table of no open or waiting payment orders.");
 
         if (changeOrderTableDTO.tableNumberOrDeliveryOrPickup().equals("delivery")) {
+            if (order.getCustomer() == null && changeOrderTableDTO.customerID() == null)
+                throw new RuntimeException("Customer is required for delivery orders.");
+
             if (changeOrderTableDTO.customerID() != null) {
                 Customer customer = company.getCustomers().stream()
                         .filter(c -> c.getId().equals(changeOrderTableDTO.customerID()))
@@ -308,7 +313,7 @@ public class OrderService {
         } else {
             int newTableNumber = isTableAvailable(company, changeOrderTableDTO.tableNumberOrDeliveryOrPickup(), order);
             order.setTableNumberOrDeliveryOrPickup(String.valueOf(newTableNumber));
-            
+
             if (changeOrderTableDTO.customerID() != null) {
                 Customer customerFound = company.getCustomers().stream()
                         .filter(c -> c.getId().equals(changeOrderTableDTO.customerID()))
@@ -346,7 +351,7 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
             throw new RuntimeException("Can't close to no open orders.");
 
-        calculateTotalPriceTaxAndDiscount(order, orderToCloseDTO);
+        calculateTotalPriceTaxAndDiscount(company, order, orderToCloseDTO);
         order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
         order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
         order.setCompletedByUser(requester);
@@ -475,7 +480,7 @@ public class OrderService {
     }
 
     // <> ---------- Aux Methods ---------- <>
-    private void calculateTotalPriceTaxAndDiscount(Order order, OrderToCloseDTO orderToCloseDTO) {
+    private void calculateTotalPriceTaxAndDiscount(Company company, Order order, OrderToCloseDTO orderToCloseDTO) {
         order.setPrice(0.0);
 
         order.getOrderItems().forEach(product -> {
@@ -483,8 +488,13 @@ public class OrderService {
         });
 
         if (orderToCloseDTO != null) {
-            order.setServiceTax(orderToCloseDTO.clientSaidNoTax() ? 0.0 : order.getPrice() * defaultTaxPercentage / 100);
-            order.setDiscount(orderToCloseDTO.discountValue() != null ? -Math.abs(orderToCloseDTO.discountValue()) : 0.0);
+            if (thisServiceHasTaxOrNot(company, order.getTableNumberOrDeliveryOrPickup()) && !orderToCloseDTO.clientSaidNoTax()) {
+                order.setServiceTax(order.getPrice() * company.getTaxServicePercentage() / 100);
+            }
+
+            if (orderToCloseDTO.discountValue() != null) {
+                order.setDiscount(-Math.abs(orderToCloseDTO.discountValue()));
+            }
 
             order.setTotalPrice(order.getPrice() + order.getServiceTax() + order.getDiscount());
         }
@@ -497,11 +507,35 @@ public class OrderService {
 
         List<Order> openOrders = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
         if (openOrders.stream().anyMatch(o -> o.getTableNumberOrDeliveryOrPickup().equals(String.valueOf(newTableNumber)) && (o.getStatus() == OrderStatus.OPEN || o.getStatus() == OrderStatus.CLOSEDWAITINGPAYMENT))) {
-            if(order != null && newTableNumberOrDeliveryOrPickup.equals(order.getTableNumberOrDeliveryOrPickup())) return newTableNumber;
+            if (order != null && newTableNumberOrDeliveryOrPickup.equals(order.getTableNumberOrDeliveryOrPickup()))
+                return newTableNumber;
             throw new RuntimeException("Table is already occupied.");
         }
 
         return newTableNumber;
+    }
+
+    private Boolean thisServiceHasTaxOrNot(Company company, String tableNumberOrDeliveryOrPickup) {
+
+        if (tableNumberOrDeliveryOrPickup.equals("delivery") && company.getDeliveryHasServiceTax().equals(false)) {
+            return false;
+        } else if (tableNumberOrDeliveryOrPickup.equals("pickup") && company.getPickupHasServiceTax().equals(false)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Scheduled(fixedRate = 6400000) // Runs every 24 hours
+    private void addServiceTax() {
+        List<Company> companies = companyRepo.findAll();
+
+        companies.forEach(x -> {
+            if (x.getTaxServicePercentage() == null) {
+                x.setTaxServicePercentage(10);
+                companyRepo.save(x);
+            }
+        });
     }
 }
 

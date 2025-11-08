@@ -51,6 +51,11 @@ public class Company {
 
     private int numberOfTables;
 
+    private Integer taxServicePercentage = 10;
+
+    private Boolean pickupHasServiceTax = false;
+    private Boolean deliveryHasServiceTax = false;
+
     //<>------------ Constructors ------------<>
     public Company() {
     }
@@ -167,5 +172,32 @@ public class Company {
     }
     public void setNumberOfTables(int numberOfTables) {
         this.numberOfTables = numberOfTables;
+    }
+
+    public Integer getTaxServicePercentage() {
+        return taxServicePercentage;
+    }
+    public void setTaxServicePercentage(int taxServicePercentage) {
+        if(taxServicePercentage < 0 || taxServicePercentage > 100){
+            throw new IllegalArgumentException("Tax service percentage must be between 0 and 100");
+        }
+
+        this.taxServicePercentage = taxServicePercentage;
+    }
+
+    public Boolean getPickupHasServiceTax() {
+        return pickupHasServiceTax;
+    }
+
+    public void setPickupHasServiceTax(Boolean pickupHasServiceTax) {
+        this.pickupHasServiceTax = pickupHasServiceTax;
+    }
+
+    public Boolean getDeliveryHasServiceTax() {
+        return deliveryHasServiceTax;
+    }
+
+    public void setDeliveryHasServiceTax(Boolean deliveryHasServiceTax) {
+        this.deliveryHasServiceTax = deliveryHasServiceTax;
     }
 }
