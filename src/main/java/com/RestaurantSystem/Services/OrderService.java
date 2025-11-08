@@ -525,26 +525,7 @@ public class OrderService {
             return true;
         }
     }
-
-    @Scheduled(fixedRate = 6400000) // Runs every 24 hours
-    private void addServiceTax() {
-        List<Company> companies = companyRepo.findAll();
-
-        companies.forEach(x -> {
-            if (x.getTaxServicePercentage() == null) {
-                x.setTaxServicePercentage(10);
-            }
-
-            if (x.getDeliveryHasServiceTax() == null) {
-                x.setDeliveryHasServiceTax(false);
-            }
-            if (x.getPickupHasServiceTax() == null) {
-                x.setPickupHasServiceTax(false);
-            }
-
-            companyRepo.save(x);
-        });
-    }
+    
 }
 
 

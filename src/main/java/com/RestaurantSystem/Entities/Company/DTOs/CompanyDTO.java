@@ -22,7 +22,9 @@ public record CompanyDTO(
         Shift lastOrOpenShift,
         int numberOfTables,
         String ownerID,
-        Integer taxServicePercentage
+        Integer taxServicePercentage,
+        Boolean deliveryHasServiceTax,
+        Boolean pickupHasServiceTax
 ) {
     public CompanyDTO(Company company) {
         this(
@@ -38,7 +40,9 @@ public record CompanyDTO(
                 company.getLastOrOpenShift(),
                 company.getNumberOfTables(),
                 company.getOwnerCompound().getOwner().getEmail(),
-                company.getTaxServicePercentage()
+                company.getTaxServicePercentage(),
+                company.getDeliveryHasServiceTax(),
+                company.getPickupHasServiceTax()
         );
     }
 

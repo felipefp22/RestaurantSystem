@@ -24,7 +24,9 @@ public record CompanyOperationDTO(
         Shift currentShift,
         List<CompanyEmployeesDTO> employees,
         int numberOfTables,
-        Integer taxServicePercentage
+        Integer taxServicePercentage,
+        Boolean deliveryHasServiceTax,
+        Boolean pickupHasServiceTax
 
 ) {
 
@@ -44,7 +46,9 @@ public record CompanyOperationDTO(
                 currentShift,
                 company.getEmployees().stream().map(CompanyEmployeesDTO::new).toList(),
                 company.getNumberOfTables(),
-                company.getTaxServicePercentage()
+                company.getTaxServicePercentage(),
+                company.getDeliveryHasServiceTax(),
+                company.getPickupHasServiceTax()
         );
     }
 }
