@@ -91,6 +91,10 @@ public class CompanyService {
 
         if (!verificationsServices.isOwner(company, requester)) throw new RuntimeException("justOwnerCanEditCompany");
 
+        if (company.getOwnerCompound().getCompanies().stream()
+                .anyMatch(c -> c.getCompanyName().equalsIgnoreCase(updateCompanyDTO.companyName()) && !c.getId().equals(updateCompanyDTO.companyID())))
+            throw new RuntimeException("This Companies Compound already has a company with this name");
+
         Company companyToUpdate = requester.getCompaniesCompounds().stream()
                 .flatMap(compound -> compound.getCompanies().stream())
                 .filter(c -> c.getId().equals(updateCompanyDTO.companyID()))

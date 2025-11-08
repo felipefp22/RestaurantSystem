@@ -40,7 +40,7 @@ public class CompaniesCompoundService {
         AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
 
         if (requester.getCompaniesCompounds().stream()
-                .anyMatch(c -> c.getCompoundName().equalsIgnoreCase(updateCompoundDTO.compoundName())))
+                .anyMatch(c -> c.getCompoundName().equalsIgnoreCase(updateCompoundDTO.compoundName()) && !c.getId().equals(updateCompoundDTO.compoundID())))
             throw new RuntimeException("You already have a CompaniesCompound with this name");
 
         CompaniesCompound companiesCompound = requester.getCompaniesCompounds().stream()

@@ -138,6 +138,11 @@ public class OrderService {
     }
 
     public Order addProductsOnOrder(String requesterID, ProductsToAddOnOrderDTO productsToAdd) {
+        productsToAdd.orderItemsIDs().forEach(x -> {
+            if (x.quantity() <= 0)
+                throw new RuntimeException("Quantity must be greater than zero for product ID: " + x.productID());
+        });
+
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
