@@ -11,6 +11,9 @@ public record UpdateCompanyDTO(
         Double companyLat,
         Double companyLng,
         String urlCompanyLogo,
-        int numberOfTables
+        int numberOfTables,
+        Integer taxServicePercentage,
+        Boolean deliveryHasServiceTax,
+        Boolean pickupHasServiceTax
 ) {
 }

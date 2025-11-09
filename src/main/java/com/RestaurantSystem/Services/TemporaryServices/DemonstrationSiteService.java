@@ -114,7 +114,10 @@ public class DemonstrationSiteService {
                 lat,
                 lng,
                 null,
-                0
+                0,
+                null,
+                null,
+                null
         ));
 
         //create demonstration customers

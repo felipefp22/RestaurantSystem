@@ -279,6 +279,10 @@ public class OrderService {
         }
 
         Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(changeOrderTableDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
+
+        if (!order.getStatus().equals(OrderStatus.OPEN))
+            throw new RuntimeException("toUpdateOrderReopenFirst");
+
         if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
             throw new RuntimeException("Can't change table of no open or waiting payment orders.");
 
@@ -299,7 +303,8 @@ public class OrderService {
                 throw new RuntimeException("Customer is required for delivery orders.");
             }
         } else if (changeOrderTableDTO.tableNumberOrDeliveryOrPickup().equals("pickup")) {
-            if (changeOrderTableDTO.pickupName() != null && !changeOrderTableDTO.pickupName().isEmpty()) {
+            if ((changeOrderTableDTO.pickupName() != null && !changeOrderTableDTO.pickupName().isEmpty()) || (order.getPickupName() != null && !order.getPickupName().isEmpty())
+            || (changeOrderTableDTO.customerID() != null) || order.getCustomer() != null) {
                 order.setPickupName(changeOrderTableDTO.pickupName());
                 order.setCustomer(changeOrderTableDTO.customerID() != null ? company.getCustomers().stream()
                         .filter(c -> c.getId().equals(changeOrderTableDTO.customerID()))
@@ -308,7 +313,7 @@ public class OrderService {
 
                 order.setTableNumberOrDeliveryOrPickup("pickup");
             } else {
-                throw new RuntimeException("Pickup name is required for pickup orders.");
+                throw new RuntimeException("Pickup name or Customer is required for pickup orders.");
             }
         } else {
             int newTableNumber = isTableAvailable(company, changeOrderTableDTO.tableNumberOrDeliveryOrPickup(), order);
@@ -423,7 +428,6 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
             throw new RuntimeException("Can't reopen to no \"closed waiting payment\" orders.");
 
-        order.setPrice(0);
         order.setServiceTax(0);
         order.setDiscount(0);
         order.setTotalPrice(0);
@@ -484,7 +488,7 @@ public class OrderService {
         order.setPrice(0.0);
 
         order.getOrderItems().forEach(product -> {
-            order.setPrice(order.getPrice() + product.getPrice());
+            order.setPrice(order.getPrice() + (product.getPrice() * product.getQuantity()));
         });
 
         if (orderToCloseDTO != null) {

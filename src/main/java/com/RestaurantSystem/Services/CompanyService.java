@@ -41,23 +41,25 @@ public class CompanyService {
 
         Company company = companyRepo.findById(UUID.fromString(companyID)).orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You don't have permission to access this company");
+        if (!verificationsServices.worksOnCompany(company, requester))
+            throw new RuntimeException("You don't have permission to access this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
 //        if(openedShift.isEmpty()){
 //            throw new RuntimeException("noActiveShift");
 //        }
         Shift currentShift = null;
-        if(openedShift.size() > 1){
+        if (openedShift.size() > 1) {
             Shift lastShift = openedShift.stream()
                     .max(Comparator.comparing(Shift::getStartTimeUTC))
                     .orElse(null);
             currentShift = lastShift;
-        } else if(openedShift.size() > 0) {
+        } else if (openedShift.size() > 0) {
             currentShift = openedShift.get(0);
-        };
+        }
+        ;
 
-        if(currentShift == null) currentShift = company.getLastOrOpenShift();
+        if (currentShift == null) currentShift = company.getLastOrOpenShift();
 
         return new CompanyOperationDTO(company, currentShift);
     }
@@ -107,6 +109,12 @@ public class CompanyService {
         companyToUpdate.setCompanyAddress(updateCompanyDTO.companyAddress());
         companyToUpdate.setUrlCompanyLogo(updateCompanyDTO.urlCompanyLogo());
         companyToUpdate.setNumberOfTables(updateCompanyDTO.numberOfTables());
+        if (updateCompanyDTO.taxServicePercentage() != null)
+            companyToUpdate.setTaxServicePercentage(updateCompanyDTO.taxServicePercentage());
+        if (updateCompanyDTO.deliveryHasServiceTax() != null)
+            companyToUpdate.setDeliveryHasServiceTax(updateCompanyDTO.deliveryHasServiceTax());
+        if (updateCompanyDTO.pickupHasServiceTax() != null)
+            companyToUpdate.setPickupHasServiceTax(updateCompanyDTO.pickupHasServiceTax());
 
         return companyRepo.save(companyToUpdate);
     }
@@ -118,7 +126,8 @@ public class CompanyService {
         Company company = companyRepo.findById(updateCompanyDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwnerOrManager(company, requester)) throw new RuntimeException("Just Owner or Manager can add employees to a company");
+        if (!verificationsServices.isOwnerOrManager(company, requester))
+            throw new RuntimeException("Just Owner or Manager can add employees to a company");
 
         company.setCompanyLat(updateCompanyDTO.companyLat());
         company.setCompanyLng(updateCompanyDTO.companyLng());
@@ -133,7 +142,8 @@ public class CompanyService {
         Company company = companyRepo.findById(UUID.fromString(companyID))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
+            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
         return company.getEmployees().stream().map(CompanyEmployeesDTO::new).toList();
     }
@@ -145,7 +155,8 @@ public class CompanyService {
         Company company = companyRepo.findById(employeeDTO.companyId())
                 .orElseThrow(() -> new RuntimeException("companyNotFound"));
 
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
+            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
         AuthUserLogin employeeToAdd = authUserRepository.findById(employeeDTO.employeeEmail())
                 .orElseThrow(() -> new RuntimeException("emailNotFound"));
@@ -167,7 +178,8 @@ public class CompanyService {
         Company company = companyRepo.findById(employeeDTO.companyId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
+            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
         CompanyEmployees companyEmployeeToUpdate = company.getEmployees().stream()
                 .filter(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail()))
@@ -191,7 +203,8 @@ public class CompanyService {
         Company company = companyRepo.findById(employeeDTO.companyId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
+            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
         CompanyEmployees companyEmployeeToRemove = company.getEmployees().stream()
                 .filter(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail()))
