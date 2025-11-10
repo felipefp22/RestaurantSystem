@@ -1,0 +1,63 @@
+name: Trigger auto deployment for ca-restaurantsystem-dev
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/ca-restaurantsystem-dev-AutoDeployTrigger-5c176b1a-13f0-4c58-9628-dca721f1c162.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.CARESTAURANTSYSTEMDEV_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CARESTAURANTSYSTEMDEV_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CARESTAURANTSYSTEMDEV_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: usgcrakitemtrampo.azurecr.io
+          registryUsername: ${{ secrets.CARESTAURANTSYSTEMDEV_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CARESTAURANTSYSTEMDEV_REGISTRY_PASSWORD }}
+          containerAppName: ca-restaurantsystem-dev
+          resourceGroup: rg-restaurantsystem-dev
+          imageToBuild: usgcrakitemtrampo.azurecr.io/ca-restaurantsystem-dev:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+          environmentVariables:
+            DATABASE_PASSWORD=${{ secrets.PROD_DATABASE_PASSWORD }}
+            DATABASE_URL=${{ secrets.PROD_DATABASE_URL }}
+            DATABASE_USERNAME=${{ secrets.PROD_DATABASE_USERNAME }}
+            DEFAULT_TAX_PERCENTAGE=${{ secrets.PROD_DEFAULT_TAX_PERCENTAGE }}
+            EMAIL_IMAGE_URL=${{ secrets.PROD_EMAIL_IMAGE_URL }}
+            FACEBOOK_CLIENT_ID=${{ secrets.PROD_FACEBOOK_CLIENT_ID }}
+            FACEBOOK_CLIENT_SECRET=${{ secrets.PROD_FACEBOOK_CLIENT_SECRET }}
+            GOOGLE_CLIENT_ID=${{ secrets.PROD_GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.PROD_GOOGLE_CLIENT_SECRET }}
+            HOW_MANY_DEVICES_CAN_BE_LOGGED=${{ secrets.PROD_HOW_MANY_DEVICES_CAN_BE_LOGGED }}
+            MAIL_HOST=${{ secrets.PROD_MAIL_HOST }}
+            MAIL_PASSWORD=${{ secrets.PROD_MAIL_PASSWORD }}
+            MAIL_PORT=${{ secrets.PROD_MAIL_PORT }}
+            MAIL_USERNAME=${{ secrets.PROD_MAIL_USERNAME }}
+            NO_REPLY_EMAIL=${{ secrets.PROD_NO_REPLY_EMAIL }}

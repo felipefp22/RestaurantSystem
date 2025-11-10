@@ -178,7 +178,7 @@ public class Company {
         return taxServicePercentage;
     }
     public void setTaxServicePercentage(int taxServicePercentage) {
-        if(taxServicePercentage < 0 || taxServicePercentage > 100){
+        if(taxServicePercentage <= 0 || taxServicePercentage > 100){
             throw new IllegalArgumentException("Tax service percentage must be between 0 and 100");
         }
 
