@@ -45,19 +45,3 @@ jobs:
           imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
           _buildArgumentsKey_: |
             _buildArgumentsValues_
-          environmentVariables: |
-            DATABASE_PASSWORD: ${{ secrets.PROD_DATABASE_PASSWORD }}
-            DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
-            DATABASE_USERNAME: ${{ secrets.PROD_DATABASE_USERNAME }}
-            DEFAULT_TAX_PERCENTAGE: ${{ secrets.PROD_DEFAULT_TAX_PERCENTAGE }}
-            EMAIL_IMAGE_URL: ${{ secrets.PROD_EMAIL_IMAGE_URL }}
-            FACEBOOK_CLIENT_ID: ${{ secrets.PROD_FACEBOOK_CLIENT_ID }}
-            FACEBOOK_CLIENT_SECRET: ${{ secrets.PROD_FACEBOOK_CLIENT_SECRET }}
-            GOOGLE_CLIENT_ID: ${{ secrets.PROD_GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET: ${{ secrets.PROD_GOOGLE_CLIENT_SECRET }}
-            HOW_MANY_DEVICES_CAN_BE_LOGGED: ${{ secrets.PROD_HOW_MANY_DEVICES_CAN_BE_LOGGED }}
-            MAIL_HOST: ${{ secrets.PROD_MAIL_HOST }}
-            MAIL_PASSWORD: ${{ secrets.PROD_MAIL_PASSWORD }}
-            MAIL_PORT: ${{ secrets.PROD_MAIL_PORT }}
-            MAIL_USERNAME: ${{ secrets.PROD_MAIL_USERNAME }}
-            NO_REPLY_EMAIL: ${{ secrets.PROD_NO_REPLY_EMAIL }}
