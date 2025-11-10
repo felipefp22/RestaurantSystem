@@ -32,7 +32,9 @@ public class AUserActionsController {
     public ResponseEntity<AuthUserDTO> getUserData(@RequestHeader("Authorization") String authorizationHeader) throws Exception {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        return ResponseEntity.ok(aUserActionsService.getUserData(requesterID));
+        var response = aUserActionsService.getUserData(requesterID);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/is-admin")

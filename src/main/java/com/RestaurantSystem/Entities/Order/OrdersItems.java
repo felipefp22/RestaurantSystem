@@ -40,6 +40,17 @@ public class OrdersItems {
         this.quantity = quantity;
     }
 
+    //Just Use to PrintSync bellow constructor
+    public OrdersItems(OrdersItems orderItems, int quantity) {
+        this.order = orderItems.getOrder();
+        this.productId = orderItems.getProductId();
+        this.name = orderItems.getName();
+        this.price = orderItems.getPrice();
+        this.description = orderItems.getDescription();
+        this.imagePath = orderItems.getImagePath();
+        this.quantity = quantity;
+    }
+
     /// <>------------ Getters and Setters ------------<>
 
     public UUID getId() {

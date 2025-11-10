@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Controllers;
 
+import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.MarkOrderPrintSyncPrintedDTO;
 import com.RestaurantSystem.Entities.Order.DTOs.*;
 import com.RestaurantSystem.Entities.Order.Order;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
@@ -62,7 +63,7 @@ public class OrderController {
 
     @PutMapping("/update-order")
     public ResponseEntity<Order> updateOrder(@RequestHeader("Authorization") String authorizationHeader,
-                                                    @RequestBody ChangeOrderTableDTO changeOrderTableDTO) {
+                                             @RequestBody ChangeOrderTableDTO changeOrderTableDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = orderService.updateOrder(requesterID, changeOrderTableDTO);
@@ -108,5 +109,17 @@ public class OrderController {
         var response = orderService.cancelOrder(requesterID, confirmOrCancelOrderDTO);
 
         return ResponseEntity.ok(response);
+    }
+
+
+    // <>------------ Prints Service ------------<>
+    @PutMapping("/mark-orderPrintSync-printed")
+    public ResponseEntity markOrderAsPrinted(@RequestHeader("Authorization") String authorizationHeader,
+                                             @RequestBody MarkOrderPrintSyncPrintedDTO dto) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        orderService.markOrderAsPrinted(requesterID, dto);
+
+        return ResponseEntity.ok().build();
     }
 }

@@ -63,5 +63,16 @@ public class VerificationsServices {
         return requesterHavePermission;
     }
 
+    public boolean isServer(Company company, AuthUserLogin user) {
+        Boolean requesterHavePermission = false;
+
+        if (company.getOwnerCompound().getOwner().equals(user)) {
+            requesterHavePermission = true;
+        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.SERVER))) {
+            requesterHavePermission = true;
+        }
+
+        return requesterHavePermission;
+    }
 
 }

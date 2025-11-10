@@ -1,10 +1,12 @@
 package com.RestaurantSystem.Services;
 
+import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.MarkOrderPrintSyncPrintedDTO;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Order.DTOs.*;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Order.Order;
+import com.RestaurantSystem.Entities.Order.OrderPrintSync;
 import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
@@ -33,14 +35,16 @@ public class OrderService {
     private final CompanyRepo companyRepo;
     private final ShiftRepo shiftRepo;
     private final VerificationsServices verificationsServices;
+    private final OrderPrintSyncRepo orderPrintSyncRepo;
 
-    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, ShiftRepo shiftRepo, VerificationsServices verificationsServices) {
+    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, ShiftRepo shiftRepo, VerificationsServices verificationsServices, OrderPrintSyncRepo orderPrintSyncRepo) {
         this.orderRepo = orderRepo;
         this.ordersItemsRepo = ordersItemsRepo;
         this.authUserRepository = authUserRepository;
         this.companyRepo = companyRepo;
         this.shiftRepo = shiftRepo;
         this.verificationsServices = verificationsServices;
+        this.orderPrintSyncRepo = orderPrintSyncRepo;
     }
 
     // <> ---------- Methods ---------- <>
@@ -103,6 +107,7 @@ public class OrderService {
         orderCreated.getOrderItems().addAll(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
         ordersItemsRepo.saveAll(ordersItems);
+        orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItems, "add"));
 
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
     }
@@ -166,11 +171,15 @@ public class OrderService {
         } else {
             currentShift = openedShift.get(0);
         }
-        ;
+
 
         Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(productsToAdd.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN)
             throw new RuntimeException("Can't add orderItemsIDs to no open orders.");
+
+
+        // ToSync is to print
+        List<OrdersItems> ordersItemsToSync = new ArrayList<>();
 
         productsToAdd.orderItemsIDs().forEach(x -> {
             OrdersItems existingItem = order.getOrderItems().stream()
@@ -181,6 +190,9 @@ public class OrderService {
             if (existingItem != null) {
                 existingItem.setQuantity(existingItem.getQuantity() + x.quantity());
                 ordersItemsRepo.save(existingItem);
+
+                //Here is to print, then needs have just new add quantity, not total quantity
+                ordersItemsToSync.add(new OrdersItems(existingItem, x.quantity()));
             } else {
                 Product product = company.getProductsCategories().stream()
                         .flatMap(c -> c.getProducts().stream())
@@ -191,11 +203,16 @@ public class OrderService {
                 OrdersItems newItem = new OrdersItems(order, product, x.quantity());
                 order.getOrderItems().add(newItem);
                 ordersItemsRepo.save(newItem);
+
+                //Here is to print, then needs have just new add quantity, not total quantity
+                ordersItemsToSync.add(new OrdersItems(newItem, x.quantity()));
             }
         });
 
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
+        orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItemsToSync, "add"));
+
 
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
     }
@@ -223,7 +240,6 @@ public class OrderService {
         } else {
             currentShift = openedShift.get(0);
         }
-        ;
 
         Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(productsToRemove.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN)
@@ -251,6 +267,7 @@ public class OrderService {
 
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
+        orderPrintSyncRepo.save(new OrderPrintSync(order, itemsToDelete, "del"));
 
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing orderItemsIDs."));
     }
@@ -304,7 +321,7 @@ public class OrderService {
             }
         } else if (changeOrderTableDTO.tableNumberOrDeliveryOrPickup().equals("pickup")) {
             if ((changeOrderTableDTO.pickupName() != null && !changeOrderTableDTO.pickupName().isEmpty()) || (order.getPickupName() != null && !order.getPickupName().isEmpty())
-            || (changeOrderTableDTO.customerID() != null) || order.getCustomer() != null) {
+                    || (changeOrderTableDTO.customerID() != null) || order.getCustomer() != null) {
                 order.setPickupName(changeOrderTableDTO.pickupName());
                 order.setCustomer(changeOrderTableDTO.customerID() != null ? company.getCustomers().stream()
                         .filter(c -> c.getId().equals(changeOrderTableDTO.customerID()))
@@ -529,7 +546,23 @@ public class OrderService {
             return true;
         }
     }
-    
+
+    public void markOrderAsPrinted(String requesterID, MarkOrderPrintSyncPrintedDTO dto) {
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        OrderPrintSync orderPrintSync = orderPrintSyncRepo.findById(dto.orderPrintSyncID())
+                .orElseThrow(() -> new RuntimeException("OrderPrintSync not found"));
+
+        Company company = orderPrintSync.getOrder().getShift().getCompany();
+
+        if (!verificationsServices.worksOnCompany(company, requester))
+            throw new RuntimeException("You are not allowed to see the categories of this company");
+
+
+        orderPrintSync.setAlreadyPrinted(true);
+        orderPrintSyncRepo.save(orderPrintSync);
+    }
 }
 
 

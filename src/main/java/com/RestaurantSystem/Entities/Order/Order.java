@@ -62,6 +62,9 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersItems> orderItems = new ArrayList<>();
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderPrintSync> printSyncs = new ArrayList<>();
+
     // <>------------ Constructors ------------<>
     public Order() {
     }
@@ -218,6 +221,15 @@ public class Order {
         if (this.status == OrderStatus.OPEN) {
             this.orderItems.removeAll(products);
         }
+    }
+    public List<OrderPrintSync> getPrintSyncs() {
+        return printSyncs;
+    }
+    public void addPrintSync(OrderPrintSync printSync) {
+        this.printSyncs.add(printSync);
+    }
+    public void removePrintSync(OrderPrintSync printSync) {
+        this.printSyncs.remove(printSync);
     }
 }
 
