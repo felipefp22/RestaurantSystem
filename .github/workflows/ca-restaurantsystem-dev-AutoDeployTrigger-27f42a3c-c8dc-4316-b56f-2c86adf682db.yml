@@ -35,16 +35,9 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
-          _dockerfilePathKey_: _dockerfilePath_
-          _targetLabelKey_: _targetLabel_
-          registryUrl: 
-          registryUsername: ${{ secrets.CARESTAURANTSYSTEMDEV_REGISTRY_USERNAME }}
-          registryPassword: ${{ secrets.CARESTAURANTSYSTEMDEV_REGISTRY_PASSWORD }}
           containerAppName: ca-restaurantsystem-dev
           resourceGroup: rg-restaurantsystem-dev
-          imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
-          _buildArgumentsKey_: |
-            _buildArgumentsValues_
+          runtimeStack: java:21
           environmentVariables:
             DATABASE_PASSWORD=${{ secrets.PROD_DATABASE_PASSWORD }}
             DATABASE_URL=${{ secrets.PROD_DATABASE_URL }}
@@ -61,5 +54,3 @@ jobs:
             MAIL_PORT=${{ secrets.PROD_MAIL_PORT }}
             MAIL_USERNAME=${{ secrets.PROD_MAIL_USERNAME }}
             NO_REPLY_EMAIL=${{ secrets.PROD_NO_REPLY_EMAIL }}
-
-
