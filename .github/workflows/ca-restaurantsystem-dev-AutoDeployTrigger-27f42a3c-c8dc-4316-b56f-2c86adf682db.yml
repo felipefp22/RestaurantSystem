@@ -21,8 +21,8 @@ jobs:
       contents: read #Required when GH token is used to authenticate with private repo
 
     steps:
-      - name: Checkout to the branch
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
               # Ensure Java 21 is available for Maven build if needed
       - name: Set up Java 21
