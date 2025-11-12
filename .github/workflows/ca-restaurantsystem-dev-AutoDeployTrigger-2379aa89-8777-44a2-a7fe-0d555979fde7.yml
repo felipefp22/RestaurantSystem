@@ -61,3 +61,6 @@ jobs:
             MAIL_PORT=${{ secrets.PROD_MAIL_PORT }}
             MAIL_USERNAME=${{ secrets.PROD_MAIL_USERNAME }}
             NO_REPLY_EMAIL=${{ secrets.PROD_NO_REPLY_EMAIL }}
+            SIGNALR_URL_CONNECTION=${{ secrets.PROD_SIGNALR_URL_CONNECTIONL }}
+            SIGNALR_ACCESS_KEY=${{ secrets.PROD_SIGNALR_ACCESS_KEY }}
+            FUNC_NEGOTIATE_SIGNALR=${{ secrets.PROD_FUNC_NEGOTIATE_SIGNALR }}

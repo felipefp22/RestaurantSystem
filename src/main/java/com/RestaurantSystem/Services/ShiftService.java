@@ -35,7 +35,7 @@ public class ShiftService {
     }
 
     //<>------------ Methods ------------<>
-    public ShiftOperationDTO getShiftOperation(String requesterID, String companyID){
+    public ShiftOperationDTO getShiftOperationRequesterAlreadyVerified(String requesterID, String companyID){
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
@@ -44,29 +44,7 @@ public class ShiftService {
 
         if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the shifts of this company");
 
-        List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if(openedShift.isEmpty()){
-            return null;
-        }
-        Shift currentShift = null;
-        if(openedShift.size() > 1){
-            Shift lastShift = openedShift.stream()
-                    .max(Comparator.comparing(Shift::getStartTimeUTC))
-                    .orElse(null);
-        } else {
-            currentShift = openedShift.get(0);
-        }
-        Shift previousShift = shiftRepo.findById(company.getId().toString() + "_" + (Integer.parseInt(openedShift.get(0).getShiftNumber()) - 1))
-                .orElse(null);
-
-        List<Order> previousShiftStillOpenOrders = previousShift == null ? List.of() : previousShift.getOrders().stream()
-                .filter(o -> o.getCompletedOrderDateUtc() == null)
-                .toList();
-
-        List<Order> ordersOnOperation = currentShift.getOrders();
-        ordersOnOperation.addAll(previousShiftStillOpenOrders);
-
-        return new ShiftOperationDTO(currentShift, ordersOnOperation);
+        return getShiftOperationRequesterAlreadyVerified(company);
     }
 
     public List<Shift> getAllShifts(String requesterID, String companyID) {
@@ -132,4 +110,32 @@ public class ShiftService {
             throw new RuntimeException("invalidAdminPassword");
         }
     }
+
+    // <>------------ Split Methods ------------<>
+    public ShiftOperationDTO getShiftOperationRequesterAlreadyVerified(Company company){
+        List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
+        if(openedShift.isEmpty()){
+            return null;
+        }
+        Shift currentShift = null;
+        if(openedShift.size() > 1){
+            Shift lastShift = openedShift.stream()
+                    .max(Comparator.comparing(Shift::getStartTimeUTC))
+                    .orElse(null);
+        } else {
+            currentShift = openedShift.get(0);
+        }
+        Shift previousShift = shiftRepo.findById(company.getId().toString() + "_" + (Integer.parseInt(openedShift.get(0).getShiftNumber()) - 1))
+                .orElse(null);
+
+        List<Order> previousShiftStillOpenOrders = previousShift == null ? List.of() : previousShift.getOrders().stream()
+                .filter(o -> o.getCompletedOrderDateUtc() == null)
+                .toList();
+
+        List<Order> ordersOnOperation = currentShift.getOrders();
+        ordersOnOperation.addAll(previousShiftStillOpenOrders);
+
+        return new ShiftOperationDTO(currentShift, ordersOnOperation);
+    }
+
 }

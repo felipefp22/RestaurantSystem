@@ -13,6 +13,7 @@ import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.*;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
+import com.RestaurantSystem.WebSocket.SignalR;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,8 +27,6 @@ import java.util.List;
 
 @Service
 public class OrderService {
-    @Value("${default.tax.percentage}")
-    private Double defaultTaxPercentage;
 
     private final OrderRepo orderRepo;
     private final OrdersItemsRepo ordersItemsRepo;
@@ -36,8 +35,10 @@ public class OrderService {
     private final ShiftRepo shiftRepo;
     private final VerificationsServices verificationsServices;
     private final OrderPrintSyncRepo orderPrintSyncRepo;
+    private final SignalR signalR;
 
-    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, ShiftRepo shiftRepo, VerificationsServices verificationsServices, OrderPrintSyncRepo orderPrintSyncRepo) {
+    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, ShiftRepo shiftRepo, VerificationsServices verificationsServices,
+                        OrderPrintSyncRepo orderPrintSyncRepo, SignalR signalR) {
         this.orderRepo = orderRepo;
         this.ordersItemsRepo = ordersItemsRepo;
         this.authUserRepository = authUserRepository;
@@ -45,6 +46,7 @@ public class OrderService {
         this.shiftRepo = shiftRepo;
         this.verificationsServices = verificationsServices;
         this.orderPrintSyncRepo = orderPrintSyncRepo;
+        this.signalR = signalR;
     }
 
     // <> ---------- Methods ---------- <>
@@ -109,6 +111,7 @@ public class OrderService {
         ordersItemsRepo.saveAll(ordersItems);
         orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItems, "add"));
 
+        signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
     }
 
@@ -141,6 +144,7 @@ public class OrderService {
 
         order.setNotes(notesAndOrderID.notes());
 
+        signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);
     }
 
@@ -213,7 +217,7 @@ public class OrderService {
         orderRepo.save(order);
         orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItemsToSync, "add"));
 
-
+        signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
     }
 
@@ -269,6 +273,7 @@ public class OrderService {
         orderRepo.save(order);
         orderPrintSyncRepo.save(new OrderPrintSync(order, itemsToDelete, "del"));
 
+        signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing orderItemsIDs."));
     }
 
@@ -354,6 +359,7 @@ public class OrderService {
         order.setNotes(changeOrderTableDTO.notes());
         orderRepo.save(order);
 
+        signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);
     }
 
@@ -378,6 +384,7 @@ public class OrderService {
         order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
         order.setCompletedByUser(requester);
 
+        signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);
     }
 
@@ -404,7 +411,6 @@ public class OrderService {
         } else {
             currentShift = openedShift.get(0);
         }
-        ;
 
         List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
         Order order = orderOpened.stream().filter(x -> x.getId().equals(dto.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
@@ -416,6 +422,7 @@ public class OrderService {
             order.setCompletedByUser(requester);
             order.setCompletedOrderDateUtc(LocalDateTime.now(ZoneOffset.UTC));
 
+            signalR.sendShiftOperationSigr(company);
             return orderRepo.save(order);
         } else if (order.getStatus() == OrderStatus.PAID) {
             throw new RuntimeException("Order is already paid.");
@@ -451,6 +458,7 @@ public class OrderService {
         order.setStatus(OrderStatus.OPEN);
         order.setCompletedByUser(null);
 
+        signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);
     }
 
@@ -479,7 +487,6 @@ public class OrderService {
         } else {
             currentShift = openedShift.get(0);
         }
-        ;
 
         List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
         Order order = orderOpened.stream().filter(x -> x.getId().equals(cancelOrderDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
@@ -494,6 +501,7 @@ public class OrderService {
             order.setNotes((order.getNotes() != null ? order.getNotes() + " \n | " : "") + "Cancellation Reason: " + cancelOrderDTO.cancellationReason());
             order.setCompletedOrderDateUtc(LocalDateTime.now(ZoneOffset.UTC));
 
+            signalR.sendShiftOperationSigr(company);
             return orderRepo.save(order);
         } else {
             throw new RuntimeException("Invalid admin password.");

@@ -27,7 +27,7 @@ public class ShiftController {
                                                                @PathVariable String companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = shiftService.getShiftOperation(requesterID, companyID);
+        var response = shiftService.getShiftOperationRequesterAlreadyVerified(requesterID, companyID);
         if(response == null) throw new RuntimeException("No active shift found");
 
         return ResponseEntity.ok(response);

@@ -58,6 +58,7 @@ public class SecurityConfig {
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeRequests(auth -> {
+                    auth.requestMatchers("/ws/**").permitAll();
                     auth.requestMatchers("/auth/register").permitAll();
                     auth.requestMatchers("/auth/login").permitAll();
                     auth.requestMatchers("/auth/refresh-token").permitAll();
