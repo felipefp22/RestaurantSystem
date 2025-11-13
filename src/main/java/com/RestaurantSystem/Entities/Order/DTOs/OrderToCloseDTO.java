@@ -6,6 +6,7 @@ public record OrderToCloseDTO(
         UUID companyID,
         UUID orderID,
         boolean clientSaidNoTax,
-        Double discountValue
+        Double discountValue,
+        String deliverymanID
 ) {
 }

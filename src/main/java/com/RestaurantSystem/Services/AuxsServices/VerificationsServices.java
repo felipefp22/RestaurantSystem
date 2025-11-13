@@ -31,7 +31,7 @@ public class VerificationsServices {
 
         if (company.getOwnerCompound().getOwner().equals(user)) {
             requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.MANAGER ))) {
+        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.MANAGER))) {
             requesterHavePermission = true;
         }
 
@@ -56,7 +56,22 @@ public class VerificationsServices {
 
         if (company.getOwnerCompound().getOwner().equals(user)) {
             requesterHavePermission = true;
-        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user))) {
+        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.MANAGER))
+                || company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.SUPERVISOR))
+                || company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.WAITER))
+                || company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.SERVER))) {
+            requesterHavePermission = true;
+        }
+
+        return requesterHavePermission;
+    }
+
+    public boolean deliverymanOnCompany(Company company, AuthUserLogin user) {
+        Boolean requesterHavePermission = false;
+
+        if (company.getOwnerCompound().getOwner().equals(user)) {
+            requesterHavePermission = true;
+        } else if (company.getEmployees().stream().anyMatch(e -> e.getEmployee().equals(user) && e.getPosition().equals(EmployeePosition.DELIVERYMAN))) {
             requesterHavePermission = true;
         }
 

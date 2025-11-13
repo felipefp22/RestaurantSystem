@@ -14,7 +14,6 @@ import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.*;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import com.RestaurantSystem.WebSocket.SignalR;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -69,6 +68,10 @@ public class OrderService {
                     .orElseThrow(() -> new RuntimeException("Customer not found in the company."));
         }
 
+        if (orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && customer == null) {
+            throw new RuntimeException("Customer is required for delivery orders.");
+        }
+
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
         if (openedShift.isEmpty()) {
             throw new RuntimeException("No active shift found");
@@ -81,17 +84,17 @@ public class OrderService {
         } else {
             currentShift = openedShift.get(0);
         }
-        ;
-
-        if (orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && customer == null) {
-            throw new RuntimeException("Customer is required for delivery orders.");
-        }
 
         if (!orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && !orderToCreate.tableNumberOrDeliveryOrPickup().equals("pickup")) {
             isTableAvailable(company, orderToCreate.tableNumberOrDeliveryOrPickup(), null);
         }
 
         Order order = new Order(requester, currentShift, (currentShift.getOrders().size() + 1), orderToCreate, customer);
+        if (orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery")) {
+            if (orderToCreate.deliveryDistanceKM() == null)
+                throw new RuntimeException("Delivery tax is required for delivery orders.");
+            order.setDeliveryTax(calculateDeliveryTax(company, orderToCreate.deliveryDistanceKM()));
+        }
         Order orderCreated = orderRepo.save(order);
 
         List<OrdersItems> ordersItems = new ArrayList<>();
@@ -312,6 +315,10 @@ public class OrderService {
             if (order.getCustomer() == null && changeOrderTableDTO.customerID() == null)
                 throw new RuntimeException("Customer is required for delivery orders.");
 
+            if (changeOrderTableDTO.deliveryDistanceKM() == null)
+                throw new RuntimeException("Delivery tax is required for delivery orders.");
+            order.setDeliveryTax(calculateDeliveryTax(company, changeOrderTableDTO.deliveryDistanceKM()));
+
             if (changeOrderTableDTO.customerID() != null) {
                 Customer customer = company.getCustomers().stream()
                         .filter(c -> c.getId().equals(changeOrderTableDTO.customerID()))
@@ -333,6 +340,7 @@ public class OrderService {
                         .findFirst()
                         .orElseThrow(() -> new RuntimeException("Customer not found in the company.")) : null);
 
+                order.setDeliveryTax(0.0);
                 order.setTableNumberOrDeliveryOrPickup("pickup");
             } else {
                 throw new RuntimeException("Pickup name or Customer is required for pickup orders.");
@@ -340,6 +348,7 @@ public class OrderService {
         } else {
             int newTableNumber = isTableAvailable(company, changeOrderTableDTO.tableNumberOrDeliveryOrPickup(), order);
             order.setTableNumberOrDeliveryOrPickup(String.valueOf(newTableNumber));
+            order.setDeliveryTax(0.0);
 
             if (changeOrderTableDTO.customerID() != null) {
                 Customer customerFound = company.getCustomers().stream()
@@ -379,7 +388,10 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
             throw new RuntimeException("Can't close to no open orders.");
 
+        if (!order.getTableNumberOrDeliveryOrPickup().equals("delivery")) order.setDeliveryTax(0.0);
+
         calculateTotalPriceTaxAndDiscount(company, order, orderToCloseDTO);
+        order.setDeliveryManID(orderToCloseDTO.deliverymanID());
         order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
         order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
         order.setCompletedByUser(requester);
@@ -457,6 +469,7 @@ public class OrderService {
         order.setTotalPrice(0);
         order.setStatus(OrderStatus.OPEN);
         order.setCompletedByUser(null);
+        order.setDeliveryManID(null);
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);
@@ -525,8 +538,17 @@ public class OrderService {
                 order.setDiscount(-Math.abs(orderToCloseDTO.discountValue()));
             }
 
-            order.setTotalPrice(order.getPrice() + order.getServiceTax() + order.getDiscount());
+            order.setTotalPrice(order.getPrice() + order.getServiceTax() + order.getDiscount() + order.getDeliveryTax());
         }
+    }
+
+    private Double calculateDeliveryTax(Company company, Integer deliveryDistanceKM) {
+        Double priceToSet = company.getBaseDeliveryTax();
+        Integer extraKm = deliveryDistanceKM > company.getBaseDeliveryDistanceKM() ? (int) Math.ceil(deliveryDistanceKM - company.getBaseDeliveryDistanceKM()) : 0;
+
+        priceToSet += extraKm * company.getTaxPerExtraKM();
+
+        return priceToSet;
     }
 
     private Integer isTableAvailable(Company company, String newTableNumberOrDeliveryOrPickup, Order order) {
@@ -570,6 +592,27 @@ public class OrderService {
 
         orderPrintSync.setAlreadyPrinted(true);
         orderPrintSyncRepo.save(orderPrintSync);
+    }
+
+
+    @Scheduled(fixedRate = 3000000)
+    private void setDeliveryTax(){
+        List<Company> companies = companyRepo.findAll();
+        companies.forEach(x -> {
+            x.setMaxRecommendedDistanceKM(8);
+            x.setMaxDeliveryDistanceKM(20);
+            x.setBaseDeliveryDistanceKM(2);
+            x.setBaseDeliveryTax(4.0);
+            x.setTaxPerExtraKM(2.0);
+//            x.getLastOrOpenShift().getOrders().forEach(order -> {
+//                if(order.getTableNumberOrDeliveryOrPickup().equals("delivery")){
+//                    order.setDeliveryTax(0.0);
+//                    orderRepo.save(order);
+//                }
+//            });
+        });
+
+        companyRepo.saveAll(companies);
     }
 }
 

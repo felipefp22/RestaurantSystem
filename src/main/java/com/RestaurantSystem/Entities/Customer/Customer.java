@@ -35,6 +35,8 @@ public class Customer {
     private Double lng;
     private String complement;
 
+    private Integer distanceFromStoreKM;
+
     //<>------------ Constructors ------------<>
     public Customer() {
     }
@@ -145,5 +147,13 @@ public class Customer {
 
     public void setComplement(String complement) {
         this.complement = complement;
+    }
+
+    public Integer getDistanceFromStoreKM() {
+        return distanceFromStoreKM;
+    }
+
+    public void setDistanceFromStoreKM(Integer distanceFromStoreKM) {
+        this.distanceFromStoreKM = distanceFromStoreKM;
     }
 }

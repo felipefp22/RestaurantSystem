@@ -5,5 +5,6 @@ public enum EmployeePosition {
     SERVER,
     WAITER,
     SUPERVISOR,
-    MANAGER
+    MANAGER,
+    DELIVERYMAN
 }

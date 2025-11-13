@@ -53,6 +53,7 @@ public class Order {
     private double price;
     private double serviceTax;
     private double discount;
+    private Double deliveryTax;
     private double totalPrice;
     private String notes;
 
@@ -64,6 +65,8 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderPrintSync> printSyncs = new ArrayList<>();
+
+    private String deliveryManID;
 
     // <>------------ Constructors ------------<>
     public Order() {
@@ -183,6 +186,13 @@ public class Order {
         this.discount = discount;
     }
 
+    public Double getDeliveryTax() {
+        return deliveryTax;
+    }
+    public void setDeliveryTax(Double deliveryTax) {
+        this.deliveryTax = deliveryTax;
+    }
+
     public double getTotalPrice() {
         return totalPrice;
     }
@@ -230,6 +240,13 @@ public class Order {
     }
     public void removePrintSync(OrderPrintSync printSync) {
         this.printSyncs.remove(printSync);
+    }
+
+    public String getDeliveryManID() {
+        return deliveryManID;
+    }
+    public void setDeliveryManID(String deliveryManID) {
+        this.deliveryManID = deliveryManID;
     }
 }
 

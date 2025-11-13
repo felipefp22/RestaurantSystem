@@ -26,7 +26,12 @@ public record CompanyOperationDTO(
         int numberOfTables,
         Integer taxServicePercentage,
         Boolean deliveryHasServiceTax,
-        Boolean pickupHasServiceTax
+        Boolean pickupHasServiceTax,
+        Integer maxRecommendedDistanceKM,
+        Integer maxDeliveryDistanceKM,
+        Integer baseDeliveryDistanceKM,
+        Double baseDeliveryTax,
+        Double taxPerExtraKM
 
 ) {
 
@@ -48,7 +53,12 @@ public record CompanyOperationDTO(
                 company.getNumberOfTables(),
                 company.getTaxServicePercentage(),
                 company.getDeliveryHasServiceTax(),
-                company.getPickupHasServiceTax()
+                company.getPickupHasServiceTax(),
+                company.getMaxRecommendedDistanceKM(),
+                company.getMaxDeliveryDistanceKM(),
+                company.getBaseDeliveryDistanceKM(),
+                company.getBaseDeliveryTax(),
+                company.getTaxPerExtraKM()
         );
     }
 }

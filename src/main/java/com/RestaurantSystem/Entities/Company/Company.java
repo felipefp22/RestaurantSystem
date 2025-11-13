@@ -53,6 +53,13 @@ public class Company {
 
     private Integer taxServicePercentage = 10;
 
+    private Integer maxRecommendedDistanceKM = 8;
+    private Integer maxDeliveryDistanceKM = 20;
+
+    private Integer baseDeliveryDistanceKM = 2;
+    private Double baseDeliveryTax = 4.00;
+    private Double taxPerExtraKM = 2.00;
+
     private Boolean pickupHasServiceTax = false;
     private Boolean deliveryHasServiceTax = false;
 
@@ -75,6 +82,7 @@ public class Company {
         this.customers = new ArrayList<>();;
         this.shifts = new ArrayList<>();;
         this.numberOfTables = createCompanyDTO.numberOfTables();
+
     }
 
     //<>------------ Getters and setters ------------<>
@@ -183,6 +191,38 @@ public class Company {
         }
 
         this.taxServicePercentage = taxServicePercentage;
+    }
+
+    public Integer getMaxRecommendedDistanceKM() {
+        return maxRecommendedDistanceKM;
+    }
+    public void setMaxRecommendedDistanceKM(Integer maxRecommendedDistanceKM) {
+        this.maxRecommendedDistanceKM = maxRecommendedDistanceKM;
+    }
+    public Integer getMaxDeliveryDistanceKM() {
+        return maxDeliveryDistanceKM;
+    }
+    public void setMaxDeliveryDistanceKM(Integer maxDeliveryDistanceKM) {
+        this.maxDeliveryDistanceKM = maxDeliveryDistanceKM;
+    }
+
+    public Integer getBaseDeliveryDistanceKM() {
+        return baseDeliveryDistanceKM;
+    }
+    public void setBaseDeliveryDistanceKM(Integer baseDeliveryDistanceKM) {
+        this.baseDeliveryDistanceKM = baseDeliveryDistanceKM;
+    }
+    public Double getBaseDeliveryTax() {
+        return baseDeliveryTax;
+    }
+    public void setBaseDeliveryTax(Double baseDeliveryTax) {
+        this.baseDeliveryTax = baseDeliveryTax;
+    }
+    public Double getTaxPerExtraKM() {
+        return taxPerExtraKM;
+    }
+    public void setTaxPerExtraKM(Double taxPerExtraKM) {
+        this.taxPerExtraKM = taxPerExtraKM;
     }
 
     public Boolean getPickupHasServiceTax() {

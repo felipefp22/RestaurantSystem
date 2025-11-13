@@ -9,7 +9,8 @@ public record CreateOrderDTO(
         UUID customerID,
         String pickupName,
         List<OrderItemDTO> orderItemsIDs,
-        String notes
+        String notes,
+        Integer deliveryDistanceKM
 ) {
     public record OrderItemDTO(
             UUID productID,
