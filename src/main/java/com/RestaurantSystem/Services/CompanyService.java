@@ -116,6 +116,12 @@ public class CompanyService {
         if (updateCompanyDTO.pickupHasServiceTax() != null)
             companyToUpdate.setPickupHasServiceTax(updateCompanyDTO.pickupHasServiceTax());
 
+        companyToUpdate.setMaxRecommendedDistanceKM(updateCompanyDTO.maxRecommendedDistanceKM());
+        companyToUpdate.setMaxDeliveryDistanceKM(updateCompanyDTO.maxDeliveryDistanceKM());
+        companyToUpdate.setBaseDeliveryDistanceKM(updateCompanyDTO.baseDeliveryDistanceKM());
+        companyToUpdate.setBaseDeliveryTax(updateCompanyDTO.baseDeliveryTax());
+        companyToUpdate.setTaxPerExtraKM(updateCompanyDTO.taxPerExtraKM());
+
         return companyRepo.save(companyToUpdate);
     }
 

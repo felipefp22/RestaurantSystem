@@ -14,6 +14,12 @@ public record UpdateCompanyDTO(
         int numberOfTables,
         Integer taxServicePercentage,
         Boolean deliveryHasServiceTax,
-        Boolean pickupHasServiceTax
+        Boolean pickupHasServiceTax,
+
+        Integer maxRecommendedDistanceKM,
+        Integer maxDeliveryDistanceKM,
+        Integer baseDeliveryDistanceKM,
+        Double baseDeliveryTax,
+        Double taxPerExtraKM
 ) {
 }

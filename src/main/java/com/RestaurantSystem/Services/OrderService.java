@@ -594,26 +594,6 @@ public class OrderService {
         orderPrintSyncRepo.save(orderPrintSync);
     }
 
-
-    @Scheduled(fixedRate = 3000000)
-    private void setDeliveryTax(){
-        List<Company> companies = companyRepo.findAll();
-        companies.forEach(x -> {
-            x.setMaxRecommendedDistanceKM(8);
-            x.setMaxDeliveryDistanceKM(20);
-            x.setBaseDeliveryDistanceKM(2);
-            x.setBaseDeliveryTax(4.0);
-            x.setTaxPerExtraKM(2.0);
-//            x.getLastOrOpenShift().getOrders().forEach(order -> {
-//                if(order.getTableNumberOrDeliveryOrPickup().equals("delivery")){
-//                    order.setDeliveryTax(0.0);
-//                    orderRepo.save(order);
-//                }
-//            });
-        });
-
-        companyRepo.saveAll(companies);
-    }
 }
 
 

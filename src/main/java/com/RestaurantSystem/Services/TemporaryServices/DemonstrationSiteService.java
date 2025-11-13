@@ -117,7 +117,12 @@ public class DemonstrationSiteService {
                 0,
                 null,
                 null,
-                null
+                null,
+                8,
+                20,
+                2,
+                4.00,
+                2.00
         ));
 
         //create demonstration customers
