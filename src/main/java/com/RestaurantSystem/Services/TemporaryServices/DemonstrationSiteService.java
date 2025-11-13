@@ -137,7 +137,7 @@ public class DemonstrationSiteService {
                     company.getId(),
                     null,
                     name,
-                    "(212) 555-1234",
+                    "2125" + i + "512" + i,
                     name + "Address",
                     String.valueOf(new Random().nextInt(1, 9999)),
                     "Company City",

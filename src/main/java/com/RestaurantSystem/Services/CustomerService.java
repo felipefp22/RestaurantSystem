@@ -61,7 +61,8 @@ public class CustomerService {
         Company company = companyRepo.findById(UUID.fromString(companyID))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
+        if (!verificationsServices.worksOnCompany(company, requester))
+            throw new RuntimeException("You are not allowed to see the categories of this company");
 
         return company.getCustomers();
     }
@@ -73,7 +74,10 @@ public class CustomerService {
         Company company = companyRepo.findById(customerToCreateDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
+        if (!verificationsServices.worksOnCompany(company, requester))
+            throw new RuntimeException("You are not allowed to see the categories of this company");
+        if (company.getCustomers().stream().anyMatch(x -> x.getPhone().equals(customerToCreateDTO.phone())))
+            throw new RuntimeException("thisPhoneAlreadyInUse");
 
         Customer newCustomer = new Customer(company, customerToCreateDTO);
 
@@ -89,12 +93,16 @@ public class CustomerService {
         Company company = companyRepo.findById(customerToUpdateDTO.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.worksOnCompany(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
+        if (!verificationsServices.worksOnCompany(company, requester))
+            throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Customer existingCustomer = company.getCustomers().stream()
                 .filter(c -> c.getId().equals(customerToUpdateDTO.id()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Customer not found in this company"));
+
+        if (company.getCustomers().stream().anyMatch(x -> x.getPhone().equals(customerToUpdateDTO.phone()) && !x.getId().equals(existingCustomer.getId())))
+            throw new RuntimeException("thisPhoneAlreadyInUse");
 
         existingCustomer.setCustomerName(customerToUpdateDTO.customerName());
         existingCustomer.setPhone(customerToUpdateDTO.phone());
@@ -119,7 +127,8 @@ public class CustomerService {
         Company company = companyRepo.findById(dto.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to see the categories of this company");
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
+            throw new RuntimeException("You are not allowed to see the categories of this company");
 
         Customer existingCustomer = company.getCustomers().stream()
                 .filter(c -> c.getId().equals(dto.customerID()))

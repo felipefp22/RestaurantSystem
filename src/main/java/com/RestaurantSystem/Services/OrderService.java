@@ -71,6 +71,9 @@ public class OrderService {
         if (orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && customer == null) {
             throw new RuntimeException("Customer is required for delivery orders.");
         }
+        if (orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && orderToCreate.deliveryDistanceKM() >= company.getMaxDeliveryDistanceKM()) {
+            throw new RuntimeException("customerExceedsMaximumDistance-" + company.getMaxDeliveryDistanceKM());
+        }
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
         if (openedShift.isEmpty()) {
@@ -326,6 +329,11 @@ public class OrderService {
                         .orElseThrow(() -> new RuntimeException("Customer not found in the company."));
 
                 order.setCustomer(customer);
+
+                if (changeOrderTableDTO.deliveryDistanceKM() >= company.getMaxDeliveryDistanceKM()) {
+                    throw new RuntimeException("customerExceedsMaximumDistance-" + company.getMaxDeliveryDistanceKM());
+                }
+
                 order.setPickupName(null);
                 order.setTableNumberOrDeliveryOrPickup("delivery");
             } else {
