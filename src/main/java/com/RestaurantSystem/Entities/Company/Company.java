@@ -242,4 +242,17 @@ public class Company {
     public void setDeliveryHasServiceTax(Boolean deliveryHasServiceTax) {
         this.deliveryHasServiceTax = deliveryHasServiceTax;
     }
+
+    public List<String> getNoUserDeliveryMans() {
+        return noUserDeliveryMans;
+    }
+    public void setNoUserDeliveryMans(List<String> noUserDeliveryMans) {
+        this.noUserDeliveryMans = noUserDeliveryMans;
+    }
+    public void addNoUserDeliveryMan(String deliveryManName) {
+        this.noUserDeliveryMans.add(deliveryManName);
+    }
+    public void removeNoUserDeliveryMan(String deliveryManName) {
+        this.noUserDeliveryMans.remove(deliveryManName);
+    }
 }

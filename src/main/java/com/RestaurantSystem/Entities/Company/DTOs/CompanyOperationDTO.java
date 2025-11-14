@@ -7,6 +7,7 @@ import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.Shift;
 
 import java.util.List;
+import java.util.SimpleTimeZone;
 import java.util.UUID;
 
 public record CompanyOperationDTO(
@@ -31,7 +32,8 @@ public record CompanyOperationDTO(
         Integer maxDeliveryDistanceKM,
         Integer baseDeliveryDistanceKM,
         Double baseDeliveryTax,
-        Double taxPerExtraKM
+        Double taxPerExtraKM,
+        List<String> noUserDeliveryMans
 
 ) {
 
@@ -58,7 +60,8 @@ public record CompanyOperationDTO(
                 company.getMaxDeliveryDistanceKM(),
                 company.getBaseDeliveryDistanceKM(),
                 company.getBaseDeliveryTax(),
-                company.getTaxPerExtraKM()
+                company.getTaxPerExtraKM(),
+                company.getNoUserDeliveryMans()
         );
     }
 }

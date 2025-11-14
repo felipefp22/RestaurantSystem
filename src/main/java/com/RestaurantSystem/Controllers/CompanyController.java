@@ -48,7 +48,7 @@ public class CompanyController {
 
     @PutMapping("/update-company")
     public ResponseEntity updateCompany(@RequestHeader("Authorization") String authorizationHeader,
-                                                 @RequestBody UpdateCompanyDTO updateCompanyDTO) {
+                                        @RequestBody UpdateCompanyDTO updateCompanyDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
@@ -109,5 +109,25 @@ public class CompanyController {
         var response = companyService.removeEmployeeFromCompany(requesterID, employeeDTO);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/add-no-user-deliveryman")
+    public ResponseEntity<List<CompanyEmployees>> addNoUserDeliveryman(@RequestHeader("Authorization") String authorizationHeader,
+                                                                       @RequestBody AddOrRemoveNoUserDeliveryManDTO dto) {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        companyService.addNoUserDeliveryman(requesterID, dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/remove-no-user-deliveryman")
+    public ResponseEntity<List<CompanyEmployees>> removeNoUserDeliveryman(@RequestHeader("Authorization") String authorizationHeader,
+                                                                          @RequestBody AddOrRemoveNoUserDeliveryManDTO dto) {
+
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        companyService.removeNoUserDeliveryman(requesterID, dto);
+        return ResponseEntity.ok().build();
     }
 }

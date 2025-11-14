@@ -12,8 +12,10 @@ import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -222,5 +224,49 @@ public class CompanyService {
 
         company = companyRepo.findById(company.getId()).orElse(null);
         return company.getEmployees();
+    }
+
+    public void addNoUserDeliveryman(String requesterID, AddOrRemoveNoUserDeliveryManDTO dto){
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(dto.companyID())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
+            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+
+        if(company.getNoUserDeliveryMans().contains(dto.noUserDeliveryMan()))
+            throw new RuntimeException("This no user deliveryman already exists");
+
+        company.addNoUserDeliveryMan(dto.noUserDeliveryMan());
+        companyRepo.save(company);
+    }
+
+    public void removeNoUserDeliveryman(String requesterID, AddOrRemoveNoUserDeliveryManDTO dto){
+        AuthUserLogin requester = authUserRepository.findById(requesterID)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        Company company = companyRepo.findById(dto.companyID())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
+            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+
+        company.removeNoUserDeliveryMan(dto.noUserDeliveryMan());
+        companyRepo.save(company);
+    }
+
+
+    @Scheduled(fixedRate = 86400000) // Runs every 24 hours
+    public void addNoRegisteredDeliverman(){
+
+        List<Company> companies = companyRepo.findAll();
+        companies.forEach(company -> {
+            if(company.getNoUserDeliveryMans() == null){
+                company.setNoUserDeliveryMans(new ArrayList<>());
+                companyRepo.save(company);
+            }
+        });
     }
 }
