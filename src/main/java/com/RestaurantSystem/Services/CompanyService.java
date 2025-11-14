@@ -115,6 +115,8 @@ public class CompanyService {
         companyToUpdate.setCompanyEmail(updateCompanyDTO.companyEmail());
         companyToUpdate.setCompanyPhone(updateCompanyDTO.companyPhone());
         companyToUpdate.setCompanyAddress(updateCompanyDTO.companyAddress());
+        companyToUpdate.setCompanyLat(updateCompanyDTO.companyLat());
+        companyToUpdate.setCompanyLng(updateCompanyDTO.companyLng());
         companyToUpdate.setUrlCompanyLogo(updateCompanyDTO.urlCompanyLogo());
         companyToUpdate.setNumberOfTables(updateCompanyDTO.numberOfTables());
         if (updateCompanyDTO.taxServicePercentage() != null)
