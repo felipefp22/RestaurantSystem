@@ -42,8 +42,7 @@ public class CompanyService {
         AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
 
         Company company = companyRepo.findById(UUID.fromString(companyID)).orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.worksOnCompany(company, requester))
+        if (!verificationsServices.worksOnCompany(company, requester) && !verificationsServices.deliverymanOnCompany(company, requester))
             throw new RuntimeException("You don't have permission to access this company");
 
         List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
@@ -59,11 +58,18 @@ public class CompanyService {
         } else if (openedShift.size() > 0) {
             currentShift = openedShift.get(0);
         }
-        ;
 
         if (currentShift == null) currentShift = company.getLastOrOpenShift();
 
-        return new CompanyOperationDTO(company, currentShift);
+        if (verificationsServices.worksOnCompany(company, requester)) {
+            return new CompanyOperationDTO(company, currentShift);
+        }
+        if (verificationsServices.deliverymanOnCompany(company, requester)) {
+            CompanyOperationDeliveryManDTO dto = new CompanyOperationDeliveryManDTO(company, currentShift, requesterID);
+            return new CompanyOperationDTO(dto);
+        }
+
+        return null;
     }
 
     public Company createCompany(String requesterID, CreateCompanyDTO createCompanyDTO) {
@@ -226,7 +232,7 @@ public class CompanyService {
         return company.getEmployees();
     }
 
-    public void addNoUserDeliveryman(String requesterID, AddOrRemoveNoUserDeliveryManDTO dto){
+    public void addNoUserDeliveryman(String requesterID, AddOrRemoveNoUserDeliveryManDTO dto) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
@@ -236,14 +242,14 @@ public class CompanyService {
         if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
             throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
 
-        if(company.getNoUserDeliveryMans().contains(dto.noUserDeliveryMan()))
+        if (company.getNoUserDeliveryMans().contains(dto.noUserDeliveryMan()))
             throw new RuntimeException("This no user deliveryman already exists");
 
         company.addNoUserDeliveryMan(dto.noUserDeliveryMan());
         companyRepo.save(company);
     }
 
-    public void removeNoUserDeliveryman(String requesterID, AddOrRemoveNoUserDeliveryManDTO dto){
+    public void removeNoUserDeliveryman(String requesterID, AddOrRemoveNoUserDeliveryManDTO dto) {
         AuthUserLogin requester = authUserRepository.findById(requesterID)
                 .orElseThrow(() -> new RuntimeException("Requester not found"));
 
@@ -255,18 +261,5 @@ public class CompanyService {
 
         company.removeNoUserDeliveryMan(dto.noUserDeliveryMan());
         companyRepo.save(company);
-    }
-
-
-    @Scheduled(fixedRate = 86400000) // Runs every 24 hours
-    public void addNoRegisteredDeliverman(){
-
-        List<Company> companies = companyRepo.findAll();
-        companies.forEach(company -> {
-            if(company.getNoUserDeliveryMans() == null){
-                company.setNoUserDeliveryMans(new ArrayList<>());
-                companyRepo.save(company);
-            }
-        });
     }
 }

@@ -1,0 +1,46 @@
+package com.RestaurantSystem.Entities.Company.DTOs;
+
+import com.RestaurantSystem.Entities.Company.Company;
+import com.RestaurantSystem.Entities.Customer.Customer;
+import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
+import com.RestaurantSystem.Entities.Shift.Shift;
+
+import java.util.List;
+import java.util.UUID;
+
+public record CompanyOperationDeliveryManDTO(
+        UUID id,
+        String ownerID,
+        String companyName,
+        String companyEmail,
+        String companyPhone,
+        String companyAddress,
+        Double companyLat,
+        Double companyLng,
+        String urlCompanyLogo,
+        Shift currentShift,
+        List<CompanyEmployeesDTO> employees,
+        Integer baseDeliveryDistanceKM,
+        Double baseDeliveryTax,
+        Double taxPerExtraKM
+) {
+
+    public CompanyOperationDeliveryManDTO(Company company, Shift currentShift, String requesterID) {
+        this(
+                company.getId(),
+                company.getOwnerCompound().getOwner().getEmail(),
+                company.getCompanyName(),
+                company.getCompanyEmail(),
+                company.getCompanyPhone(),
+                company.getCompanyAddress(),
+                company.getCompanyLat(),
+                company.getCompanyLng(),
+                company.getUrlCompanyLogo(),
+                currentShift,
+                company.getEmployees().stream().filter(x -> x.getEmployee().getEmail().equals(requesterID)).map(CompanyEmployeesDTO::new).toList(),
+                company.getBaseDeliveryDistanceKM(),
+                company.getBaseDeliveryTax(),
+                company.getTaxPerExtraKM()
+        );
+    }
+}

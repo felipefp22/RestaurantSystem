@@ -64,4 +64,32 @@ public record CompanyOperationDTO(
                 company.getNoUserDeliveryMans()
         );
     }
+
+    public CompanyOperationDTO(CompanyOperationDeliveryManDTO company) {
+        this(
+                company.id(),
+                company.ownerID(),
+                company.companyName(),
+                company.companyEmail(),
+                company.companyPhone(),
+                company.companyAddress(),
+                company.companyLat(),
+                company.companyLng(),
+                company.urlCompanyLogo(),
+                null,
+                null,
+                company.currentShift(),
+                company.employees(),
+                0,
+                null,
+                null,
+                null,
+                null,
+                null,
+                company.baseDeliveryDistanceKM(),
+                company.baseDeliveryTax(),
+                company.taxPerExtraKM(),
+                null
+        );
+    }
 }
