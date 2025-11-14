@@ -143,7 +143,6 @@ public class OrderService {
         } else {
             currentShift = openedShift.get(0);
         }
-        ;
 
         Order order = currentShift.getOrders().stream().filter(x -> x.getId().equals(notesAndOrderID.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found in the current shift."));
         if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't add notes to no open orders.");
@@ -403,6 +402,9 @@ public class OrderService {
         order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
         order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
         order.setCompletedByUser(requester);
+
+        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery"))
+            order.setDeliveryManID(orderToCloseDTO.deliverymanID());
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);

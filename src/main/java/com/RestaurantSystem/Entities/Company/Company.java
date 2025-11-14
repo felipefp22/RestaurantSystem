@@ -63,6 +63,8 @@ public class Company {
     private Boolean pickupHasServiceTax = false;
     private Boolean deliveryHasServiceTax = false;
 
+    private List<String> noUserDeliveryMans = new ArrayList<>();
+
     //<>------------ Constructors ------------<>
     public Company() {
     }
@@ -82,7 +84,7 @@ public class Company {
         this.customers = new ArrayList<>();;
         this.shifts = new ArrayList<>();;
         this.numberOfTables = createCompanyDTO.numberOfTables();
-
+        this.noUserDeliveryMans.add("DeliveryMan1");
     }
 
     //<>------------ Getters and setters ------------<>
