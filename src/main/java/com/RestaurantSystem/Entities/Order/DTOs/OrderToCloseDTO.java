@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Entities.Order.DTOs;
 
+import java.util.List;
 import java.util.UUID;
 
 public record OrderToCloseDTO(
@@ -7,6 +8,7 @@ public record OrderToCloseDTO(
         UUID orderID,
         boolean clientSaidNoTax,
         Double discountValue,
-        String deliverymanID
+        String deliverymanID,
+        List<UUID> deliveryOrdersSequence
 ) {
 }

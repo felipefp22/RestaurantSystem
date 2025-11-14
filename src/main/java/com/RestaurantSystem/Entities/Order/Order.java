@@ -67,7 +67,7 @@ public class Order {
     private List<OrderPrintSync> printSyncs = new ArrayList<>();
 
     private String deliveryManID;
-
+    private List<UUID> deliveryOrdersSequence;
     // <>------------ Constructors ------------<>
     public Order() {
     }
@@ -247,6 +247,13 @@ public class Order {
     }
     public void setDeliveryManID(String deliveryManID) {
         this.deliveryManID = deliveryManID;
+    }
+
+    public List<UUID> getDeliveryOrdersSequence() {
+        return deliveryOrdersSequence;
+    }
+    public void setDeliveryOrdersSequence(List<UUID> deliveryOrdersSequence) {
+        this.deliveryOrdersSequence = deliveryOrdersSequence;
     }
 }
 

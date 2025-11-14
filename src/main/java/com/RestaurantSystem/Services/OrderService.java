@@ -396,9 +396,10 @@ public class OrderService {
             throw new RuntimeException("Can't close to no open orders.");
 
         if (!order.getTableNumberOrDeliveryOrPickup().equals("delivery")) order.setDeliveryTax(0.0);
+        order.setDeliveryManID(orderToCloseDTO.deliverymanID());
+        order.setDeliveryOrdersSequence(orderToCloseDTO.deliveryOrdersSequence());
 
         calculateTotalPriceTaxAndDiscount(company, order, orderToCloseDTO);
-        order.setDeliveryManID(orderToCloseDTO.deliverymanID());
         order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
         order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
         order.setCompletedByUser(requester);
@@ -480,6 +481,7 @@ public class OrderService {
         order.setStatus(OrderStatus.OPEN);
         order.setCompletedByUser(null);
         order.setDeliveryManID(null);
+        order.setDeliveryOrdersSequence(null);
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);
