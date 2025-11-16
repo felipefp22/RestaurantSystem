@@ -1,7 +1,9 @@
 package com.RestaurantSystem.Entities.Shift.DTOs;
 
+import java.util.UUID;
+
 public record CloseShiftDTO(
-        String companyID,
+        UUID companyID,
         String shiftID,
         String adminPassword
 ) {

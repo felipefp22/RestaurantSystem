@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/shifts")
@@ -24,7 +25,7 @@ public class ShiftController {
     //<>------------ Methods ------------<>
     @GetMapping("/get-shift-operation/{companyID}")
     public ResponseEntity<ShiftOperationDTO> getShiftOperation(@RequestHeader("Authorization") String authorizationHeader,
-                                                               @PathVariable String companyID) {
+                                                               @PathVariable UUID companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = shiftService.getShiftOperationRequesterAlreadyVerified(requesterID, companyID);
@@ -34,7 +35,7 @@ public class ShiftController {
     }
     @GetMapping("/get-all-shifts/{companyID}")
     public ResponseEntity<List<Shift>> getAllShifts(@RequestHeader("Authorization") String authorizationHeader,
-                                                    @PathVariable String companyID) {
+                                                    @PathVariable UUID companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = shiftService.getAllShifts(requesterID, companyID);
@@ -44,7 +45,7 @@ public class ShiftController {
 
     @PostMapping("/create-shift/{companyID}")
     private ResponseEntity<Shift> createShift(@RequestHeader("Authorization") String authorizationHeader,
-                                              @PathVariable String companyID) {
+                                              @PathVariable UUID companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = shiftService.createShift(requesterID, companyID);

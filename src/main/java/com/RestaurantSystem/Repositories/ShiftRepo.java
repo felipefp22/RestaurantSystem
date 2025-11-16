@@ -11,6 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface ShiftRepo extends JpaRepository<Shift, String> {
-    List<Shift> findAllByCompanyAndEndTimeUTCIsNull(Company company);
+    Optional<List<Shift>> findAllByCompanyAndEndTimeUTCIsNull(Company company);
 
 }

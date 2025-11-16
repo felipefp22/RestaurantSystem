@@ -70,13 +70,9 @@ public class ProductService {
 //    }
 
     public Product createProduct(String requesterID, CreateOrUpdateProductDTO productToCreate) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(productToCreate.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to add a product, ask to manager or supervisor");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(productToCreate.companyID());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         ProductCategory productCategoryToAddProduct = company.getProductsCategories().stream()
                 .filter(pc -> pc.getId().equals(UUID.fromString(productToCreate.productCategoryID())))
@@ -91,13 +87,9 @@ public class ProductService {
     }
 
     public Product updateProduct(String requesterID, CreateOrUpdateProductDTO productToUpdateDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(productToUpdateDTO.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to add a product, ask to manager or supervisor");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(productToUpdateDTO.companyID());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         List<Product> allProducts = company.getProductsCategories().stream().flatMap(pc -> pc.getProducts().stream()).toList();
 
@@ -124,13 +116,10 @@ public class ProductService {
     }
 
     public void deleteProduct(String requesterID, FindProductDTO dto) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(dto.companyID());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
-        Company company = companyRepo.findById(dto.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester)) throw new RuntimeException("You are not allowed to add a product, ask to manager or supervisor");
 
         List<Product> allProducts = company.getProductsCategories().stream().flatMap(pc -> pc.getProducts().stream()).toList();
 

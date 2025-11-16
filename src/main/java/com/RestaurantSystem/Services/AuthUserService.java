@@ -51,7 +51,6 @@ public class AuthUserService {
     public IsAdmDTO isAdmin(String requesterID) throws Exception {
         AuthUserLogin requesterUser = authUserRepository.findById(requesterID).orElseThrow(() -> new Exception("User not found"));
 
-
         return new IsAdmDTO((requesterUser.getRole() == Role.ADMIN || requesterUser.getRole() == Role.MASTERADMIN),
                 (requesterUser.getRole() == Role.MASTERADMIN));
     }

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/product-category")
@@ -25,7 +26,7 @@ public class ProductCategoryController {
 
     @GetMapping("/get-all-categories-of-company/{companyID}")
     public ResponseEntity<List<ProductCategory>> getAllProductAndProductCategories(@RequestHeader("Authorization") String authorizationHeader,
-                                                                                   @PathVariable String companyID) {
+                                                                                   @PathVariable UUID companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = productCategoryService.getAllProductAndProductCategories(requesterID, companyID);

@@ -35,41 +35,26 @@ public class ShiftService {
     }
 
     //<>------------ Methods ------------<>
-    public ShiftOperationDTO getShiftOperationRequesterAlreadyVerified(String requesterID, String companyID) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(UUID.fromString(companyID))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.worksOnCompany(company, requester) && !verificationsServices.deliverymanOnCompany(company, requester))
-            throw new RuntimeException("You are not allowed to see the shifts of this company");
+    public ShiftOperationDTO getShiftOperationRequesterAlreadyVerified(String requesterID, UUID companyID) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(companyID);
+        verificationsServices.worksOnCompany(company, requester);
 
         return getShiftOperationRequesterAlreadyVerified(company);
     }
 
-    public List<Shift> getAllShifts(String requesterID, String companyID) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(UUID.fromString(companyID))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
-            throw new RuntimeException("You are not allowed to see the shifts of this company");
+    public List<Shift> getAllShifts(String requesterID, UUID companyID) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(companyID);
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         return company.getShifts();
     }
 
-    public Shift createShift(String requesterID, String companyID) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(UUID.fromString(companyID))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManager(company, requester))
-            throw new RuntimeException("You are not allowed to add a product, ask to manager");
+    public Shift createShift(String requesterID, UUID companyID) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(companyID);
+        verificationsServices.justOwnerOrManager(company, requester);
 
         company.getShifts().stream()
                 .filter(s -> s.getEndTimeUTC() == null)
@@ -89,14 +74,10 @@ public class ShiftService {
     }
 
     public Shift closeShift(String requesterID, CloseShiftDTO closeShiftDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(closeShiftDTO.companyID());
+        verificationsServices.justOwnerOrManager(company, requester);
 
-        Company company = companyRepo.findById(UUID.fromString(closeShiftDTO.companyID()))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManager(company, requester))
-            throw new RuntimeException("justOwnerOrManagerCanCloseShift");
 
         if (new BCryptPasswordEncoder().matches(closeShiftDTO.adminPassword(), requester.getOwnAdministrativePassword())) {
             Shift shift = company.getShifts().stream()
@@ -117,19 +98,9 @@ public class ShiftService {
 
     // <>------------ Split Methods ------------<>
     public ShiftOperationDTO getShiftOperationRequesterAlreadyVerified(Company company) {
-        List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-        if (openedShift.isEmpty()) {
-            return null;
-        }
-        Shift currentShift = null;
-        if (openedShift.size() > 1) {
-            Shift lastShift = openedShift.stream()
-                    .max(Comparator.comparing(Shift::getStartTimeUTC))
-                    .orElse(null);
-        } else {
-            currentShift = openedShift.get(0);
-        }
-        Shift previousShift = shiftRepo.findById(company.getId().toString() + "_" + (Integer.parseInt(openedShift.get(0).getShiftNumber()) - 1))
+        Shift currentShift = verificationsServices.retrieveCurrentShift(company);
+
+        Shift previousShift = shiftRepo.findById(company.getId().toString() + "_" + (Integer.parseInt(currentShift.getShiftNumber()) - 1))
                 .orElse(null);
 
         List<Order> previousShiftStillOpenOrders = previousShift == null ? List.of() : previousShift.getOrders().stream()
@@ -141,5 +112,4 @@ public class ShiftService {
 
         return new ShiftOperationDTO(currentShift, ordersOnOperation);
     }
-
 }

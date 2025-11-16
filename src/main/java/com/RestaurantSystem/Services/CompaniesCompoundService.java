@@ -7,6 +7,7 @@ import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompaniesCompoundRepo;
+import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,19 +18,21 @@ public class CompaniesCompoundService {
 
     private final CompaniesCompoundRepo companiesCompoundRepo;
     private final AuthUserRepository authUserRepository;
+    private final VerificationsServices verificationsServices;
 
-    public CompaniesCompoundService(CompaniesCompoundRepo companiesCompoundRepo, AuthUserRepository authUserRepository) {
+    public CompaniesCompoundService(CompaniesCompoundRepo companiesCompoundRepo, AuthUserRepository authUserRepository, VerificationsServices verificationsServices) {
         this.companiesCompoundRepo = companiesCompoundRepo;
         this.authUserRepository = authUserRepository;
+        this.verificationsServices = verificationsServices;
     }
 
     // <> ------------- Methods ------------- <>
     public CompaniesCompound createCompaniesCompound(String requesterID, CreateOrUpdateCompoundDTO createCompoundDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
 
-            if (requester.getCompaniesCompounds().stream()
-                    .anyMatch(c -> c.getCompoundName().equalsIgnoreCase(createCompoundDTO.compoundName())))
-                throw new RuntimeException("You already have a CompaniesCompound with this name");
+        if (requester.getCompaniesCompounds().stream()
+                .anyMatch(c -> c.getCompoundName().equalsIgnoreCase(createCompoundDTO.compoundName())))
+            throw new RuntimeException("You already have a CompaniesCompound with this name");
 
         CompaniesCompound companiesCompound = new CompaniesCompound(requester, createCompoundDTO);
 
@@ -37,7 +40,7 @@ public class CompaniesCompoundService {
     }
 
     public CompaniesCompound updateCompaniesCompound(String requesterID, CreateOrUpdateCompoundDTO updateCompoundDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
 
         if (requester.getCompaniesCompounds().stream()
                 .anyMatch(c -> c.getCompoundName().equalsIgnoreCase(updateCompoundDTO.compoundName()) && !c.getId().equals(updateCompoundDTO.compoundID())))

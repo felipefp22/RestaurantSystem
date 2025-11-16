@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/company")
@@ -26,7 +27,7 @@ public class CompanyController {
     // <> ------------- Methods ------------- <>
     @GetMapping("/get-company-operation/{companyID}")
     public ResponseEntity<CompanyOperationDTO> getCompanyOperation(@RequestHeader("Authorization") String authorizationHeader,
-                                                                   @PathVariable String companyID) {
+                                                                   @PathVariable UUID companyID) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 

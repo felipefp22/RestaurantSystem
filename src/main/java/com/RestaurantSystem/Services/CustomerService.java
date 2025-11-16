@@ -3,9 +3,7 @@ package com.RestaurantSystem.Services;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
-import com.RestaurantSystem.Entities.Customer.DTOs.CustomerResumeDTO;
 import com.RestaurantSystem.Entities.Customer.DTOs.FindCustomerDTO;
-import com.RestaurantSystem.Entities.Customer.DTOs.SearchCustomerDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
@@ -13,9 +11,7 @@ import com.RestaurantSystem.Repositories.CustomerRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -54,28 +50,19 @@ public class CustomerService {
 //                .toList();
 //    }
 
-    public List<Customer> getAllCustomers(String requesterID, String companyID) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(UUID.fromString(companyID))
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.worksOnCompany(company, requester))
-            throw new RuntimeException("You are not allowed to see the categories of this company");
+    public List<Customer> getAllCustomers(String requesterID, UUID companyID) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(companyID);
+        verificationsServices.worksOnCompany(company, requester);
 
         return company.getCustomers();
     }
 
     public Customer createCustomer(String requesterID, CreateOrUpdateCustomerDTO customerToCreateDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(customerToCreateDTO.companyID());
+        verificationsServices.worksOnCompany(company, requester);
 
-        Company company = companyRepo.findById(customerToCreateDTO.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.worksOnCompany(company, requester))
-            throw new RuntimeException("You are not allowed to see the categories of this company");
         if (company.getCustomers().stream().anyMatch(x -> x.getPhone().equals(customerToCreateDTO.phone())))
             throw new RuntimeException("thisPhoneAlreadyInUse");
 
@@ -87,14 +74,9 @@ public class CustomerService {
     }
 
     public Customer updateCustomer(String requesterID, CreateOrUpdateCustomerDTO customerToUpdateDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(customerToUpdateDTO.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.worksOnCompany(company, requester))
-            throw new RuntimeException("You are not allowed to see the categories of this company");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(customerToUpdateDTO.companyID());
+        verificationsServices.worksOnCompany(company, requester);
 
         Customer existingCustomer = company.getCustomers().stream()
                 .filter(c -> c.getId().equals(customerToUpdateDTO.id()))
@@ -127,8 +109,7 @@ public class CustomerService {
         Company company = companyRepo.findById(dto.companyID())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
-            throw new RuntimeException("You are not allowed to see the categories of this company");
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         Customer existingCustomer = company.getCustomers().stream()
                 .filter(c -> c.getId().equals(dto.customerID()))

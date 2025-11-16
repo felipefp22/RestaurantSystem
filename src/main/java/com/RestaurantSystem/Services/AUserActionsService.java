@@ -9,6 +9,7 @@ import com.RestaurantSystem.Entities.User.AuthUserDTOs.*;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
+import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -19,41 +20,41 @@ import java.util.UUID;
 public class AUserActionsService {
     private final AuthUserRepository authUserRepository;
     private final CompanyEmployeesRepo companyEmployeesRepo;
-    private final ShiftService shiftService;
+    private final VerificationsServices verificationsServices;
 
-    public AUserActionsService(AuthUserRepository authUserRepository, CompanyEmployeesRepo companyEmployeesRepo, ShiftService shiftService) {
+    public AUserActionsService(AuthUserRepository authUserRepository, CompanyEmployeesRepo companyEmployeesRepo, VerificationsServices verificationsServices) {
         this.authUserRepository = authUserRepository;
         this.companyEmployeesRepo = companyEmployeesRepo;
-        this.shiftService = shiftService;
+        this.verificationsServices = verificationsServices;
     }
 
     // <>--------------- Methodos ---------------<>
     @Transactional
     public AuthUserDTO getUserData(String requesterID) {
-        AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
 
-        return new AuthUserDTO(authUserLogin);
+        return new AuthUserDTO(requester);
     }
 
     public IsAdmDTO isAdmin(String requesterID) throws Exception {
-        AuthUserLogin requesterUser = authUserRepository.findById(requesterID).orElseThrow(() -> new Exception("User not found"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
 
 
-        return new IsAdmDTO((requesterUser.getRole() == Role.ADMIN || requesterUser.getRole() == Role.MASTERADMIN),
-                (requesterUser.getRole() == Role.MASTERADMIN));
+        return new IsAdmDTO((requester.getRole() == Role.ADMIN || requester.getRole() == Role.MASTERADMIN),
+                (requester.getRole() == Role.MASTERADMIN));
     }
 
     public void setOwnAdministrativePassword(String requesterID, SetOwnAdministrativePasswordDTO setOwnAdministrativePasswordDTO) {
-        AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
 
-        authUserLogin.setOwnAdministrativePassword(setOwnAdministrativePasswordDTO.newAdministrativePassword());
-        authUserRepository.save(authUserLogin);
+        requester.setOwnAdministrativePassword(setOwnAdministrativePasswordDTO.newAdministrativePassword());
+        authUserRepository.save(requester);
     }
 
     public void acceptInviteCompany(String requesterID, UUID companyId) {
-        AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
 
-        CompanyEmployees companiesToAccept = authUserLogin.getWorksAtCompanies().stream().filter(c -> c.getCompany().getId().equals(companyId))
+        CompanyEmployees companiesToAccept = requester.getWorksAtCompanies().stream().filter(c -> c.getCompany().getId().equals(companyId))
                 .findFirst().orElseThrow(() -> new NoSuchElementException("You don't work at this company"));
 
         companiesToAccept.setStatus(EmployeeStatus.ACTIVE);
@@ -62,20 +63,20 @@ public class AUserActionsService {
     }
 
     public void quitCompany(String requesterID, UUID companyId) {
-        AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
 
-        CompanyEmployees companiesToQuit = authUserLogin.getWorksAtCompanies().stream().filter(c -> c.getCompany().getId().equals(companyId))
+        CompanyEmployees companiesToQuit = requester.getWorksAtCompanies().stream().filter(c -> c.getCompany().getId().equals(companyId))
                 .findFirst().orElseThrow(() -> new NoSuchElementException("You don't work at this company"));
 
-        authUserLogin.getWorksAtCompanies().remove(companiesToQuit);
+        requester.getWorksAtCompanies().remove(companiesToQuit);
         companyEmployeesRepo.delete(companiesToQuit);
     }
 
     public Theme setTheme(String requesterID, String themeName) {
-        AuthUserLogin authUserLogin = authUserRepository.findById(requesterID).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
-        authUserLogin.setTheme(Theme.valueOf(themeName));
-        authUserRepository.save(authUserLogin);
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        requester.setTheme(Theme.valueOf(themeName));
+        authUserRepository.save(requester);
 
-        return authUserLogin.getTheme();
+        return requester.getTheme();
     }
 }

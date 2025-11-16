@@ -12,10 +12,8 @@ import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -38,42 +36,23 @@ public class CompanyService {
     }
 
     // <> ------------- Methods ------------- <>
-    public CompanyOperationDTO getCompanyOperation(String requesterID, String companyID) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
+    public CompanyOperationDTO getCompanyOperation(String requesterID, UUID companyID) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(companyID);
+        verificationsServices.worksOnCompany(company, requester);
 
-        Company company = companyRepo.findById(UUID.fromString(companyID)).orElseThrow(() -> new RuntimeException("Company not found"));
-        if (!verificationsServices.worksOnCompany(company, requester) && !verificationsServices.deliverymanOnCompany(company, requester))
-            throw new RuntimeException("You don't have permission to access this company");
+        Shift currentShift = verificationsServices.retrieveCurrentShift(company);
 
-        List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company);
-//        if(openedShift.isEmpty()){
-//            throw new RuntimeException("noActiveShift");
-//        }
-        Shift currentShift = null;
-        if (openedShift.size() > 1) {
-            Shift lastShift = openedShift.stream()
-                    .max(Comparator.comparing(Shift::getStartTimeUTC))
-                    .orElse(null);
-            currentShift = lastShift;
-        } else if (openedShift.size() > 0) {
-            currentShift = openedShift.get(0);
-        }
-
-        if (currentShift == null) currentShift = company.getLastOrOpenShift();
-
-        if (verificationsServices.worksOnCompany(company, requester)) {
-            return new CompanyOperationDTO(company, currentShift);
-        }
-        if (verificationsServices.deliverymanOnCompany(company, requester)) {
+        if (verificationsServices.isDeliveryman(company, requester)) {
             CompanyOperationDeliveryManDTO dto = new CompanyOperationDeliveryManDTO(company, currentShift, requesterID);
             return new CompanyOperationDTO(dto);
         }
 
-        return null;
+        return new CompanyOperationDTO(company, currentShift);
     }
 
     public Company createCompany(String requesterID, CreateCompanyDTO createCompanyDTO) {
-        AuthUserLogin owner = authUserRepository.findById(requesterID).orElseThrow(() -> new RuntimeException("User not found"));
+        AuthUserLogin owner = verificationsServices.retrieveRequester(requesterID);
 
         if (owner.getCompaniesCompounds().isEmpty())
             throw new RuntimeException("You need to have at least one Companies Compound to create a company");
@@ -93,13 +72,9 @@ public class CompanyService {
     }
 
     public Company updateCompany(String requesterID, UpdateCompanyDTO updateCompanyDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(updateCompanyDTO.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwner(company, requester)) throw new RuntimeException("justOwnerCanEditCompany");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(updateCompanyDTO.companyID());
+        verificationsServices.justOwner(company, requester);
 
         if (company.getOwnerCompound().getCompanies().stream()
                 .anyMatch(c -> c.getCompanyName().equalsIgnoreCase(updateCompanyDTO.companyName()) && !c.getId().equals(updateCompanyDTO.companyID())))
@@ -136,14 +111,9 @@ public class CompanyService {
     }
 
     public Company setCompanyGeoLocation(String requesterID, UpdateCompanyDTO updateCompanyDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(updateCompanyDTO.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManager(company, requester))
-            throw new RuntimeException("Just Owner or Manager can add employees to a company");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(updateCompanyDTO.companyID());
+        verificationsServices.justOwnerOrManager(company, requester);
 
         company.setCompanyLat(updateCompanyDTO.companyLat());
         company.setCompanyLng(updateCompanyDTO.companyLng());
@@ -158,21 +128,15 @@ public class CompanyService {
         Company company = companyRepo.findById(UUID.fromString(companyID))
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
-            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         return company.getEmployees().stream().map(CompanyEmployeesDTO::new).toList();
     }
 
     public List<CompanyEmployees> addEmployeeToCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("requesterNotFound"));
-
-        Company company = companyRepo.findById(employeeDTO.companyId())
-                .orElseThrow(() -> new RuntimeException("companyNotFound"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
-            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(employeeDTO.companyId());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         AuthUserLogin employeeToAdd = authUserRepository.findById(employeeDTO.employeeEmail())
                 .orElseThrow(() -> new RuntimeException("emailNotFound"));
@@ -188,14 +152,9 @@ public class CompanyService {
     }
 
     public List<CompanyEmployees> updateEmployeePosition(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(employeeDTO.companyId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
-            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(employeeDTO.companyId());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         CompanyEmployees companyEmployeeToUpdate = company.getEmployees().stream()
                 .filter(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail()))
@@ -213,14 +172,9 @@ public class CompanyService {
     }
 
     public List<CompanyEmployees> removeEmployeeFromCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(employeeDTO.companyId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
-            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(employeeDTO.companyId());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         CompanyEmployees companyEmployeeToRemove = company.getEmployees().stream()
                 .filter(e -> e.getEmployee().getEmail().equals(employeeDTO.employeeEmail()))
@@ -235,14 +189,9 @@ public class CompanyService {
     }
 
     public void addNoUserDeliveryman(String requesterID, AddOrRemoveNoUserDeliveryManDTO dto) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(dto.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
-            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(dto.companyID());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         if (company.getNoUserDeliveryMans().contains(dto.noUserDeliveryMan()))
             throw new RuntimeException("This no user deliveryman already exists");
@@ -252,14 +201,9 @@ public class CompanyService {
     }
 
     public void removeNoUserDeliveryman(String requesterID, AddOrRemoveNoUserDeliveryManDTO dto) {
-        AuthUserLogin requester = authUserRepository.findById(requesterID)
-                .orElseThrow(() -> new RuntimeException("Requester not found"));
-
-        Company company = companyRepo.findById(dto.companyID())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        if (!verificationsServices.isOwnerOrManagerOrSupervisor(company, requester))
-            throw new RuntimeException("Just Owner, Supervisor or Manager can add employees to a company");
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(dto.companyID());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
         company.removeNoUserDeliveryMan(dto.noUserDeliveryMan());
         companyRepo.save(company);
