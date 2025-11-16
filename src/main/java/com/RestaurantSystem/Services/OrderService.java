@@ -16,6 +16,7 @@ import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import com.RestaurantSystem.WebSocket.SignalR;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -49,6 +50,7 @@ public class OrderService {
 
     // <> ---------- Methods ---------- <>
 
+    @Transactional
     public Order createOrder(String requesterID, CreateOrderDTO orderToCreate) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(orderToCreate.companyID());
@@ -69,14 +71,7 @@ public class OrderService {
         order.setDeliveryTax(calculateDeliveryTax(company, orderToCreate.deliveryDistanceKM(), orderToCreate.tableNumberOrDeliveryOrPickup()));
         Order orderCreated = orderRepo.save(order);
 
-        List<OrdersItems> ordersItems = orderToCreate.orderItemsIDs().stream().map(x -> {
-            Product product = company.getProductsCategories().stream().flatMap(c -> c.getProducts().stream())
-                    .filter(p -> p.getId().equals(x.productID()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + x.productID()));
-
-            return new OrdersItems(orderCreated, product, x.quantity());
-        }).toList();
+        List<OrdersItems> ordersItems = mapOrderItems(orderToCreate, null, company, orderCreated);
 
         orderCreated.getOrderItems().addAll(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
@@ -85,6 +80,35 @@ public class OrderService {
         signalR.sendShiftOperationSigr(company);
 
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
+    }
+
+    private Product getProductFromID(UUID productID, Company company) {
+        return company.getProductsCategories().stream()
+                .flatMap(c -> c.getProducts().stream())
+                .filter(p -> p.getId().equals(productID))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Product not found: " + productID));
+    }
+
+    private List<OrdersItems> mapOrderItems(CreateOrderDTO orderToCreate, ProductsToAddOnOrderDTO productsToAddOnOrder, Company company, Order orderCreated) {
+        List<OrdersItems> ordersItems = new ArrayList<>();
+        if (orderToCreate.orderItemsIDs() != null) {
+            orderToCreate.orderItemsIDs().forEach(itemDTO -> {
+                Product product = getProductFromID(itemDTO.productID(), company);
+                OrdersItems ordersItem = new OrdersItems(orderCreated, product, itemDTO.quantity());
+                ordersItems.add(ordersItem);
+            });
+        }
+
+        if (orderToCreate.customOrderItems() != null) {
+            orderToCreate.customOrderItems().forEach(customItemDTO -> {
+                List<Product> products = customItemDTO.productID().stream().map(productID -> getProductFromID(UUID.fromString(productID), company)).toList();
+                double totalPrice = products.stream().mapToDouble(Product::getPrice).average().orElse(0.0);
+                OrdersItems ordersItem = new OrdersItems(orderCreated, products, totalPrice, customItemDTO.quantity());
+                ordersItems.add(ordersItem);
+            });
+        }
+        return ordersItems;
     }
 
 

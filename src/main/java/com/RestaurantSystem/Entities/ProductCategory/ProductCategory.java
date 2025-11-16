@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Entities.ProductCategory;
 
 import com.RestaurantSystem.Entities.Company.Company;
+import com.RestaurantSystem.Entities.ENUMs.CustomOrderPriceRule;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +26,11 @@ public class ProductCategory {
 
     private String categoryName;
     private String description;
+
+    private Integer customOrderAllowed;
+
+    @Enumerated(EnumType.STRING)
+    private CustomOrderPriceRule customOrderPriceRule;
 
     //<>------------ Constructors ------------<>
     public ProductCategory() {
@@ -69,5 +75,21 @@ public class ProductCategory {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getCustomOrderAllowed() {
+        return customOrderAllowed;
+    }
+
+    public void setCustomOrderAllowed(Integer customOrderAllowed) {
+        this.customOrderAllowed = customOrderAllowed;
+    }
+
+    public CustomOrderPriceRule getCustomOrderPriceRule() {
+        return customOrderPriceRule;
+    }
+
+    public void setCustomOrderPriceRule(CustomOrderPriceRule customOrderPriceRule) {
+        this.customOrderPriceRule = customOrderPriceRule;
     }
 }

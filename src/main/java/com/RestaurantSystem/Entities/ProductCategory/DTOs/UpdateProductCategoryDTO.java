@@ -6,7 +6,9 @@ public record UpdateProductCategoryDTO(
         UUID companyID,
         UUID categoryID,
         String categoryName,
-        String description
+        String description,
+        Integer customOrderAllowed,
+        String customOrderPriceRule
 
 ) {
 }

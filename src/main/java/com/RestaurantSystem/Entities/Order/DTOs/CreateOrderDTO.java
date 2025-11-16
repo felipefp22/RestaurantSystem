@@ -9,6 +9,7 @@ public record CreateOrderDTO(
         UUID customerID,
         String pickupName,
         List<OrderItemDTO> orderItemsIDs,
+        List<CustomOrderItemsDTO> customOrderItems,
         String notes,
         Integer deliveryDistanceKM
 ) {
@@ -16,6 +17,11 @@ public record CreateOrderDTO(
             UUID productID,
             int quantity
     ) {
+    }
 
+    public record CustomOrderItemsDTO(
+            List<String> productID,
+            int quantity
+    ) {
     }
 }

@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Services;//package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.Company.Company;
+import com.RestaurantSystem.Entities.ENUMs.CustomOrderPriceRule;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.UpdateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
@@ -59,18 +60,21 @@ public class ProductCategoryService {
         Company company = verificationsServices.retrieveCompany(updateDTO.companyID());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
-
         ProductCategory categoryToUpdate = company.getProductsCategories().stream()
                 .filter(x -> x.getId().equals(updateDTO.categoryID()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        company.getProductsCategories().forEach(x ->{
-            if (x.getCategoryName().equalsIgnoreCase(updateDTO.categoryName())) throw new RuntimeException("Category with name: [" + updateDTO.categoryName() +"} already exists");
+        company.getProductsCategories().forEach(x -> {
+            if (x.getCategoryName().equalsIgnoreCase(updateDTO.categoryName()) && !x.getId().equals(categoryToUpdate.getId()))
+                throw new RuntimeException("Category with name: [" + updateDTO.categoryName() + "} already exists");
         });
 
         categoryToUpdate.setCategoryName(updateDTO.categoryName());
         categoryToUpdate.setDescription(updateDTO.description());
+        categoryToUpdate.setCustomOrderAllowed(updateDTO.customOrderAllowed());
+        if (updateDTO.customOrderPriceRule() != null)
+            categoryToUpdate.setCustomOrderPriceRule(CustomOrderPriceRule.valueOf(updateDTO.customOrderPriceRule()));
 
         productCategoryRepo.save(categoryToUpdate);
 

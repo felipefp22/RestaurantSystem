@@ -1,9 +1,10 @@
 package com.RestaurantSystem.Entities.Order;
 
+import java.util.List;
 import java.util.UUID;
 
 public record OrdersItemsPrintSync(
-        UUID productId,
+        List<String> productId,
         String name,
         int quantity
 ) {
