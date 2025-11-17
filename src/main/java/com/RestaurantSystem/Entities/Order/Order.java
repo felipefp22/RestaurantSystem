@@ -63,11 +63,15 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersItems> orderItems = new ArrayList<>();
 
+    @OneToMany
+    private List<OrdersItemsCancelled> orderItemsCancelled;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderPrintSync> printSyncs = new ArrayList<>();
 
     private String deliveryManID;
     private List<UUID> deliveryOrdersSequence;
+
     // <>------------ Constructors ------------<>
     public Order() {
     }
@@ -130,6 +134,7 @@ public class Order {
     public LocalDateTime getClosedWaitingPaymentAtUtc() {
         return closedWaitingPaymentAtUtc;
     }
+
     public void setClosedWaitingPaymentAtUtc(LocalDateTime closedWaitingPaymentAtUtc) {
         this.closedWaitingPaymentAtUtc = closedWaitingPaymentAtUtc;
     }
@@ -189,6 +194,7 @@ public class Order {
     public Double getDeliveryTax() {
         return deliveryTax;
     }
+
     public void setDeliveryTax(Double deliveryTax) {
         this.deliveryTax = deliveryTax;
     }
@@ -225,12 +231,21 @@ public class Order {
         this.orderItems = orderItems;
     }
 
+    public List<OrdersItemsCancelled> getOrderItemsCancelled() {
+        if(orderItemsCancelled == null){
+            orderItemsCancelled = new ArrayList<>();
+        }
+        return orderItemsCancelled;
+    }
+
     public List<OrderPrintSync> getPrintSyncs() {
         return printSyncs;
     }
+
     public void addPrintSync(OrderPrintSync printSync) {
         this.printSyncs.add(printSync);
     }
+
     public void removePrintSync(OrderPrintSync printSync) {
         this.printSyncs.remove(printSync);
     }
@@ -238,6 +253,7 @@ public class Order {
     public String getDeliveryManID() {
         return deliveryManID;
     }
+
     public void setDeliveryManID(String deliveryManID) {
         this.deliveryManID = deliveryManID;
     }
@@ -245,6 +261,7 @@ public class Order {
     public List<UUID> getDeliveryOrdersSequence() {
         return deliveryOrdersSequence;
     }
+
     public void setDeliveryOrdersSequence(List<UUID> deliveryOrdersSequence) {
         this.deliveryOrdersSequence = deliveryOrdersSequence;
     }

@@ -1,14 +1,15 @@
-package com.RestaurantSystem.Entities.Order;
+package com.RestaurantSystem.Entities.Order.DTOs;
+
+import com.RestaurantSystem.Entities.Order.OrdersItems;
 
 import java.util.List;
-import java.util.UUID;
 
-public record OrdersItemsPrintSync(
+public record OrdersItemsPrintSyncDTO(
         List<String> productId,
         String name,
         int quantity
 ) {
-    public OrdersItemsPrintSync(OrdersItems ordersItems) {
+    public OrdersItemsPrintSyncDTO(OrdersItems ordersItems) {
         this(
                 ordersItems.getProductId(),
                 ordersItems.getName(),

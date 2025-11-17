@@ -1,10 +1,11 @@
 package com.RestaurantSystem.Entities.Order;
 
+import com.RestaurantSystem.Entities.Order.DTOs.OrdersItemsPrintSyncDTO;
+import com.RestaurantSystem.Entities.Order.DTOs.UpdateNotesOnOrderDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
-import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -43,8 +44,8 @@ public class OrderPrintSync {
         this.alreadyPrinted = false;
         this.addOrCancel = addOrCancel;
 
-        List<OrdersItemsPrintSync> itemsToSet = ordersItems.stream()
-                .map(OrdersItemsPrintSync::new).toList();
+        List<OrdersItemsPrintSyncDTO> itemsToSet = ordersItems.stream()
+                .map(OrdersItemsPrintSyncDTO::new).toList();
 
         try {
             this.items = mapper.writeValueAsString(itemsToSet);
@@ -80,12 +81,12 @@ public class OrderPrintSync {
         return addOrCancel;
     }
 
-    public List<OrdersItemsPrintSync> getItems() {
+    public List<OrdersItemsPrintSyncDTO> getItems() {
         ObjectMapper mapper = new ObjectMapper();
-        List<OrdersItemsPrintSync> items;
+        List<OrdersItemsPrintSyncDTO> items;
 
         try {
-            items = mapper.readValue(this.items, new TypeReference<List<OrdersItemsPrintSync>>() {
+            items = mapper.readValue(this.items, new TypeReference<List<OrdersItemsPrintSyncDTO>>() {
             });
         } catch (Exception e) {
             throw new RuntimeException("Error deserializing order items for print sync", e);

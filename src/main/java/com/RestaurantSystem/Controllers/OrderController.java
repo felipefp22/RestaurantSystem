@@ -53,7 +53,7 @@ public class OrderController {
 
     @PutMapping("/remove-products-on-order")
     public ResponseEntity<Order> removeProductsOnOrder(@RequestHeader("Authorization") String authorizationHeader,
-                                                       @RequestBody ProductsToAddOnOrderDTO products) {
+                                                       @RequestBody ProductsToRemoveOnOrderDTO products) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = orderService.removeProductsOnOrder(requesterID, products);

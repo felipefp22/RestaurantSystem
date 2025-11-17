@@ -11,6 +11,7 @@ import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
 import com.RestaurantSystem.Entities.Order.Order;
 import com.RestaurantSystem.Entities.Order.OrderPrintSync;
 import com.RestaurantSystem.Entities.Order.OrdersItems;
+import com.RestaurantSystem.Entities.Order.OrdersItemsCancelled;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
@@ -32,6 +33,7 @@ public class OrderService {
 
     private final OrderRepo orderRepo;
     private final OrdersItemsRepo ordersItemsRepo;
+    private final OrdersItemsCancelledRepo ordersItemsCancelledRepo;
     private final AuthUserRepository authUserRepository;
     private final CompanyRepo companyRepo;
     private final ShiftRepo shiftRepo;
@@ -39,10 +41,11 @@ public class OrderService {
     private final OrderPrintSyncRepo orderPrintSyncRepo;
     private final SignalR signalR;
 
-    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, ShiftRepo shiftRepo, VerificationsServices verificationsServices,
-                        OrderPrintSyncRepo orderPrintSyncRepo, SignalR signalR) {
+    public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, OrdersItemsCancelledRepo ordersItemsCancelledRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo,
+                        ShiftRepo shiftRepo, VerificationsServices verificationsServices, OrderPrintSyncRepo orderPrintSyncRepo, SignalR signalR) {
         this.orderRepo = orderRepo;
         this.ordersItemsRepo = ordersItemsRepo;
+        this.ordersItemsCancelledRepo = ordersItemsCancelledRepo;
         this.authUserRepository = authUserRepository;
         this.companyRepo = companyRepo;
         this.shiftRepo = shiftRepo;
@@ -124,7 +127,7 @@ public class OrderService {
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
     }
 
-    public Order removeProductsOnOrder(String requesterID, ProductsToAddOnOrderDTO productsToRemove) {
+    public Order removeProductsOnOrder(String requesterID, ProductsToRemoveOnOrderDTO productsToRemove) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(productsToRemove.companyID());
         verificationsServices.worksOnCompany(company, requester);
@@ -133,9 +136,11 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.OPEN) throw new RuntimeException("Can't remove Items to no open orders.");
 
         List<OrdersItems> itemsToDelete = new ArrayList<>();
+        List<OrdersItemsCancelled> ordersItemsCancelledToSave = new ArrayList<>();
         productsToRemove.orderItemsIDs().forEach(x -> {
             order.getOrderItems().forEach(y -> {
-                if (!y.getProductId().equals(x.productID())) return;
+                if (!y.getProductId().stream().sorted().toList().equals(x.productId().stream().sorted().toList()))
+                    return;
                 int currentQty = y.getQuantity();
                 int removeQty = x.quantity();
 
@@ -145,6 +150,10 @@ public class OrderService {
                     y.setQuantity(currentQty - removeQty);
                     ordersItemsRepo.save(y);
                 }
+
+                for (int i = 1; i <= removeQty; i++) {
+                    ordersItemsCancelledToSave.add(new OrdersItemsCancelled(y));
+                }
             });
         });
 
@@ -152,6 +161,9 @@ public class OrderService {
             order.getOrderItems().remove(item); // keep object graph consistent
             ordersItemsRepo.delete(item);
         });
+
+        order.getOrderItemsCancelled().addAll(ordersItemsCancelledToSave);
+        ordersItemsCancelledRepo.saveAll(ordersItemsCancelledToSave);
 
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);

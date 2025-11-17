@@ -41,10 +41,10 @@ public class OrdersItems {
     }
     public OrdersItems(Order order, List<Product> products, Double price, int quantity) {
         this.order = order;
-        this.productId = products.stream().map(p -> p.getId().toString()).toList();
-        this.name = products.stream().map(Product::getName).reduce((a, b) -> a + "/" + b).orElse("");
+        this.productId = products.stream().map(p -> p.getId().toString()).sorted().toList();
+        this.name = products.stream().map(Product::getName).sorted().reduce((a, b) -> a + "/" + b).orElse("");
         this.price = price;
-        this.description = products.stream().map(Product::getDescription).reduce((a, b) -> a + " / " + b).orElse("");
+        this.description = products.stream().map(Product::getDescription).sorted().reduce((a, b) -> a + " / " + b).orElse("");
         this.imagePath = null;
         this.quantity = quantity;
     }
