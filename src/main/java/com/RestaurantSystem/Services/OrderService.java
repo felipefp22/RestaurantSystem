@@ -3,8 +3,11 @@ package com.RestaurantSystem.Services;
 import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.MarkOrderPrintSyncPrintedDTO;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
+import com.RestaurantSystem.Entities.ENUMs.CustomOrderPriceRule;
 import com.RestaurantSystem.Entities.Order.DTOs.*;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
+import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.CustomOrderItemsDTO;
+import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
 import com.RestaurantSystem.Entities.Order.Order;
 import com.RestaurantSystem.Entities.Order.OrderPrintSync;
 import com.RestaurantSystem.Entities.Order.OrdersItems;
@@ -71,46 +74,15 @@ public class OrderService {
         order.setDeliveryTax(calculateDeliveryTax(company, orderToCreate.deliveryDistanceKM(), orderToCreate.tableNumberOrDeliveryOrPickup()));
         Order orderCreated = orderRepo.save(order);
 
-        List<OrdersItems> ordersItems = mapOrderItems(orderToCreate, null, company, orderCreated);
+        List<OrdersItems> ordersItems = mapOrderItems(orderCreated, orderToCreate.orderItemsIDs(), orderToCreate.customOrderItemsIDs(), company);
 
-        orderCreated.getOrderItems().addAll(ordersItems);
+        orderCreated.setOrderItems(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
-        ordersItemsRepo.saveAll(ordersItems);
-        orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItems, "add"));
+        orderRepo.save(order);
         signalR.sendShiftOperationSigr(company);
 
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
     }
-
-    private Product getProductFromID(UUID productID, Company company) {
-        return company.getProductsCategories().stream()
-                .flatMap(c -> c.getProducts().stream())
-                .filter(p -> p.getId().equals(productID))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Product not found: " + productID));
-    }
-
-    private List<OrdersItems> mapOrderItems(CreateOrderDTO orderToCreate, ProductsToAddOnOrderDTO productsToAddOnOrder, Company company, Order orderCreated) {
-        List<OrdersItems> ordersItems = new ArrayList<>();
-        if (orderToCreate.orderItemsIDs() != null) {
-            orderToCreate.orderItemsIDs().forEach(itemDTO -> {
-                Product product = getProductFromID(itemDTO.productID(), company);
-                OrdersItems ordersItem = new OrdersItems(orderCreated, product, itemDTO.quantity());
-                ordersItems.add(ordersItem);
-            });
-        }
-
-        if (orderToCreate.customOrderItems() != null) {
-            orderToCreate.customOrderItems().forEach(customItemDTO -> {
-                List<Product> products = customItemDTO.productID().stream().map(productID -> getProductFromID(UUID.fromString(productID), company)).toList();
-                double totalPrice = products.stream().mapToDouble(Product::getPrice).average().orElse(0.0);
-                OrdersItems ordersItem = new OrdersItems(orderCreated, products, totalPrice, customItemDTO.quantity());
-                ordersItems.add(ordersItem);
-            });
-        }
-        return ordersItems;
-    }
-
 
     public Order addNotesOnOrder(String requesterID, UpdateNotesOnOrderDTO notesAndOrderID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
@@ -142,40 +114,11 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.OPEN)
             throw new RuntimeException("Can't add orderItemsIDs to no open orders.");
 
-        // ToSync is to print
-        List<OrdersItems> ordersItemsToSync = new ArrayList<>();
+        List<OrdersItems> ordersItems = mapOrderItems(order, productsToAdd.orderItemsIDs(), productsToAdd.customOrderItemsIDs(), company);
 
-        productsToAdd.orderItemsIDs().forEach(x -> {
-            OrdersItems existingItem = order.getOrderItems().stream()
-                    .filter(y -> y.getProductId().equals(x.productID()))
-                    .findFirst()
-                    .orElse(null);
-
-            if (existingItem != null) {
-                existingItem.setQuantity(existingItem.getQuantity() + x.quantity());
-                ordersItemsRepo.save(existingItem);
-
-                //Here is to print, then needs have just new add quantity, not total quantity
-                ordersItemsToSync.add(new OrdersItems(existingItem, x.quantity()));
-            } else {
-                Product product = company.getProductsCategories().stream()
-                        .flatMap(c -> c.getProducts().stream())
-                        .filter(p -> p.getId().equals(x.productID()))
-                        .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Product not found: " + x.productID()));
-
-                OrdersItems newItem = new OrdersItems(order, product, x.quantity());
-                order.getOrderItems().add(newItem);
-                ordersItemsRepo.save(newItem);
-
-                //Here is to print, then needs have just new add quantity, not total quantity
-                ordersItemsToSync.add(new OrdersItems(newItem, x.quantity()));
-            }
-        });
-
+        order.setOrderItems(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
-        orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItemsToSync, "add"));
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
@@ -262,36 +205,37 @@ public class OrderService {
         return orderRepo.save(order);
     }
 
-    public Order closeOrder(String requesterID, OrderToCloseDTO orderToCloseDTO) {
+    public void closeOrder(String requesterID, OrderToCloseDTO orderToCloseDTO) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(orderToCloseDTO.companyID());
         verificationsServices.worksOnCompany(company, requester);
 
-        Order order = verificationsServices.retrieveOrderOpenedDoesnoteMatterShift(company, orderToCloseDTO.orderID());
+        orderToCloseDTO.ordersIDs().forEach(x -> {
+            Order order = verificationsServices.retrieveOrderOpenedDoesnoteMatterShift(company, x);
 
-        if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
-            throw new RuntimeException("Can't close to no open orders.");
+            if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT) return;
 
-        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
-            order.setDeliveryManID(orderToCloseDTO.deliverymanID());
-            order.setDeliveryOrdersSequence(orderToCloseDTO.deliveryOrdersSequence());
-        }
+            if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+                order.setDeliveryManID(orderToCloseDTO.deliverymanID());
+                order.setDeliveryOrdersSequence(orderToCloseDTO.deliveryOrdersSequence());
+            }
 
-        if (order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
-            order.setDeliveryTax(0.0);
-        }
+            if (order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
+                order.setDeliveryTax(0.0);
+            }
 
-        if (!order.getTableNumberOrDeliveryOrPickup().equals("delivery") && !order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
-            order.setDeliveryTax(0.0);
-        }
+            if (!order.getTableNumberOrDeliveryOrPickup().equals("delivery") && !order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
+                order.setDeliveryTax(0.0);
+            }
 
-        calculateTotalPriceTaxAndDiscount(company, order, orderToCloseDTO);
-        order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
-        order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
-        order.setCompletedByUser(requester);
+            calculateTotalPriceTaxAndDiscount(company, order, orderToCloseDTO);
+            order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
+            order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
+            order.setCompletedByUser(requester);
+            orderRepo.save(order);
+        });
 
         signalR.sendShiftOperationSigr(company);
-        return orderRepo.save(order);
     }
 
     public Order confirmPaidOrder(String requesterID, FindOrderDTO dto) {
@@ -312,27 +256,28 @@ public class OrderService {
         return orderRepo.save(order);
     }
 
-    public Order reopenOrder(String requesterID, FindOrderDTO orderToReopen) {
+    public void reopenOrder(String requesterID, ReopenOrdersDTO orderToReopen) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(orderToReopen.companyID());
         verificationsServices.worksOnCompany(company, requester);
 
-        List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
-        Order order = orderOpened.stream().filter(x -> x.getId().equals(orderToReopen.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
+        orderToReopen.ordersIDs().forEach(x -> {
+            Order order = verificationsServices.retrieveOrderOpenedDoesnoteMatterShift(company, x);
 
-        if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT)
-            throw new RuntimeException("Can't reopen to no \"closed waiting payment\" orders.");
+            if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT) return;
 
-        order.setServiceTax(0);
-        order.setDiscount(0);
-        order.setTotalPrice(0);
-        order.setStatus(OrderStatus.OPEN);
-        order.setCompletedByUser(null);
-        order.setDeliveryManID(null);
-        order.setDeliveryOrdersSequence(null);
+            order.setServiceTax(0);
+            order.setDiscount(0);
+            order.setTotalPrice(0);
+            order.setStatus(OrderStatus.OPEN);
+            order.setCompletedByUser(null);
+            order.setDeliveryManID(null);
+            order.setDeliveryOrdersSequence(null);
+
+            orderRepo.save(order);
+        });
 
         signalR.sendShiftOperationSigr(company);
-        return orderRepo.save(order);
     }
 
     public Order cancelOrder(String requesterID, ConfirmOrCancelOrderDTO cancelOrderDTO) {
@@ -364,6 +309,66 @@ public class OrderService {
     }
 
     // <> ---------- Aux Methods ---------- <>
+
+    // <>---------------------------- ADD/REMOVE ITEMS HELPERS -----------------------------------<>
+    private Product getProductFromID(UUID productID, Company company) {
+        return company.getProductsCategories().stream()
+                .flatMap(c -> c.getProducts().stream())
+                .filter(p -> p.getId().equals(productID))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Product not found: " + productID));
+    }
+
+    private List<OrdersItems> mapOrderItems(Order order, List<OrderItemDTO> orderItemsToAddIDs, List<CustomOrderItemsDTO> customOrderItemsToAddIDs, Company company) {
+        List<OrdersItems> ordersItemsToSync = new ArrayList<>();
+        List<OrdersItems> ordersItems = order.getOrderItems() != null ? order.getOrderItems() : new ArrayList<>();
+        if (orderItemsToAddIDs != null) {
+            orderItemsToAddIDs.forEach(itemDTO -> {
+                OrdersItems existingItem = ordersItems.stream()
+                        .filter(y -> y.getProductId().equals(itemDTO.productID()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (existingItem != null) {
+                    existingItem.setQuantity(existingItem.getQuantity() + itemDTO.quantity());
+                    ordersItemsToSync.add(new OrdersItems(existingItem, itemDTO.quantity()));
+                } else {
+                    Product product = getProductFromID(itemDTO.productID(), company);
+                    OrdersItems newItem = new OrdersItems(order, product, itemDTO.quantity());
+                    ordersItems.add(newItem);
+                    ordersItemsToSync.add(new OrdersItems(newItem, itemDTO.quantity()));
+                }
+            });
+        }
+
+        if (customOrderItemsToAddIDs != null) {
+            customOrderItemsToAddIDs.forEach(customItemDTO -> {
+                List<String> incomingIds = customItemDTO.productID().stream().sorted().toList();
+                OrdersItems existingCustomItem = ordersItems.stream()
+                        .filter(item -> {
+                            List<String> existingIds = item.getProductId().stream().sorted().toList();
+                            return existingIds.equals(incomingIds);
+                        }).findFirst().orElse(null);
+
+                if (existingCustomItem != null) {
+                    existingCustomItem.setQuantity(existingCustomItem.getQuantity() + customItemDTO.quantity());
+                    ordersItemsToSync.add(new OrdersItems(existingCustomItem, customItemDTO.quantity()));
+                } else {
+                    List<Product> incomingProducts = incomingIds.stream().map(id -> getProductFromID(UUID.fromString(id), company)).toList();
+
+                    double totalPrice = incomingProducts.get(0).getProductCategory().getCustomOrderPriceRule().equals(CustomOrderPriceRule.BIGGESTPRICE) ?
+                            incomingProducts.stream().mapToDouble(Product::getPrice).max().orElse(0.0) : incomingProducts.stream().mapToDouble(Product::getPrice).average().orElse(0.0);
+
+                    ordersItems.add(new OrdersItems(order, incomingProducts, totalPrice, customItemDTO.quantity()));
+                }
+            });
+        }
+
+        ordersItemsRepo.saveAll(ordersItems);
+        orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItemsToSync, "add"));
+        return ordersItems;
+    }
+
     private void calculateTotalPriceTaxAndDiscount(Company company, Order order, OrderToCloseDTO orderToCloseDTO) {
         order.setPrice(0.0);
 
@@ -440,7 +445,7 @@ public class OrderService {
 
         return newTableNumber;
     }
-    // <>---------------------------- END || CREATE/UPDATE ORDERS HELPERS || END -----------------------------------<>
+// <>---------------------------- END || CREATE/UPDATE ORDERS HELPERS || END -----------------------------------<>
 
     public void markOrderAsPrinted(String requesterID, MarkOrderPrintSyncPrintedDTO dto) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);

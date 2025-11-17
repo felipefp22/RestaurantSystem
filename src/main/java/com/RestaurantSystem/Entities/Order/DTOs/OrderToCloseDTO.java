@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record OrderToCloseDTO(
         UUID companyID,
-        UUID orderID,
+        List<UUID> ordersIDs,
         boolean clientSaidNoTax,
         Double discountValue,
         String deliverymanID,

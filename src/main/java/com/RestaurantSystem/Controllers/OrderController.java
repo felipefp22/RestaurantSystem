@@ -72,13 +72,13 @@ public class OrderController {
     }
 
     @PutMapping("/close-order")
-    public ResponseEntity<Order> closeOrder(@RequestHeader("Authorization") String authorizationHeader,
-                                            @RequestBody OrderToCloseDTO orderToCloseDTO) {
+    public ResponseEntity closeOrder(@RequestHeader("Authorization") String authorizationHeader,
+                                     @RequestBody OrderToCloseDTO orderToCloseDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = orderService.closeOrder(requesterID, orderToCloseDTO);
+        orderService.closeOrder(requesterID, orderToCloseDTO);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/confirm-paid-order")
@@ -92,13 +92,13 @@ public class OrderController {
     }
 
     @PutMapping("/reopen-order")
-    public ResponseEntity<Order> reopenOrder(@RequestHeader("Authorization") String authorizationHeader,
-                                             @RequestBody FindOrderDTO dto) {
+    public ResponseEntity reopenOrder(@RequestHeader("Authorization") String authorizationHeader,
+                                      @RequestBody ReopenOrdersDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
-        var response = orderService.reopenOrder(requesterID, dto);
+        orderService.reopenOrder(requesterID, dto);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/cancel-order")

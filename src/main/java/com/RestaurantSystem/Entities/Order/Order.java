@@ -221,17 +221,10 @@ public class Order {
         return orderItems;
     }
 
-    public void addProducts(List<OrdersItems> products) {
-        if (this.status == OrderStatus.OPEN) {
-            this.orderItems.addAll(products);
-        }
+    public void setOrderItems(List<OrdersItems> orderItems) {
+        this.orderItems = orderItems;
     }
 
-    public void removeProducts(List<OrdersItems> products) {
-        if (this.status == OrderStatus.OPEN) {
-            this.orderItems.removeAll(products);
-        }
-    }
     public List<OrderPrintSync> getPrintSyncs() {
         return printSyncs;
     }
