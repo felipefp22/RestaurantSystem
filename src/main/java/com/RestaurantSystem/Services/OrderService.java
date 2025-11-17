@@ -325,7 +325,7 @@ public class OrderService {
     private void calculateTotalPriceTaxAndDiscount(Company company, Order order, OrderToCloseDTO orderToCloseDTO) {
         order.setPrice(0.0);
 
-        order.getOrderItems().forEach(product -> {
+        order.getOrderItems().stream().filter(x -> x.getStatus().equals("ACTIVE")).forEach(product -> {
             order.setPrice(order.getPrice() + (product.getPrice()));
         });
 
