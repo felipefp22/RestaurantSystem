@@ -63,9 +63,6 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersItems> orderItems = new ArrayList<>();
 
-    @OneToMany
-    private List<OrdersItemsCancelled> orderItemsCancelled;
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderPrintSync> printSyncs = new ArrayList<>();
 
@@ -229,13 +226,6 @@ public class Order {
 
     public void setOrderItems(List<OrdersItems> orderItems) {
         this.orderItems = orderItems;
-    }
-
-    public List<OrdersItemsCancelled> getOrderItemsCancelled() {
-        if(orderItemsCancelled == null){
-            orderItemsCancelled = new ArrayList<>();
-        }
-        return orderItemsCancelled;
     }
 
     public List<OrderPrintSync> getPrintSyncs() {

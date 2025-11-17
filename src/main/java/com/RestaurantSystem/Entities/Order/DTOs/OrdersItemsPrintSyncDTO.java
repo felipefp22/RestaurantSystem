@@ -6,14 +6,12 @@ import java.util.List;
 
 public record OrdersItemsPrintSyncDTO(
         List<String> productId,
-        String name,
-        int quantity
+        String name
 ) {
     public OrdersItemsPrintSyncDTO(OrdersItems ordersItems) {
         this(
                 ordersItems.getProductId(),
-                ordersItems.getName(),
-                ordersItems.getQuantity()
+                ordersItems.getName()
         );
     }
 }

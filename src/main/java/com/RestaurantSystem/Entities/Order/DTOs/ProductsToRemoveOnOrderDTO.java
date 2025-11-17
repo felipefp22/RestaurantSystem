@@ -9,12 +9,7 @@ import java.util.UUID;
 public record ProductsToRemoveOnOrderDTO(
         UUID companyID,
         UUID orderID,
-        List<OrderItemToRemoveDTO> orderItemsIDs
+        List<UUID> ordersItemsIDs
 ) {
-    public record OrderItemToRemoveDTO(
-            List<String> productId,
-            int quantity
-    ) {
-    }
 
 }

@@ -65,7 +65,7 @@ public class ProductService {
 //
 //        List<Product> allProducts = company.getProductsCategories().stream().flatMap(pc -> pc.getProducts().stream()).toList();
 //
-//        return allProducts.stream().filter(p -> p.getId().equals(dto.productID())).findFirst()
+//        return allProducts.stream().filter(p -> p.getId().equals(dto.productsIDs())).findFirst()
 //                .orElseThrow(() -> new RuntimeException("Product not found"));
 //    }
 

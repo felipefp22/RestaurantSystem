@@ -24,40 +24,29 @@ public class OrdersItems {
     private double price;
     private String description;
     private String imagePath;
-    private int quantity;
+    private String status;
 
     // <>------------ Constructors ------------<>
 
     public OrdersItems() {
     }
-    public OrdersItems(Order order, Product product, int quantity) {
+    public OrdersItems(Order order, Product product) {
         this.order = order;
         this.productId = List.of(product.getId().toString());
         this.name = product.getName();
         this.price = product.getPrice();
         this.description = product.getDescription();
         this.imagePath = product.getImagePath();
-        this.quantity = quantity;
+        this.status = "ACTIVE";
     }
-    public OrdersItems(Order order, List<Product> products, Double price, int quantity) {
+    public OrdersItems(Order order, List<Product> products, Double price) {
         this.order = order;
         this.productId = products.stream().map(p -> p.getId().toString()).sorted().toList();
         this.name = products.stream().map(Product::getName).sorted().reduce((a, b) -> a + "/" + b).orElse("");
         this.price = price;
         this.description = products.stream().map(Product::getDescription).sorted().reduce((a, b) -> a + " / " + b).orElse("");
         this.imagePath = null;
-        this.quantity = quantity;
-    }
-
-    //Just Use to PrintSync bellow constructor
-    public OrdersItems(OrdersItems orderItems, int quantity) {
-        this.order = orderItems.getOrder();
-        this.productId = orderItems.getProductId();
-        this.name = orderItems.getName();
-        this.price = orderItems.getPrice();
-        this.description = orderItems.getDescription();
-        this.imagePath = orderItems.getImagePath();
-        this.quantity = quantity;
+        this.status = "ACTIVE";
     }
 
     /// <>------------ Getters and Setters ------------<>
@@ -90,11 +79,10 @@ public class OrdersItems {
         return imagePath;
     }
 
-    public int getQuantity() {
-        return quantity;
+    public String getStatus() {
+        return status;
     }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -1,9 +1,9 @@
 package com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs;
 
-import java.util.UUID;
+import java.util.List;
 
 public record OrderItemDTO(
-        UUID productID,
+        List<String> productsIDs,
         int quantity
 ) {
 }

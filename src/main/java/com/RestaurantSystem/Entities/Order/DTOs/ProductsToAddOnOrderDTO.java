@@ -9,8 +9,7 @@ import java.util.UUID;
 public record ProductsToAddOnOrderDTO(
         UUID companyID,
         UUID orderID,
-        List<OrderItemDTO> orderItemsIDs,
-        List<CustomOrderItemsDTO> customOrderItemsIDs
+        List<OrderItemDTO> orderItemsIDs
         ) {
 
 
