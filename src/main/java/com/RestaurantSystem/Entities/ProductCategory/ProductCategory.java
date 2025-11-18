@@ -3,6 +3,7 @@ package com.RestaurantSystem.Entities.ProductCategory;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.ENUMs.CustomOrderPriceRule;
 import com.RestaurantSystem.Entities.Product.Product;
+import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -23,6 +24,9 @@ public class ProductCategory {
 
     @OneToMany(mappedBy = "productCategory")
     private List<Product> products;
+
+    @OneToMany(mappedBy = "productCategory")
+    private List<ProductOption> productOptions;
 
     private String categoryName;
     private String description;
@@ -59,6 +63,13 @@ public class ProductCategory {
 
     public List<Product> getProducts() {
         return products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
+    }
+    public List<ProductOption> getProductOptions() {
+        return productOptions;
     }
 
     public String getCategoryName() {

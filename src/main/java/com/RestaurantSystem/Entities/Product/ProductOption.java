@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Entities.Product;
 
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
+import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductOptionDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -8,7 +9,7 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-public class Product {
+public class ProductOption {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -26,15 +27,15 @@ public class Product {
     private String ifoodCode;
 
     // <>------------ Constructors ------------<>
-    public Product() {
+    public ProductOption() {
     }
-    public Product(CreateOrUpdateProductDTO productToCreate, ProductCategory productCategory) {
+    public ProductOption(CreateOrUpdateProductOptionDTO productOptToCreate, ProductCategory productCategory) {
         this.productCategory = productCategory;
-        this.name = productToCreate.name();
-        this.price = productToCreate.price();
-        this.description = productToCreate.description();
-        this.imagePath = productToCreate.imagePath();
-        this.ifoodCode = productToCreate.ifoodCode();
+        this.name = productOptToCreate.name();
+        this.price = productOptToCreate.price();
+        this.description = productOptToCreate.description();
+        this.imagePath = productOptToCreate.imagePath();
+        this.ifoodCode = productOptToCreate.ifoodCode();
     }
 
     // <>------------ Getters and Setters ------------<>
@@ -84,6 +85,7 @@ public class Product {
     public String getIfoodCode() {
         return ifoodCode;
     }
+
     public void setIfoodCode(String ifoodCode) {
         this.ifoodCode = ifoodCode;
     }

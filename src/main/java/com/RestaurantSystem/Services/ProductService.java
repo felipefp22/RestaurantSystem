@@ -19,16 +19,10 @@ import java.util.UUID;
 @Service
 public class ProductService {
     private final ProductRepo productRepo;
-    private final ProductCategoryRepo productCategoryRepo;
-    private final AuthUserRepository authUserRepository;
-    private final CompanyRepo companyRepo;
     private final VerificationsServices verificationsServices;
 
-    public ProductService(ProductRepo productRepo, ProductCategoryRepo productCategoryRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, VerificationsServices verificationsServices) {
+    public ProductService(ProductRepo productRepo, VerificationsServices verificationsServices) {
         this.productRepo = productRepo;
-        this.productCategoryRepo = productCategoryRepo;
-        this.authUserRepository = authUserRepository;
-        this.companyRepo = companyRepo;
         this.verificationsServices = verificationsServices;
     }
 
@@ -81,8 +75,6 @@ public class ProductService {
 
         Product product = new Product(productToCreate, productCategoryToAddProduct);
 
-        productRepo.save(product);
-
         return productRepo.save(product);
     }
 
@@ -96,21 +88,21 @@ public class ProductService {
         Product productToUpdate = allProducts.stream().filter(p -> p.getId().equals(productToUpdateDTO.productID())).findFirst()
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        ProductCategory productCategoryToAddProduct = company.getProductsCategories().stream()
-                .filter(pc -> pc.getId().equals(UUID.fromString(productToUpdateDTO.productCategoryID())))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+//        ProductCategory productCategoryToAddProduct = company.getProductsCategories().stream()
+//                .filter(pc -> pc.getId().equals(UUID.fromString(productToUpdateDTO.productCategoryID())))
+//                .findFirst()
+//                .orElseThrow(() -> new RuntimeException("Category not found"));
 
         productToUpdate.setName(productToUpdateDTO.name());
         productToUpdate.setPrice(productToUpdateDTO.price());
         productToUpdate.setDescription(productToUpdateDTO.description());
         productToUpdate.setImagePath(productToUpdateDTO.imagePath());
 
-        if (productToUpdate.getProductCategory() != productCategoryToAddProduct) {
-            if (!company.getProductsCategories().contains(productCategoryToAddProduct))
-                throw new RuntimeException("Category not found, create it first");
-            productToUpdate.setProductCategory(productCategoryToAddProduct);
-        }
+//        if (productToUpdate.getProductCategory() != productCategoryToAddProduct) {
+//            if (!company.getProductsCategories().contains(productCategoryToAddProduct))
+//                throw new RuntimeException("Category not found, create it first");
+//            productToUpdate.setProductCategory(productCategoryToAddProduct);
+//        }
 
         return productRepo.save(productToUpdate);
     }

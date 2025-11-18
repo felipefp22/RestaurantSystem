@@ -2,9 +2,9 @@ package com.RestaurantSystem.Entities.Product.DTOs;
 
 import java.util.UUID;
 
-public record CreateOrUpdateProductDTO(
+public record CreateOrUpdateProductOptionDTO(
         UUID companyID,
-        UUID productID,
+        UUID productOptID,
         String name,
         double price,
         String description,
