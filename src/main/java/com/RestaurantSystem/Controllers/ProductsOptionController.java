@@ -5,6 +5,7 @@ import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductOptionDTO
 import com.RestaurantSystem.Entities.Product.DTOs.FindProductDTO;
 import com.RestaurantSystem.Entities.Product.DTOs.FindProductOptionDTO;
 import com.RestaurantSystem.Entities.Product.Product;
+import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.ProductOptionService;
 import com.RestaurantSystem.Services.ProductService;
@@ -25,8 +26,8 @@ public class ProductsOptionController {
     // <>------------ Methods ------------<>
 
     @PostMapping("/create-product-option")
-    public ResponseEntity<Product> createProductOption(@RequestHeader("Authorization") String authorizationHeader,
-                                                       @RequestBody CreateOrUpdateProductOptionDTO productToCreate) {
+    public ResponseEntity<ProductOption> createProductOption(@RequestHeader("Authorization") String authorizationHeader,
+                                                             @RequestBody CreateOrUpdateProductOptionDTO productToCreate) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
         var response = productOptionService.createProductOption(requesterID, productToCreate);
 
@@ -34,8 +35,8 @@ public class ProductsOptionController {
     }
 
     @PutMapping("/update-product-option")
-    public ResponseEntity<Product> updateProductOption(@RequestHeader("Authorization") String authorizationHeader,
-                                                       @RequestBody CreateOrUpdateProductOptionDTO productToUpdate) {
+    public ResponseEntity<ProductOption> updateProductOption(@RequestHeader("Authorization") String authorizationHeader,
+                                                             @RequestBody CreateOrUpdateProductOptionDTO productToUpdate) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
         var response = productOptionService.updateProductOption(requesterID, productToUpdate);
 

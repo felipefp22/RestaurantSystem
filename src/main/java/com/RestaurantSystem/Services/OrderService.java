@@ -11,6 +11,7 @@ import com.RestaurantSystem.Entities.Order.Order;
 import com.RestaurantSystem.Entities.Order.OrderPrintSync;
 import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Product.Product;
+import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.*;
@@ -289,15 +290,21 @@ public class OrderService {
     // <> ---------- Aux Methods ---------- <>
 
     // <>---------------------------- ADD/REMOVE ITEMS HELPERS -----------------------------------<>
-    private Map<UUID, Product> getProductMap(UUID productID, Company company) {
+    private Map<UUID, Product> getProductMap(Company company) {
         return company.getProductsCategories().stream()
                 .flatMap(c -> c.getProducts().stream())
                 .collect(Collectors.toMap(Product::getId, p -> p));
     }
+    private Map<UUID, ProductOption> getProductOptsMap(Company company) {
+        return company.getProductsCategories().stream()
+                .flatMap(c -> c.getProductOptions().stream())
+                .collect(Collectors.toMap(ProductOption::getId, p -> p));
+    }
 
     private List<OrdersItems> mapOrderItems(Order order, List<OrderItemDTO> orderItemsToAddIDs, Company company) {
         List<OrdersItems> ordersItems = new ArrayList<>();
-        Map<UUID, Product> productMap = getProductMap(company.getId(), company);
+        Map<UUID, Product> productMap = getProductMap(company);
+        Map<UUID, ProductOption> productOptsMap = getProductOptsMap(company);
 
         if (orderItemsToAddIDs != null) {
             orderItemsToAddIDs.forEach(x -> {
@@ -305,15 +312,20 @@ public class OrderService {
                 if (products.stream().anyMatch(Objects::isNull))
                     throw new RuntimeException("Product not found: " + x.productsIDs());
 
-                Double totalPrice;
+                List<ProductOption> productOptions = x.productOptsIDs() != null ?
+                        x.productOptsIDs().stream().map(id -> productOptsMap.get(UUID.fromString(id))).toList() : new ArrayList<>();
+                if (productOptions.stream().anyMatch(Objects::isNull))
+                    throw new RuntimeException("Product Option not found: " + x.productOptsIDs());
+
+                Double totalProductPrice;
                 if (products.size() <= 1) {
-                    totalPrice = products.get(0).getPrice();
+                    totalProductPrice = products.get(0).getPrice();
                 } else {
-                    totalPrice = products.get(0).getProductCategory().getCustomOrderPriceRule().equals(CustomOrderPriceRule.BIGGESTPRICE) ?
+                    totalProductPrice = products.get(0).getProductCategory().getCustomOrderPriceRule().equals(CustomOrderPriceRule.BIGGESTPRICE) ?
                             products.stream().mapToDouble(Product::getPrice).max().orElse(0.0) : products.stream().mapToDouble(Product::getPrice).average().orElse(0.0);
                 }
 
-                ordersItems.add(new OrdersItems(order, products, totalPrice));
+                ordersItems.add(new OrdersItems(order, products, totalProductPrice, productOptions, x.notes()));
             });
         }
 
@@ -325,7 +337,9 @@ public class OrderService {
     private void calculateTotalPriceTaxAndDiscount(Company company, Order order, OrderToCloseDTO orderToCloseDTO) {
         order.setPrice(0.0);
 
-        order.getOrderItems().stream().filter(x -> x.getStatus().equals("ACTIVE")).forEach(product -> {
+        order.getOrderItems().stream().filter(x -> x.getStatus().equals("ACTIVE" +
+                "" +
+                "")).forEach(product -> {
             order.setPrice(order.getPrice() + (product.getPrice()));
         });
 

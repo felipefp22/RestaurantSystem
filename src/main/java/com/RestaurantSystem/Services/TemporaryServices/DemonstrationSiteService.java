@@ -91,12 +91,12 @@ public class DemonstrationSiteService {
         UUID pCategoryDessertsID = pCategoriesCreated.stream().filter(c -> c.getCategoryName().equals("Desserts")).map(ProductCategory::getId).findFirst().orElseThrow(() -> new RuntimeException("Desserts category not created"));
 
         List<CreateOrUpdateProductDTO> productDTOS = List.of(
-                new CreateOrUpdateProductDTO(company.getId(), null, "Coca-Cola 20oz", 5.00, "Coca-Cola 20oz", "cokeBottle", String.valueOf(pCategoryBeveragesID)),
-                new CreateOrUpdateProductDTO(company.getId(), null, "Pepsi 20oz", 5.00, "Pepsi 20oz", "pepsi", String.valueOf(pCategoryBeveragesID)),
-                new CreateOrUpdateProductDTO(company.getId(), null, "Burger", 20.00, "Cheeseburger with fries", "burguer", String.valueOf(pCategoryFoodsID)),
-                new CreateOrUpdateProductDTO(company.getId(), null, "Pizza", 30.00, "Pepperoni Pizza", "pizza", String.valueOf(pCategoryFoodsID)),
-                new CreateOrUpdateProductDTO(company.getId(), null, "Tiramisù", 10.00, "Vanilla Ice Cream", "tiramisu", String.valueOf(pCategoryDessertsID)),
-                new CreateOrUpdateProductDTO(company.getId(), null, "Cake", 15.00, "Chocolate Cake", "cake", String.valueOf(pCategoryDessertsID))
+                new CreateOrUpdateProductDTO(company.getId(), null, "Coca-Cola 20oz", 5.00, "Coca-Cola 20oz", "cokeBottle", String.valueOf(pCategoryBeveragesID), null),
+                new CreateOrUpdateProductDTO(company.getId(), null, "Pepsi 20oz", 5.00, "Pepsi 20oz", "pepsi", String.valueOf(pCategoryBeveragesID), null),
+                new CreateOrUpdateProductDTO(company.getId(), null, "Burger", 20.00, "Cheeseburger with fries", "burguer", String.valueOf(pCategoryFoodsID), null),
+                new CreateOrUpdateProductDTO(company.getId(), null, "Pizza", 30.00, "Pepperoni Pizza", "pizza", String.valueOf(pCategoryFoodsID), null),
+                new CreateOrUpdateProductDTO(company.getId(), null, "Tiramisù", 10.00, "Vanilla Ice Cream", "tiramisu", String.valueOf(pCategoryDessertsID), null),
+                new CreateOrUpdateProductDTO(company.getId(), null, "Cake", 15.00, "Chocolate Cake", "cake", String.valueOf(pCategoryDessertsID), null)
         );
 
         productDTOS.forEach(dto -> {

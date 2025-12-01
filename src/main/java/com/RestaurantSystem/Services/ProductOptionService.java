@@ -39,7 +39,9 @@ public class ProductOptionService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         ProductOption productOpt = new ProductOption(productToCreate, productCategoryToAddProductOpt);
-        changeIfoodCode(company, productOpt, productToCreate.ifoodCode());
+        productOptionRepo.save(productOpt);
+        productOpt.setIfoodCode(productOpt.getId().toString()); //default code before validation, DO NOT REMOVE
+        productOpt.setIfoodCode(validateNewIfoodCodeProductOption(company, productOpt, productToCreate.ifoodCode()));
 
         return productOptionRepo.save(productOpt);
     }
@@ -63,7 +65,7 @@ public class ProductOptionService {
         productOptToUpdate.setPrice(productToUpdateDTO.price());
         productOptToUpdate.setDescription(productToUpdateDTO.description());
         productOptToUpdate.setImagePath(productToUpdateDTO.imagePath());
-        changeIfoodCode(company, productOptToUpdate, productToUpdateDTO.ifoodCode());
+        productOptToUpdate.setIfoodCode(validateNewIfoodCodeProductOption(company, productOptToUpdate, productToUpdateDTO.ifoodCode()));
 
 //        if (productOptToUpdate.getProductCategory() != productCategoryToAddProduct) {
 //            if (!company.getProductsCategories().contains(productCategoryToAddProduct))
@@ -88,26 +90,21 @@ public class ProductOptionService {
     }
 
     // <> ---------- Helpers ---------- <>
-    private void changeIfoodCode(Company company, ProductOption productOption, String newIfoodCode) {
-        if (productOption.getIfoodCode().equals(newIfoodCode) || newIfoodCode == null) return;
-        if (newIfoodCode.equals("default")) {
-            productOption.setIfoodCode(productOption.getId().toString());
-            productOptionRepo.save(productOption);
-            return;
-        }
+    private String validateNewIfoodCodeProductOption(Company company, ProductOption productOption, String newIfoodCode) {
+        if (productOption.getIfoodCode().equals(newIfoodCode) || newIfoodCode == null) return productOption.getIfoodCode();
+        if (newIfoodCode.equals("default")) return productOption.getId().toString();
 
-        List<String> usedCodes = company.getProductsCategories().stream()
+        List<String> usedCodes = new ArrayList<>(company.getProductsCategories().stream()
                 .flatMap(pc -> Stream.concat(
                         pc.getProducts().stream().map(Product::getIfoodCode),
                         pc.getProductOptions().stream().map(ProductOption::getIfoodCode)
                 ))
-                .toList();
+                .toList());
 
         usedCodes.add("default");
 
         if (usedCodes.contains(newIfoodCode)) throw new RuntimeException("iFood code already in use");
-
-        productOption.setIfoodCode(newIfoodCode);
-        productOptionRepo.save(productOption);
+        return newIfoodCode;
     }
+
 }

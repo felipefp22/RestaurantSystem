@@ -34,7 +34,6 @@ public class Product {
         this.price = productToCreate.price();
         this.description = productToCreate.description();
         this.imagePath = productToCreate.imagePath();
-        this.ifoodCode = productToCreate.ifoodCode();
     }
 
     // <>------------ Getters and Setters ------------<>

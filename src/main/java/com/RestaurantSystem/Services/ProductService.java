@@ -4,6 +4,7 @@ import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
 import com.RestaurantSystem.Entities.Product.DTOs.FindProductDTO;
 import com.RestaurantSystem.Entities.Product.Product;
+import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
@@ -13,8 +14,10 @@ import com.RestaurantSystem.Repositories.ProductRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 public class ProductService {
@@ -74,6 +77,8 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         Product product = new Product(productToCreate, productCategoryToAddProduct);
+        product.setIfoodCode(product.getId().toString()); //default code before validation, DO NOT REMOVE
+        product.setIfoodCode(validateNewIfoodCodeProduct(company, product, productToCreate.ifoodCode()));
 
         return productRepo.save(product);
     }
@@ -97,6 +102,7 @@ public class ProductService {
         productToUpdate.setPrice(productToUpdateDTO.price());
         productToUpdate.setDescription(productToUpdateDTO.description());
         productToUpdate.setImagePath(productToUpdateDTO.imagePath());
+        productToUpdate.setIfoodCode(validateNewIfoodCodeProduct(company, productToUpdate, productToUpdateDTO.ifoodCode()));
 
 //        if (productToUpdate.getProductCategory() != productCategoryToAddProduct) {
 //            if (!company.getProductsCategories().contains(productCategoryToAddProduct))
@@ -119,5 +125,24 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         productRepo.delete(productToDelete);
+    }
+
+    // <> ---------- Helpers ---------- <>
+    private String validateNewIfoodCodeProduct(Company company, Product product, String newIfoodCode) {
+        if (product.getIfoodCode() == null && newIfoodCode == null) return product.getId().toString();
+        if (product.getIfoodCode().equals(newIfoodCode) || newIfoodCode == null) return product.getIfoodCode();
+        if (newIfoodCode.equals("default")) return product.getId().toString();
+
+        List<String> usedCodes = new ArrayList<>(company.getProductsCategories().stream()
+                .flatMap(pc -> Stream.concat(
+                        pc.getProducts().stream().map(Product::getIfoodCode),
+                        pc.getProductOptions().stream().map(ProductOption::getIfoodCode)
+                ))
+                .toList());
+
+        usedCodes.add("default");
+
+        if (usedCodes.contains(newIfoodCode)) throw new RuntimeException("iFood code already in use");
+        return newIfoodCode;
     }
 }
