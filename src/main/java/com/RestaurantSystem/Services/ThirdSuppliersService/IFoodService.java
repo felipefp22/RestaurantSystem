@@ -6,7 +6,7 @@ import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.CompanyIFoodRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
-import com.RestaurantSystem.Services.WebRequests.DTOs.*;
+import com.RestaurantSystem.Services.WebRequests.IFoodDTOs.*;
 import com.RestaurantSystem.Services.WebRequests.WebClientLinkRequestIFood;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import org.springframework.beans.factory.annotation.Value;
@@ -127,4 +127,7 @@ public class IFoodService {
         companyIFoodRepo.delete(companyIFoodData);
         companyRepo.save(company);
     }
+
+    // <>------------- Pooling -------------<>
+
 }

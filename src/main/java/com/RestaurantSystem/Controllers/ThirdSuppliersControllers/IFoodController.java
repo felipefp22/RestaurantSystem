@@ -2,9 +2,9 @@ package com.RestaurantSystem.Controllers.ThirdSuppliersControllers;
 
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.ThirdSuppliersService.IFoodService;
-import com.RestaurantSystem.Services.WebRequests.DTOs.IFoodMerchantDataDTO;
-import com.RestaurantSystem.Services.WebRequests.DTOs.ReceiveCustomerCodeToRegisterIFoodDTO;
-import com.RestaurantSystem.Services.WebRequests.DTOs.ReturnIFoodCodeToUserDTO;
+import com.RestaurantSystem.Services.WebRequests.IFoodDTOs.IFoodMerchantDataDTO;
+import com.RestaurantSystem.Services.WebRequests.IFoodDTOs.ReceiveCustomerCodeToRegisterIFoodDTO;
+import com.RestaurantSystem.Services.WebRequests.IFoodDTOs.ReturnIFoodCodeToUserDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +24,12 @@ public class IFoodController {
 
 
     // <> ------------- Methods ------------- <>
+
+    @GetMapping("/test")
+    public ResponseEntity testEndpoint() {
+
+        return ResponseEntity.ok().build();
+    }
     @GetMapping("/get-connected-ifood-store/{companyID}")
     public ResponseEntity<List<IFoodMerchantDataDTO>> getConnectedIFoodStore(@RequestHeader("Authorization") String authorizationHeader,
                                                                              @PathVariable UUID companyID) {

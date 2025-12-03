@@ -52,7 +52,17 @@
 			<artifactId>signalr</artifactId>
 			<version>5.0.10</version> <!-- or pick latest available -->
 		</dependency>
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-storage-queue</artifactId>
+			<version>12.20.1</version>
+		</dependency>
 
+		<dependency>
+			<groupId>com.azure.spring</groupId>
+			<artifactId>spring-cloud-azure-starter-integration-servicebus</artifactId>
+			<version>5.23.0</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>

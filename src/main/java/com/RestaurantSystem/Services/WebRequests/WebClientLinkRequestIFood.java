@@ -3,8 +3,7 @@ package com.RestaurantSystem.Services.WebRequests;
 
 import com.RestaurantSystem.Entities.Company.CompanyIFood;
 import com.RestaurantSystem.Repositories.CompanyIFoodRepo;
-import com.RestaurantSystem.Services.WebRequests.DTOs.IFoodRequestTokenDTO;
-import com.RestaurantSystem.Services.WebRequests.DTOs.IFoodTokenReturnDTO;
+import com.RestaurantSystem.Services.WebRequests.IFoodDTOs.IFoodTokenReturnDTO;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;

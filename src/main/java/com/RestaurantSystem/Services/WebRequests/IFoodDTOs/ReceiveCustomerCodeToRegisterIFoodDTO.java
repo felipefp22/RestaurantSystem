@@ -1,4 +1,4 @@
-package com.RestaurantSystem.Services.WebRequests.DTOs;
+package com.RestaurantSystem.Services.WebRequests.IFoodDTOs;
 
 import java.util.UUID;
 

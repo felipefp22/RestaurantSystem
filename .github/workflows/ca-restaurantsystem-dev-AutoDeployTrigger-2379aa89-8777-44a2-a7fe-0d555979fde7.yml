@@ -46,6 +46,8 @@ jobs:
           _buildArgumentsKey_: |
             _buildArgumentsValues_
           environmentVariables:
+            AZURE_STORAGE_CONNECTION_STRING=${{ secrets.PROD_AZURE_STORAGE_CONNECTION_STRING }}
+            AZURE_SERVICE_BUS_CONNECTION_STRING=${{ secrets.PROD_AZURE_SERVICE_BUS_CONNECTION_STRING }}
             DATABASE_PASSWORD=${{ secrets.PROD_DATABASE_PASSWORD }}
             DATABASE_URL=${{ secrets.PROD_DATABASE_URL }}
             DATABASE_USERNAME=${{ secrets.PROD_DATABASE_USERNAME }}
