@@ -65,6 +65,11 @@ public class Company {
 
     private List<String> noUserDeliveryMans = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "company_ifood_id")
+    private CompanyIFood companyIFoodData;
+
     //<>------------ Constructors ------------<>
     public Company() {
     }
@@ -254,5 +259,13 @@ public class Company {
     }
     public void removeNoUserDeliveryMan(String deliveryManName) {
         this.noUserDeliveryMans.remove(deliveryManName);
+    }
+
+    public CompanyIFood getCompanyIFoodData() {
+        return companyIFoodData;
+    }
+
+    public void setCompanyIFoodData(CompanyIFood companyIFoodData) {
+        this.companyIFoodData = companyIFoodData;
     }
 }
