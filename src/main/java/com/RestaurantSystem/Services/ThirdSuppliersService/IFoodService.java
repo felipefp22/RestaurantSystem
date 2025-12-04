@@ -5,6 +5,7 @@ import com.RestaurantSystem.Entities.Company.CompanyIFood;
 import com.RestaurantSystem.Entities.Company.DTOs.CompanyThirdSuppliersToPoolingDTO;
 import com.RestaurantSystem.Entities.IFood.DTOs.EventsIFoodDTO;
 import com.RestaurantSystem.Entities.IFood.DTOs.AcknowledgeIFoodDTO;
+import com.RestaurantSystem.Entities.IFood.DTOs.OrderDetailsIFoodDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.CompanyIFoodRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
@@ -22,6 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -135,11 +137,17 @@ public class IFoodService {
     public void poolingIFoodHandle(CompanyThirdSuppliersToPoolingDTO dto) {
         if (dto.companyIFoodData() == null) return;
 
-        List<EventsIFoodDTO> responseFrommIFood = webClientLinkRequestIFood.requisitionGenericIFood(dto.companyIFoodData(),
-                "events/v1.0/events:polling", HttpMethod.GET, null, new ParameterizedTypeReference<List<EventsIFoodDTO>>() {}, null);
+        Optional<List<EventsIFoodDTO>> ifoodEvents = webClientLinkRequestIFood.requisitionGenericIFood(dto.companyIFoodData(),
+                "events/v1.0/events:polling", HttpMethod.GET, null, new ParameterizedTypeReference<Optional<List<EventsIFoodDTO>>>() {
+                }, null);
 
-        System.out.println("Pooling iFood response: " + responseFrommIFood.toString());
+        if (ifoodEvents == null) return;
+        ifoodEvents.get().forEach(x -> {
+            var orderDetails = getIFoodOrderDetails(dto.companyIFoodData(), x.orderId());
 
+            System.out.println("Order Details iFood: " + orderDetails.toString());
+        });
+        acknowledgeEventIFood(dto.companyIFoodData(), ifoodEvents.get().stream().map(x -> new AcknowledgeIFoodDTO(x.id())).toList());
 
     }
 
@@ -147,36 +155,49 @@ public class IFoodService {
     private void acknowledgeEventIFood(CompanyIFood companyIFood, List<AcknowledgeIFoodDTO> acknowledgeDTO) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/events/v1.0/events/acknowledgment", HttpMethod.POST, acknowledgeDTO,
-                new ParameterizedTypeReference<Void>() {}, null);
+                new ParameterizedTypeReference<Void>() {
+                }, null);
     }
 
-    private void getIFoodOrderInfos(CompanyIFood companyIFood, String orderID) {
-        webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
+    private OrderDetailsIFoodDTO getIFoodOrderDetails(CompanyIFood companyIFood, String orderID) {
+        return webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID, HttpMethod.GET, null,
-                new ParameterizedTypeReference<Void>() {}, null);
+                new ParameterizedTypeReference<OrderDetailsIFoodDTO>() {
+                }, null);
     }
 
     private void confirmOrderIFood(CompanyIFood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/confirm", HttpMethod.POST, null,
-                new ParameterizedTypeReference<Void>() {}, null);
+                new ParameterizedTypeReference<Void>() {
+                }, null);
     }
 
     private void dispatchIFood(CompanyIFood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/dispatch", HttpMethod.POST, null,
-                new ParameterizedTypeReference<Void>() {}, null);
+                new ParameterizedTypeReference<Void>() {
+                }, null);
     }
 
     private void readyToPickupIFood(CompanyIFood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/readyToPickup", HttpMethod.POST, null,
-                new ParameterizedTypeReference<Void>() {}, null);
+                new ParameterizedTypeReference<Void>() {
+                }, null);
     }
 
     private void startPreparationIFood(CompanyIFood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/startPreparation", HttpMethod.POST, null,
-                new ParameterizedTypeReference<Void>() {}, null);
+                new ParameterizedTypeReference<Void>() {
+                }, null);
+    }
+
+    private void deliveredIFood(CompanyIFood companyIFood, String orderID) {
+        webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
+                "/order/v1.0/orders/" + orderID + "/arrivedAtDestination", HttpMethod.POST, null,
+                new ParameterizedTypeReference<Void>() {
+                }, null);
     }
 }
