@@ -4,9 +4,20 @@ import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.DTOs.CompanyThirdSuppliersToPoolingDTO;
 import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.AuxsServices.AzureServiceBusService;
+
+import com.azure.messaging.servicebus.ServiceBusClientBuilder;
+import com.azure.messaging.servicebus.ServiceBusMessage;
+import com.azure.messaging.servicebus.ServiceBusMessageBatch;
+import com.azure.messaging.servicebus.ServiceBusSenderClient;
+import com.azure.spring.cloud.service.implementation.servicebus.factory.ServiceBusSenderClientBuilderFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+
+import static org.springframework.util.SerializationUtils.serialize;
 
 @Service
 public class ServiceBusThirdSuppliersService {
@@ -26,7 +37,7 @@ public class ServiceBusThirdSuppliersService {
         azureServiceBusService.sendMessageToQueue("ThirdSuppliersPooling", "<>-- Hello service BUS! --<>");
     }
 
-    public Object getOpenShiftsToPooling() {
+    public void getOpenShiftsToPooling() throws JsonProcessingException {
         var openShifts = shiftRepo.findAllByEndTimeUTCIsNull();
 
         if (openShifts.isPresent()) {
@@ -40,9 +51,9 @@ public class ServiceBusThirdSuppliersService {
                     .map(company -> new CompanyThirdSuppliersToPoolingDTO(company.getId(), company.getCompanyIFoodData()))
                     .toList();
 
-            return itemsToPooling;
+            azureServiceBusService.sendMessageToPoolingThirdSuppliers(itemsToPooling);
         } else {
-            return null;
+
         }
     }
 }
