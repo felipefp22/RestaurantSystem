@@ -4,3 +4,4 @@ Shift Table - endTimeUTC
 
 // <>---------------------------
 Create a Service Bus on AZURE - and create a queue "ThirdSuppliersPooling"
+Create Azure function to call endpoint every 30seconds

@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Services.AuxsServices;
 
 import com.RestaurantSystem.Entities.Company.DTOs.CompanyThirdSuppliersToPoolingDTO;
+import com.RestaurantSystem.Services.ThirdSuppliersService.IFoodService;
 import com.azure.messaging.servicebus.ServiceBusClientBuilder;
 import com.azure.messaging.servicebus.ServiceBusMessage;
 import com.azure.messaging.servicebus.ServiceBusMessageBatch;
@@ -15,18 +16,19 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
 public class AzureServiceBusService {
     @Value("${spring.cloud.azure.servicebus.connection-string}")
     private String connectionString;
+    private final IFoodService ifoodService;
 
     private final ServiceBusTemplate serviceBusTemplate;
     ObjectMapper objectMapper = new ObjectMapper();
 
-    public AzureServiceBusService(ServiceBusTemplate serviceBusTemplate) {
+    public AzureServiceBusService(IFoodService ifoodService, ServiceBusTemplate serviceBusTemplate) {
+        this.ifoodService = ifoodService;
         this.serviceBusTemplate = serviceBusTemplate;
         this.serviceBusTemplate.setDefaultEntityType(ServiceBusEntityType.QUEUE);
     }
@@ -40,8 +42,9 @@ public class AzureServiceBusService {
     }
 
     @ServiceBusListener(destination = "ThirdSuppliersPooling")
-    public void thirdSuppliersPooling(String messageBody) {
-        System.out.println("Received message: " + messageBody);
+    public void thirdSuppliersPooling(String messageBody) throws JsonProcessingException {
+        CompanyThirdSuppliersToPoolingDTO dto = objectMapper.readValue(messageBody, CompanyThirdSuppliersToPoolingDTO.class);
+        executePoolingThirdSuppliers(dto);
     }
 
 
@@ -69,5 +72,10 @@ public class AzureServiceBusService {
         if (batch.getCount() > 0) {
             senderClient.sendMessages(batch);
         }
+    }
+
+    // <>--------------- Pooling Execute Methods ---------------<>
+    private void executePoolingThirdSuppliers(CompanyThirdSuppliersToPoolingDTO dto) {
+        ifoodService.poolingIFoodHandle(dto);
     }
 }
