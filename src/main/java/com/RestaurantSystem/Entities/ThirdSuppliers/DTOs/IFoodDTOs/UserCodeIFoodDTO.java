@@ -1,6 +1,6 @@
-package com.RestaurantSystem.Services.WebRequests.IFoodDTOs;
+package com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs;
 
-public record IFoodUserCodeDTO(
+public record UserCodeIFoodDTO(
         String userCode,
         String authorizationCodeVerifier,
         String verificationUrl,

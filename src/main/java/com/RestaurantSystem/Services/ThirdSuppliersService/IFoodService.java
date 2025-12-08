@@ -3,14 +3,16 @@ package com.RestaurantSystem.Services.ThirdSuppliersService;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyIFood;
 import com.RestaurantSystem.Entities.Company.DTOs.CompanyThirdSuppliersToPoolingDTO;
-import com.RestaurantSystem.Entities.IFood.DTOs.EventsIFoodDTO;
-import com.RestaurantSystem.Entities.IFood.DTOs.AcknowledgeIFoodDTO;
-import com.RestaurantSystem.Entities.IFood.DTOs.OrderDetailsIFoodDTO;
+import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
+import com.RestaurantSystem.Entities.Product.Product;
+import com.RestaurantSystem.Entities.Product.ProductOption;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.CreateThirdSpOrderDTO;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.*;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.CompanyIFoodRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
-import com.RestaurantSystem.Services.WebRequests.IFoodDTOs.*;
+import com.RestaurantSystem.Services.OrderService;
 import com.RestaurantSystem.Services.WebRequests.WebClientLinkRequestIFood;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +24,9 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class IFoodService {
@@ -34,8 +36,9 @@ public class IFoodService {
     private final CompanyRepo companyRepo;
     private final VerificationsServices verificationsServices;
     private final WebClientLinkRequestIFood webClientLinkRequestIFood;
+    private final OrderService orderService;
 
-    public IFoodService(VerificationsServices verificationsServices, @Value("${ifood.url}") String ifoodURL, CompanyIFoodRepo companyIFoodRepo, CompanyRepo companyRepo, WebClientLinkRequestIFood webClientLinkRequestIFood) {
+    public IFoodService(VerificationsServices verificationsServices, @Value("${ifood.url}") String ifoodURL, CompanyIFoodRepo companyIFoodRepo, CompanyRepo companyRepo, WebClientLinkRequestIFood webClientLinkRequestIFood, OrderService orderService) {
         webClient = WebClient.builder()
                 .baseUrl(ifoodURL)
                 .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
@@ -45,18 +48,19 @@ public class IFoodService {
         this.companyIFoodRepo = companyIFoodRepo;
         this.companyRepo = companyRepo;
         this.webClientLinkRequestIFood = webClientLinkRequestIFood;
+        this.orderService = orderService;
     }
 
 
     // <> ------------- Methods ------------- <>
-    public List<IFoodMerchantDataDTO> getConnectedIFoodStore(String requesterID, UUID companyID) {
+    public List<MerchantDataIFoodDTO> getConnectedIFoodStore(String requesterID, UUID companyID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManager(company, requester);
         CompanyIFood companyIFoodData = company.getCompanyIFoodData();
 
         var responseFromIFood = webClientLinkRequestIFood.requisitionGenericIFood(companyIFoodData, "/merchant/v1.0/merchants", HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<IFoodMerchantDataDTO>>() {
+                new ParameterizedTypeReference<List<MerchantDataIFoodDTO>>() {
                 }, null);
 
         return responseFromIFood;
@@ -73,13 +77,13 @@ public class IFoodService {
             throw new RuntimeException("iFood user code already created for this company");
         }
 
-        IFoodUserCodeDTO responseFrommIFood = webClient
+        UserCodeIFoodDTO responseFrommIFood = webClient
                 .method(HttpMethod.POST)
                 .uri("/authentication/v1.0/oauth/userCode")
                 .body(BodyInserters.fromFormData("grantType", "refresh_token")
                         .with("clientId", webClientLinkRequestIFood.getIfoodClientID()))
                 .retrieve()
-                .bodyToMono(IFoodUserCodeDTO.class)
+                .bodyToMono(UserCodeIFoodDTO.class)
                 .block();
 
         companyIFoodData.setLastGeneratedUserCode(responseFrommIFood.userCode());
@@ -98,7 +102,7 @@ public class IFoodService {
         verificationsServices.justOwnerOrManager(company, requester);
         CompanyIFood companyIFoodData = company.getCompanyIFoodData();
 
-        IFoodTokenReturnDTO responseFrommIFood = webClient
+        TokenReturnIFoodDTO responseFrommIFood = webClient
                 .method(HttpMethod.POST)
                 .uri("/authentication/v1.0/oauth/token")
                 .body(BodyInserters.fromFormData("grantType", "authorization_code")
@@ -107,7 +111,7 @@ public class IFoodService {
                         .with("authorizationCode", dto.code())
                         .with("authorizationCodeVerifier", companyIFoodData.getLastGeneratedAuthorizationCodeVerifier()))
                 .retrieve()
-                .bodyToMono(IFoodTokenReturnDTO.class)
+                .bodyToMono(TokenReturnIFoodDTO.class)
                 .block();
 
         companyIFoodData.setStoreCode(dto.code());
@@ -115,7 +119,7 @@ public class IFoodService {
         companyIFoodData.setAccessToken("Bearer " + responseFrommIFood.accessToken());
         companyIFoodData.setRefreshToken(responseFrommIFood.refreshToken());
 
-        List<IFoodMerchantDataDTO> merchantData = getConnectedIFoodStore(requesterID, dto.companyID());
+        List<MerchantDataIFoodDTO> merchantData = getConnectedIFoodStore(requesterID, dto.companyID());
 //        companyIFoodData.setMerchantID(merchantData.id());
 //        companyIFoodData.setMerchantName(merchantData.name());
 //        companyIFoodData.setCorporateName(merchantData.corporateName());
@@ -140,15 +144,44 @@ public class IFoodService {
         Optional<List<EventsIFoodDTO>> ifoodEvents = webClientLinkRequestIFood.requisitionGenericIFood(dto.companyIFoodData(),
                 "events/v1.0/events:polling", HttpMethod.GET, null, new ParameterizedTypeReference<Optional<List<EventsIFoodDTO>>>() {
                 }, null);
-
         if (ifoodEvents == null) return;
-        ifoodEvents.get().forEach(x -> {
-            var orderDetails = getIFoodOrderDetails(dto.companyIFoodData(), x.orderId());
 
-            System.out.println("Order Details iFood: " + orderDetails.toString());
+        ifoodEvents.get().forEach(x -> {
+            Company company = verificationsServices.retrieveCompany(dto.companyId());
+            OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIFoodData(), x.orderId());
+
+//            String tableNumberOrDeliveryOrPickup = "delivery"; //Still needs do make logica
+//            CreateThirdSpOrderDTO thirdSpDTO = new CreateThirdSpOrderDTO(dto, ifoodOrderDetails, tableNumberOrDeliveryOrPickup);
+//            orderService.createThirdSupplierOrder(thirdSpDTO);
+            System.out.println("sa");
         });
+
         acknowledgeEventIFood(dto.companyIFoodData(), ifoodEvents.get().stream().map(x -> new AcknowledgeIFoodDTO(x.id())).toList());
 
+    }
+
+    private List<OrderItemDTO> createOrderItemDTO(Company company, OrderDetailsIFoodDTO ifoodOrderDetails) {
+        Map<String, Product> productMap = company.getProductsCategories().stream()
+                .flatMap(c -> c.getProducts().stream())
+                .collect(Collectors.toMap(Product::getIfoodCode, p -> p));
+
+        Map<String, ProductOption> productOptsMap = company.getProductsCategories().stream()
+                .flatMap(c -> c.getProductOptions().stream())
+                .collect(Collectors.toMap(ProductOption::getIfoodCode, p -> p));
+
+        List<OrderItemDTO> orderItemsDTO = new ArrayList<>();
+
+        ifoodOrderDetails.items().forEach(x -> {
+            List<String> productsPdvCodes = IntStream.range(0, x.quantity()).mapToObj(i -> x.externalCode()).toList();
+            List<String> productOptsPdvCodes =
+                    x.options().stream().flatMap(opt -> IntStream.range(0, opt.quantity()).mapToObj(z -> opt.externalCode())).toList();
+
+            List<String> productsIDs = productsPdvCodes.stream().map(pdvCode -> productMap.get(pdvCode).getId().toString()).toList();
+            List<String> productOptsIDs = productOptsPdvCodes.stream().map(pdvCode -> productOptsMap.get(pdvCode).getId().toString()).toList();
+            orderItemsDTO.add(new OrderItemDTO(productsIDs, productOptsIDs, x.observations(), 0.0));
+        });
+
+        return orderItemsDTO;
     }
 
     // <>------------- IFood Events Actions -------------<>

@@ -1,4 +1,4 @@
-package com.RestaurantSystem.Entities.IFood.DTOs;
+package com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs;
 
 public record EventsIFoodDTO(
         String id,

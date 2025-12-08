@@ -3,7 +3,7 @@ package com.RestaurantSystem.Services.WebRequests;
 
 import com.RestaurantSystem.Entities.Company.CompanyIFood;
 import com.RestaurantSystem.Repositories.CompanyIFoodRepo;
-import com.RestaurantSystem.Services.WebRequests.IFoodDTOs.IFoodTokenReturnDTO;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.TokenReturnIFoodDTO;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -86,7 +86,7 @@ public class WebClientLinkRequestIFood {
     public void getCompanyAccessToken(CompanyIFood companyIfood) {
         var requisitionPath = ("/authentication/v1.0/oauth/token");
 
-        IFoodTokenReturnDTO responseFrommIFood = webClient
+        TokenReturnIFoodDTO responseFrommIFood = webClient
                 .method(HttpMethod.POST)
                 .uri(requisitionPath)
                 .body(BodyInserters.fromFormData("grantType", "refresh_token")
@@ -94,7 +94,7 @@ public class WebClientLinkRequestIFood {
                         .with("clientSecret", ifoodClientSecret)
                         .with("refreshToken", companyIfood.getRefreshToken()))
                 .retrieve()
-                .bodyToMono(IFoodTokenReturnDTO.class)
+                .bodyToMono(TokenReturnIFoodDTO.class)
                 .block();
 
         companyIfood.setAccessToken("Bearer " + responseFrommIFood.accessToken());

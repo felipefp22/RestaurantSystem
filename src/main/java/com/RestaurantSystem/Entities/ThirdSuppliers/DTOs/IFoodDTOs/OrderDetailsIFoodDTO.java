@@ -1,4 +1,4 @@
-package com.RestaurantSystem.Entities.IFood.DTOs;
+package com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -116,7 +116,7 @@ public record OrderDetailsIFoodDTO(
 
     public record Items(
             Double unitPrice,
-            Double quantity,
+            Integer quantity,
             String externalCode,
             Double totalPrice,
             Double index,
@@ -148,7 +148,7 @@ public record OrderDetailsIFoodDTO(
                 Double unitPrice,
                 String unit,
                 String ean,
-                Double quantity,
+                Integer quantity,
                 String externalCode,
                 Double price,
                 String name,

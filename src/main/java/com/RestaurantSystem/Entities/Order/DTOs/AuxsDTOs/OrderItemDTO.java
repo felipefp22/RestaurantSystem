@@ -5,6 +5,7 @@ import java.util.List;
 public record OrderItemDTO(
         List<String> productsIDs,
         List<String> productOptsIDs,
-        String notes
+        String notes,
+        Double customPrice
 ) {
 }

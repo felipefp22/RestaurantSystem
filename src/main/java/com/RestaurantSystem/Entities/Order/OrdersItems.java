@@ -25,6 +25,7 @@ public class OrdersItems {
 
     private String name;
     private double price;
+    private Boolean isThirdSupplierPrice;
     private String description;
     private String imagePath;
     private String status;
@@ -41,6 +42,7 @@ public class OrdersItems {
         this.productOptions = productOpts.stream().map(po -> po.getId().toString()+"|"+po.getName()+"|"+po.getPrice()).sorted().toList();
         this.name = product.getName();
         this.price = product.getPrice() + productOpts.stream().mapToDouble(ProductOption::getPrice).sum();
+        this.isThirdSupplierPrice = false;
         this.description = product.getDescription();
         this.imagePath = product.getImagePath();
         this.status = "ACTIVE";
@@ -52,6 +54,7 @@ public class OrdersItems {
         this.productOptions = productOpts.stream().map(po -> po.getId().toString()+"|"+po.getName()+"|"+po.getPrice()).sorted().toList();
         this.name = products.stream().map(Product::getName).sorted().reduce((a, b) -> a + "/" + b).orElse("");
         this.price = productPrice + productOpts.stream().mapToDouble(ProductOption::getPrice).sum();
+        this.isThirdSupplierPrice = false;
         this.description = products.stream().map(Product::getDescription).sorted().reduce((a, b) -> a + " / " + b).orElse("");
         this.imagePath = null;
         this.status = "ACTIVE";
@@ -86,6 +89,10 @@ public class OrdersItems {
 
     public double getPrice() {
         return price;
+    }
+
+    public Boolean getIsThirdSupplierPrice() {
+        return isThirdSupplierPrice;
     }
 
     public String getDescription() {

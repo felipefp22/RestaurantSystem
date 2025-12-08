@@ -3,10 +3,13 @@ package com.RestaurantSystem.Entities.Order;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Order.DTOs.CreateOrderDTO;
-import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Shift.Shift;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.AddressThirdSpOrderDTO;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.CreateThirdSpOrderDTO;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.OrderDetailsIFoodDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -69,6 +72,24 @@ public class Order {
     private String deliveryManID;
     private List<UUID> deliveryOrdersSequence;
 
+
+    private ThirdSuppliersEnum isThirdSpOrder;
+    private Boolean isUserEditBlocked;
+    private Boolean isThirdSpAddr;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpOrderID;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double thirdSpLat;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double thirdSpLng;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpZipCode;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpAddress;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpComplementAddress;
+
     // <>------------ Constructors ------------<>
     public Order() {
     }
@@ -85,6 +106,25 @@ public class Order {
         this.status = OrderStatus.OPEN;
     }
 
+    public Order(Shift shift, int orderNumberOnShift, CreateThirdSpOrderDTO thirdSpDTO, AddressThirdSpOrderDTO addressDTO) {
+        this.shift = shift;
+        this.orderNumberOnShift = orderNumberOnShift;
+        this.tableNumberOrDeliveryOrPickup = thirdSpDTO.tableNumberOrDeliveryOrPickup();
+        this.customer = null;
+        this.pickupName = thirdSpDTO.customerName();
+        this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
+        this.notes = thirdSpDTO.notes();
+        this.status = OrderStatus.OPEN;
+        this.isThirdSpOrder = thirdSpDTO.isThirdSpOrder();
+        this.isUserEditBlocked = true;
+        this.isThirdSpAddr = addressDTO.isThirdSpAddr();
+        this.thirdSpOrderID = thirdSpDTO.thirdSpOrderID();
+        this.thirdSpLat = addressDTO.lat();
+        this.thirdSpLng = addressDTO.lng();
+        this.thirdSpZipCode = addressDTO.zipCode();
+        this.thirdSpAddress = addressDTO.address();
+        this.thirdSpComplementAddress = addressDTO.complementAddress();
+    }
 
     // <>------------ Methods ------------<>
 
@@ -254,6 +294,66 @@ public class Order {
 
     public void setDeliveryOrdersSequence(List<UUID> deliveryOrdersSequence) {
         this.deliveryOrdersSequence = deliveryOrdersSequence;
+    }
+
+    public ThirdSuppliersEnum getIsThirdSpOrder() {
+        return isThirdSpOrder;
+    }
+
+    public Boolean isUserEditBlocked() {
+        return isUserEditBlocked;
+    }
+
+    public Boolean isThirdSpAddr() {
+        return isThirdSpAddr;
+    }
+
+    public String getThirdSpOrderID() {
+        return thirdSpOrderID;
+    }
+
+    public void setThirdSpOrderID(String thirdSpOrderID) {
+        this.thirdSpOrderID = thirdSpOrderID;
+    }
+
+    public Double getThirdSpLat() {
+        return thirdSpLat;
+    }
+
+    public void setThirdSpLat(Double thirdSpLat) {
+        this.thirdSpLat = thirdSpLat;
+    }
+
+    public Double getThirdSpLng() {
+        return thirdSpLng;
+    }
+
+    public void setThirdSpLng(Double thirdSpLng) {
+        this.thirdSpLng = thirdSpLng;
+    }
+
+    public String getThirdSpZipCode() {
+        return thirdSpZipCode;
+    }
+
+    public void setThirdSpZipCode(String thirdSpZipCode) {
+        this.thirdSpZipCode = thirdSpZipCode;
+    }
+
+    public String getThirdSpAddress() {
+        return thirdSpAddress;
+    }
+
+    public void setThirdSpAddress(String thirdSpAddress) {
+        this.thirdSpAddress = thirdSpAddress;
+    }
+
+    public String getThirdSpComplementAddress() {
+        return thirdSpComplementAddress;
+    }
+
+    public void setThirdSpComplementAddress(String thirdSpComplementAddress) {
+        this.thirdSpComplementAddress = thirdSpComplementAddress;
     }
 }
 

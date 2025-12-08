@@ -13,6 +13,8 @@ import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.Shift.Shift;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.AddressThirdSpOrderDTO;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.CreateThirdSpOrderDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.*;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
@@ -79,10 +81,31 @@ public class OrderService {
 
         orderCreated.setOrderItems(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
-        orderRepo.save(order);
+        orderRepo.save(orderCreated);
         signalR.sendShiftOperationSigr(company);
 
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
+    }
+
+    public void createThirdSupplierOrder(CreateThirdSpOrderDTO thirdSpDTO) {
+        Company company = verificationsServices.retrieveCompany(thirdSpDTO.companyData().companyId());
+        Shift currentShift = verificationsServices.retrieveCurrentShift(company);
+        if (currentShift.getOrders().stream().filter(x -> x.getThirdSpOrderID() != null && x.getIsThirdSpOrder().equals(thirdSpDTO.isThirdSpOrder()))
+                .anyMatch(x -> x.getThirdSpOrderID().equals(thirdSpDTO.thirdSpOrderID()))) return;
+
+        AddressThirdSpOrderDTO addressDTO = new AddressThirdSpOrderDTO(thirdSpDTO);
+        Order order = new Order(currentShift, (currentShift.getOrders().size() + 1), thirdSpDTO, addressDTO);
+        Order orderCreated = orderRepo.save(order);
+
+        List<OrdersItems> ordersItems = mapOrderItems(orderCreated, thirdSpDTO.orderItemsIDs(), company);
+        orderCreated.setOrderItems(ordersItems);
+
+        order.setPrice(thirdSpDTO.price());
+        order.setServiceTax(0.0);
+        order.setDiscount(thirdSpDTO.discount());
+        order.setTotalPrice(thirdSpDTO.totalPrice());
+        order.setDeliveryTax(thirdSpDTO.deliveryFee());
+        orderRepo.save(orderCreated);
     }
 
     public Order addNotesOnOrder(String requesterID, UpdateNotesOnOrderDTO notesAndOrderID) {
@@ -295,6 +318,7 @@ public class OrderService {
                 .flatMap(c -> c.getProducts().stream())
                 .collect(Collectors.toMap(Product::getId, p -> p));
     }
+
     private Map<UUID, ProductOption> getProductOptsMap(Company company) {
         return company.getProductsCategories().stream()
                 .flatMap(c -> c.getProductOptions().stream())

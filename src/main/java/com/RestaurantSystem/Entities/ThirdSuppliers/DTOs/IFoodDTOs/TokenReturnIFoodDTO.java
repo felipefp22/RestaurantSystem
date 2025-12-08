@@ -1,6 +1,6 @@
-package com.RestaurantSystem.Services.WebRequests.IFoodDTOs;
+package com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs;
 
-public record IFoodTokenReturnDTO(
+public record TokenReturnIFoodDTO(
         String accessToken,
         String refreshToken,
         String type,

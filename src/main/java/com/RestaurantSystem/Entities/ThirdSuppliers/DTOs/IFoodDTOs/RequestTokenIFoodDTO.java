@@ -1,6 +1,6 @@
-package com.RestaurantSystem.Services.WebRequests.IFoodDTOs;
+package com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs;
 
-public record IFoodRequestTokenDTO(
+public record RequestTokenIFoodDTO(
         String grantType,
         String clientId,
         String clientSecret,
