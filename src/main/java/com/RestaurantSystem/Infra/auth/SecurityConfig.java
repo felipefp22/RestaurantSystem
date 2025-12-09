@@ -47,6 +47,10 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                // this is trying 304 responses
+//                .headers(headers -> headers
+//                        .cacheControl(cache -> cache.disable()) // <-- IMPORTANT
+//                )
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOriginPatterns(List.of("*")); // Use this instead of setAllowedOrigins
@@ -103,7 +107,8 @@ public class SecurityConfig {
                             if (state != null) {
                                 try {
                                     platform = new String(Base64.getDecoder().decode(state), StandardCharsets.UTF_8);
-                                } catch (IllegalArgumentException ignored) {}
+                                } catch (IllegalArgumentException ignored) {
+                                }
                             }
 
                             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
