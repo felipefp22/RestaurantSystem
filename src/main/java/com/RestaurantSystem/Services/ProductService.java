@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -77,8 +78,13 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         Product product = new Product(productToCreate, productCategoryToAddProduct);
+        product = productRepo.save(product);
         product.setIfoodCode(product.getId().toString()); //default code before validation, DO NOT REMOVE
-        product.setIfoodCode(validateNewIfoodCodeProduct(company, product, productToCreate.ifoodCode()));
+        try {
+            product.setIfoodCode(validateNewIfoodCodeProduct(company, product, productToCreate.ifoodCode()));
+        } catch (Exception e) {
+            System.out.println("d");
+        }
 
         return productRepo.save(product);
     }
@@ -130,7 +136,7 @@ public class ProductService {
     // <> ---------- Helpers ---------- <>
     private String validateNewIfoodCodeProduct(Company company, Product product, String newIfoodCode) {
         if (product.getIfoodCode() == null && newIfoodCode == null) return product.getId().toString();
-        if (product.getIfoodCode().equals(newIfoodCode) || newIfoodCode == null) return product.getIfoodCode();
+        if (Objects.equals(product.getIfoodCode(),newIfoodCode) || newIfoodCode == null) return product.getIfoodCode();
         if (newIfoodCode.equals("default")) return product.getId().toString();
 
         List<String> usedCodes = new ArrayList<>(company.getProductsCategories().stream()

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,7 +92,7 @@ public class ProductOptionService {
 
     // <> ---------- Helpers ---------- <>
     private String validateNewIfoodCodeProductOption(Company company, ProductOption productOption, String newIfoodCode) {
-        if (productOption.getIfoodCode().equals(newIfoodCode) || newIfoodCode == null) return productOption.getIfoodCode();
+        if (Objects.equals(productOption.getIfoodCode(), newIfoodCode) || newIfoodCode == null) return productOption.getIfoodCode();
         if (newIfoodCode.equals("default")) return productOption.getId().toString();
 
         List<String> usedCodes = new ArrayList<>(company.getProductsCategories().stream()
