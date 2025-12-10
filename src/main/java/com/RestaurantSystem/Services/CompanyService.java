@@ -41,7 +41,12 @@ public class CompanyService {
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.worksOnCompany(company, requester);
 
-        Shift currentShift = verificationsServices.retrieveCurrentShift(company);
+        Shift currentShift = null;
+        try {
+            currentShift = verificationsServices.retrieveCurrentShift(company);
+        } catch (RuntimeException e) {
+            // No active shift found
+        }
 
         if (verificationsServices.isDeliveryman(company, requester)) {
             CompanyOperationDeliveryManDTO dto = new CompanyOperationDeliveryManDTO(company, currentShift, requesterID);
