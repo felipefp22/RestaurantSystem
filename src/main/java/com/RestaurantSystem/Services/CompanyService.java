@@ -67,8 +67,10 @@ public class CompanyService {
             throw new RuntimeException("This Companies Compound already has a company with this name");
 
         Company company = new Company(companiesCompound, createCompanyDTO);
+        company = companyRepo.save(company);
+        addNoUserDeliveryman(requesterID, new AddOrRemoveNoUserDeliveryManDTO(company.getId(), "MotoBoy 01"));
 
-        return companyRepo.save(company);
+        return company;
     }
 
     public Company updateCompany(String requesterID, UpdateCompanyDTO updateCompanyDTO) {
