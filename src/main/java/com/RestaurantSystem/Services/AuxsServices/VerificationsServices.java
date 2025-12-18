@@ -107,6 +107,12 @@ public class VerificationsServices {
         }
     }
 
+    public void justOwnerOrManagerOrSupervisorOrServer(Company company, AuthUserLogin user) {
+        if(!isOwner(company, user) && !isManager(company, user) && !isSupervisor(company, user) && !isServer(company, user)) {
+            throw new RuntimeException("User is not owner, manager, supervisor or server of this company.");
+        }
+    }
+
     public void worksOnCompany(Company company, AuthUserLogin user) {
         if (!isOwner(company, user)
                 && !isServer(company, user)

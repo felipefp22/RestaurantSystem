@@ -3,6 +3,8 @@ package com.RestaurantSystem.Entities.Company;
 import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Customer.Customer;
+import com.RestaurantSystem.Entities.Printer.PrintRules;
+import com.RestaurantSystem.Entities.Printer.Printer;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,6 +47,12 @@ public class Company {
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Shift> shifts;
 
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Printer> printers;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PrintRules> printRules;
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "last_or_open_shift")
     private Shift lastOrOpenShift;
@@ -65,6 +73,7 @@ public class Company {
 
     private List<String> noUserDeliveryMans = new ArrayList<>();
 
+
     @JsonIgnore
     @OneToOne
     @JoinColumn(name = "company_ifood_id")
@@ -84,10 +93,12 @@ public class Company {
 
         this.companyLat = createCompanyDTO.lat();
         this.companyLng = createCompanyDTO.lng();
-        this.employees = new ArrayList<>();;
-        this.productsCategories = new ArrayList<>();;
-        this.customers = new ArrayList<>();;
-        this.shifts = new ArrayList<>();;
+        this.employees = new ArrayList<>();
+        this.productsCategories = new ArrayList<>();
+        this.customers = new ArrayList<>();
+        this.shifts = new ArrayList<>();
+        this.printers = new ArrayList<>();
+        this.printRules = new ArrayList<>();
         this.numberOfTables = createCompanyDTO.numberOfTables();
         this.noUserDeliveryMans.add("DeliveryMan1");
     }
@@ -173,6 +184,15 @@ public class Company {
 
     public List<Shift> getShifts() {
         return shifts;
+    }
+
+    public List<Printer> getPrinters() {
+        if (printers == null) printers = new ArrayList<>();
+        return printers;
+    }
+    public List<PrintRules> getPrintRules() {
+        if (printRules == null) printRules = new ArrayList<>();
+        return printRules;
     }
 
     public Shift getLastOrOpenShift() {
