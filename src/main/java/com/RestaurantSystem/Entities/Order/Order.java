@@ -3,10 +3,10 @@ package com.RestaurantSystem.Entities.Order;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Order.DTOs.CreateOrderDTO;
+import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.AddressThirdSpOrderDTO;
 import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.CreateThirdSpOrderDTO;
-import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.OrderDetailsIFoodDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -65,9 +65,6 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersItems> orderItems = new ArrayList<>();
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderPrintSync> printSyncs = new ArrayList<>();
 
     private String deliveryManID;
     private List<UUID> deliveryOrdersSequence;
@@ -266,18 +263,6 @@ public class Order {
 
     public void setOrderItems(List<OrdersItems> orderItems) {
         this.orderItems = orderItems;
-    }
-
-    public List<OrderPrintSync> getPrintSyncs() {
-        return printSyncs;
-    }
-
-    public void addPrintSync(OrderPrintSync printSync) {
-        this.printSyncs.add(printSync);
-    }
-
-    public void removePrintSync(OrderPrintSync printSync) {
-        this.printSyncs.remove(printSync);
     }
 
     public String getDeliveryManID() {

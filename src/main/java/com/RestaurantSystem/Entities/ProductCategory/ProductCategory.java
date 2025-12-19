@@ -2,6 +2,7 @@ package com.RestaurantSystem.Entities.ProductCategory;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.ENUMs.CustomOrderPriceRule;
+import com.RestaurantSystem.Entities.ENUMs.PrintCategory;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
@@ -35,6 +36,9 @@ public class ProductCategory {
 
     @Enumerated(EnumType.STRING)
     private CustomOrderPriceRule customOrderPriceRule;
+
+    @Enumerated(EnumType.STRING)
+    private PrintCategory printCategory;
 
     //<>------------ Constructors ------------<>
     public ProductCategory() {
@@ -102,5 +106,12 @@ public class ProductCategory {
 
     public void setCustomOrderPriceRule(CustomOrderPriceRule customOrderPriceRule) {
         this.customOrderPriceRule = customOrderPriceRule;
+    }
+
+    public PrintCategory getPrintCategory() {
+        return printCategory;
+    }
+    public void setPrintCategory(PrintCategory printCategory) {
+        this.printCategory = printCategory;
     }
 }

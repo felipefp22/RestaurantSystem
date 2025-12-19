@@ -6,6 +6,7 @@ public enum PrintCategory {
     DESSERTS,
     DRINKS,
     BEVERAGES,
+    DELIVERY,
     BILL, // Bill to customer see resume of order
     RECEIPT, // Receipt to customer see payment details
     INVOICE, // Invoice Government tax purposes

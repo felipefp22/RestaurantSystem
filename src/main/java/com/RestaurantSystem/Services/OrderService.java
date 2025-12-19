@@ -8,7 +8,7 @@ import com.RestaurantSystem.Entities.Order.DTOs.*;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
 import com.RestaurantSystem.Entities.Order.Order;
-import com.RestaurantSystem.Entities.Order.OrderPrintSync;
+import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
@@ -17,6 +17,7 @@ import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.AddressThirdSpOrderDTO;
 import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.CreateThirdSpOrderDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.*;
+import com.RestaurantSystem.Services.AuxsServices.PrintSyncService;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import com.RestaurantSystem.WebSocket.SignalR;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,11 +39,11 @@ public class OrderService {
     private final CompanyRepo companyRepo;
     private final ShiftRepo shiftRepo;
     private final VerificationsServices verificationsServices;
-    private final OrderPrintSyncRepo orderPrintSyncRepo;
+    private final PrintSyncService printSyncService;
     private final SignalR signalR;
 
     public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, OrdersItemsCancelledRepo ordersItemsCancelledRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo,
-                        ShiftRepo shiftRepo, VerificationsServices verificationsServices, OrderPrintSyncRepo orderPrintSyncRepo, SignalR signalR) {
+                        ShiftRepo shiftRepo, VerificationsServices verificationsServices, PrintSyncService printSyncService, SignalR signalR) {
         this.orderRepo = orderRepo;
         this.ordersItemsRepo = ordersItemsRepo;
         this.ordersItemsCancelledRepo = ordersItemsCancelledRepo;
@@ -50,7 +51,7 @@ public class OrderService {
         this.companyRepo = companyRepo;
         this.shiftRepo = shiftRepo;
         this.verificationsServices = verificationsServices;
-        this.orderPrintSyncRepo = orderPrintSyncRepo;
+        this.printSyncService = printSyncService;
         this.signalR = signalR;
     }
 
@@ -157,7 +158,7 @@ public class OrderService {
 
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
-        orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItemsToCancel, "del"));
+//        printSyncRepo.save(new PrintSync(order, ordersItemsToCancel, "del"));
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing orderItemsIDs."));
@@ -354,7 +355,7 @@ public class OrderService {
         }
 
         ordersItemsRepo.saveAll(ordersItems);
-        orderPrintSyncRepo.save(new OrderPrintSync(order, ordersItems, "add"));
+//        printSyncService.save(new PrintSync(order, ordersItems, "add"));
         return ordersItems;
     }
 
@@ -438,15 +439,15 @@ public class OrderService {
     }
 // <>---------------------------- END || CREATE/UPDATE ORDERS HELPERS || END -----------------------------------<>
 
-    public void markOrderAsPrinted(String requesterID, MarkOrderPrintSyncPrintedDTO dto) {
-        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
-        OrderPrintSync orderPrintSync = orderPrintSyncRepo.findById(dto.orderPrintSyncID())
-                .orElseThrow(() -> new RuntimeException("OrderPrintSync not found"));
-
-        Company company = orderPrintSync.getOrder().getShift().getCompany();
-        verificationsServices.worksOnCompany(company, requester);
-
-        orderPrintSync.setAlreadyPrinted(true);
-        orderPrintSyncRepo.save(orderPrintSync);
-    }
+//    public void markOrderAsPrinted(String requesterID, MarkOrderPrintSyncPrintedDTO dto) {
+//        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+//        PrintSync printSync = printSyncRepo.findById(dto.orderPrintSyncID())
+//                .orElseThrow(() -> new RuntimeException("OrderPrintSync not found"));
+//
+//        Company company = printSync.getOrder().getShift().getCompany();
+//        verificationsServices.worksOnCompany(company, requester);
+//
+//        printSync.setAlreadyPrinted(true);
+//        printSyncRepo.save(printSync);
+//    }
 }

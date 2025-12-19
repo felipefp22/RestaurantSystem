@@ -4,6 +4,7 @@ import com.RestaurantSystem.Entities.CompaniesCompound.CompaniesCompound;
 import com.RestaurantSystem.Entities.Company.DTOs.CreateCompanyDTO;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Printer.PrintRules;
+import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Printer.Printer;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.Shift;
@@ -52,6 +53,9 @@ public class Company {
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PrintRules> printRules;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PrintSync> printSync;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "last_or_open_shift")
@@ -193,6 +197,11 @@ public class Company {
     public List<PrintRules> getPrintRules() {
         if (printRules == null) printRules = new ArrayList<>();
         return printRules;
+    }
+
+    public List<PrintSync> getPrintSync() {
+        if (printSync == null) printSync = new ArrayList<>();
+        return printSync;
     }
 
     public Shift getLastOrOpenShift() {

@@ -19,6 +19,7 @@ public class PrintRules {
     private Company company;
 
     //Can not Repeat
+    @Enumerated(EnumType.STRING)
     private PrintCategory printCategory;
     private UUID printerID;
     private Integer copies;

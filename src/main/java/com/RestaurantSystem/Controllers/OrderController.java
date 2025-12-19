@@ -113,13 +113,13 @@ public class OrderController {
 
 
     // <>------------ Prints Service ------------<>
-    @PutMapping("/mark-orderPrintSync-printed")
-    public ResponseEntity markOrderAsPrinted(@RequestHeader("Authorization") String authorizationHeader,
-                                             @RequestBody MarkOrderPrintSyncPrintedDTO dto) {
-        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
-
-        orderService.markOrderAsPrinted(requesterID, dto);
-
-        return ResponseEntity.ok().build();
-    }
+//    @PutMapping("/mark-orderPrintSync-printed")
+//    public ResponseEntity markOrderAsPrinted(@RequestHeader("Authorization") String authorizationHeader,
+//                                             @RequestBody MarkOrderPrintSyncPrintedDTO dto) {
+//        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+//
+//        orderService.markOrderAsPrinted(requesterID, dto);
+//
+//        return ResponseEntity.ok().build();
+//    }
 }
