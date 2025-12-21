@@ -25,7 +25,7 @@ public class PrinterController {
 
     // <> ---------- Methods ---------- <>
 
-    @GetMapping("/get-prnters/{comapnyID}")
+    @GetMapping("/get-printers/{companyID}")
     public ResponseEntity<List<Printer>> getPrinters(@PathVariable UUID companyID,
                                                      @RequestHeader("Authorization") String authorizationHeader) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
@@ -55,8 +55,8 @@ public class PrinterController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/delete-printer")
-    public ResponseEntity<Void> deletePrinter(@PathVariable DeletePrinterDTO dto,
+    @PutMapping("/delete-printer")
+    public ResponseEntity<Void> deletePrinter(@RequestBody DeletePrinterDTO dto,
                                               @RequestHeader("Authorization") String authorizationHeader) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 

@@ -35,6 +35,7 @@ public class PrinterService {
         Company company = verificationsServices.retrieveCompany(dto.companyID());
         verificationsServices.justOwnerOrManager(company, requester);
 
+        newPrinterValidations(dto, company);
         Printer newPrinter = new Printer(dto, company);
 
         return printerRepo.save(newPrinter);
@@ -50,7 +51,10 @@ public class PrinterService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Printer not found"));
 
-        if(printerToUpdate.getType().equalsIgnoreCase("NETWORK") && printerToUpdate.getMac().equalsIgnoreCase(dto.mac())) {
+        if ((company.getPrinters().stream().anyMatch(x -> !x.getId().equals(printerToUpdate.getId()) && x.getPrinterCustomName().equalsIgnoreCase(dto.printerCustomName()))))
+            throw new RuntimeException("A printer with the same custom name already exists in the company");
+
+        if (printerToUpdate.getType().equalsIgnoreCase("NETWORK") && printerToUpdate.getMac().equalsIgnoreCase(dto.mac())) {
             printerToUpdate.setPrinterCustomName(dto.printerCustomName());
             printerToUpdate.setIp(dto.ip());
         } else {
@@ -64,6 +68,32 @@ public class PrinterService {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(dto.companyID());
         verificationsServices.justOwnerOrManager(company, requester);
+
+        Printer printerToDelete = company.getPrinters().stream()
+                .filter(prn -> prn.getId().equals(dto.printerID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Printer not found"));
+
+        company.getPrinters().remove(printerToDelete);
+        printerRepo.delete(printerToDelete);
     }
 
+    // <> ---------- Helpers ---------- <>
+    private void newPrinterValidations(CreateOrUpdatePrinterDTO dto, Company company) {
+        if (dto.printerCustomName() == null || dto.printerCustomName().isBlank())
+            throw new RuntimeException("Printer custom name cannot be null or blank");
+        if (dto.type() == null || dto.type().isBlank())
+            throw new RuntimeException("Printer type cannot be null or blank");
+        if (dto.mac() == null && dto.ip() == null && dto.usbName() == null)
+            throw new RuntimeException("At least one of mac, ip or usbName must be provided");
+
+        if (company.getPrinters().stream().anyMatch(x -> x.getMac().equalsIgnoreCase(dto.mac())))
+            throw new RuntimeException("A printer with the same MAC address already exists in the company");
+        if (company.getPrinters().stream().anyMatch(x -> x.getUsbName() != null && x.getUsbName().equalsIgnoreCase(dto.usbName())))
+            throw new RuntimeException("A printer with the same USB name already exists in the company");
+        if (company.getPrinters().stream().anyMatch(x -> x.getIp() != null && x.getIp().equalsIgnoreCase(dto.ip())))
+            throw new RuntimeException("A printer with the same IP address already exists in the company");
+        if ((company.getPrinters().stream().anyMatch(x -> x.getPrinterCustomName().equalsIgnoreCase(dto.printerCustomName()))))
+            throw new RuntimeException("A printer with the same custom name already exists in the company");
+    }
 }
