@@ -110,6 +110,6 @@ public class ShiftService {
         List<Order> ordersOnOperation = currentShift.getOrders();
         ordersOnOperation.addAll(previousShiftStillOpenOrders);
 
-        return new ShiftOperationDTO(currentShift, ordersOnOperation);
+        return new ShiftOperationDTO(currentShift, ordersOnOperation, company.getPrintSync());
     }
 }

@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Entities.Printer;
 
 import com.RestaurantSystem.Entities.Company.Company;
+import com.RestaurantSystem.Entities.ENUMs.PrintCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -19,6 +20,9 @@ public class PrintSync {
     private Company company;
     private LocalDateTime releaseDateUtc;
 
+    @Enumerated(EnumType.STRING)
+    private PrintCategory printCategory;
+
     @Column(columnDefinition = "TEXT")
     private String text;
 
@@ -26,10 +30,11 @@ public class PrintSync {
     private PrintSync() {
     }
 
-    public PrintSync(Company company, LocalDateTime ordersItems, String text) {
+    public PrintSync(Company company, PrintCategory printCategory, String text) {
         this.id = UUID.randomUUID();
         this.company = company;
         this.releaseDateUtc = LocalDateTime.now(ZoneOffset.UTC);
+        this.printCategory = printCategory;
         this.text = text;
     }
 
@@ -46,6 +51,10 @@ public class PrintSync {
 
     public LocalDateTime getReleaseDateUtc() {
         return releaseDateUtc;
+    }
+
+    public PrintCategory getPrintCategory() {
+        return printCategory;
     }
 
     public String getText() {

@@ -31,7 +31,7 @@ public class PrintRulesService {
         return company.getPrintRules();
     }
 
-    public PrintRules updatePrintRules(UpdatePrintRulesDTO dto, String requesterID) {
+    public List<PrintRules> updatePrintRules(UpdatePrintRulesDTO dto, String requesterID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(dto.companyID());
         verificationsServices.justOwnerOrManager(company, requester);
@@ -44,7 +44,9 @@ public class PrintRulesService {
         printRulesToUpdate.setPrinterID(dto.printerID());
         printRulesToUpdate.setCopies(dto.copies());
 
-        return printRulesRepo.save(printRulesToUpdate);
+        printRulesRepo.save(printRulesToUpdate);
+
+        return company.getPrintRules();
     }
 
 }

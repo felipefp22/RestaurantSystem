@@ -2,8 +2,13 @@ package com.RestaurantSystem.Services.AuxsServices;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Order.Order;
+import com.RestaurantSystem.Entities.Printer.DTOs.DeletePrintSyncsDTO;
+import com.RestaurantSystem.Entities.Printer.PrintSync;
+import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.PrintSyncRepo;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class PrintSyncService {
@@ -13,9 +18,11 @@ public class PrintSyncService {
     private final String cutCommand = "{-CutHere-}";
 
     private final PrintSyncRepo printSyncRepo;
+    private final VerificationsServices verificationsServices;
 
-    public PrintSyncService(PrintSyncRepo printSyncRepo) {
+    public PrintSyncService(PrintSyncRepo printSyncRepo, VerificationsServices verificationsServices) {
         this.printSyncRepo = printSyncRepo;
+        this.verificationsServices = verificationsServices;
     }
 
     // <>------------ Methods ------------<>
@@ -31,6 +38,20 @@ public class PrintSyncService {
         return getSeparatorLine() + getSeparatorLine() + getFooter() + cutCommand + finalText;
     }
 
+    public void deletePrintSyncs(DeletePrintSyncsDTO dto, String requesterID) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(dto.companyID());
+        verificationsServices.justOwnerOrServer(company, requester);
+
+        List<PrintSync> printSyncsToDelete = printSyncRepo.findAllById(dto.printSyncsToDeleteIDs());
+
+        if(!printSyncsToDelete.isEmpty()) {
+            List<PrintSync> filteredPrintSyncs = printSyncsToDelete.stream()
+                    .filter(ps -> ps.getCompany().getId().equals(company.getId()))
+                    .toList();
+            printSyncRepo.deleteAll(filteredPrintSyncs);
+        }
+    }
 
 
     // <>------------ Helpers ------------<>

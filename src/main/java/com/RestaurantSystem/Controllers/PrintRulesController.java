@@ -25,7 +25,7 @@ public class PrintRulesController {
 
     // <> ---------- Methods ---------- <>
 
-    @GetMapping("/print-rules")
+    @GetMapping("/print-rules/{companyID}")
     public ResponseEntity<List<PrintRules>> getPrintRules(@PathVariable UUID companyID,
                                                           @RequestHeader("Authorization") String authorizationHeader) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
@@ -36,7 +36,7 @@ public class PrintRulesController {
     }
 
     @PutMapping("/update-print-rules")
-    public ResponseEntity<PrintRules> updatePrintRules(@RequestBody UpdatePrintRulesDTO dto,
+    public ResponseEntity<List<PrintRules>> updatePrintRules(@RequestBody UpdatePrintRulesDTO dto,
                                                        @RequestHeader("Authorization") String authorizationHeader) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 

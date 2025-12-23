@@ -3,6 +3,9 @@ package com.RestaurantSystem.Entities.Company.DTOs;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.Customer.Customer;
+import com.RestaurantSystem.Entities.Printer.PrintRules;
+import com.RestaurantSystem.Entities.Printer.PrintSync;
+import com.RestaurantSystem.Entities.Printer.Printer;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.Shift;
 
@@ -33,7 +36,10 @@ public record CompanyOperationDTO(
         Integer baseDeliveryDistanceKM,
         Double baseDeliveryTax,
         Double taxPerExtraKM,
-        List<String> noUserDeliveryMans
+        List<String> noUserDeliveryMans,
+        List<Printer> printers,
+        List<PrintRules> printRules,
+        List<PrintSync> printSync
 
 ) {
 
@@ -61,7 +67,10 @@ public record CompanyOperationDTO(
                 company.getBaseDeliveryDistanceKM(),
                 company.getBaseDeliveryTax(),
                 company.getTaxPerExtraKM(),
-                company.getNoUserDeliveryMans()
+                company.getNoUserDeliveryMans(),
+                company.getPrinters(),
+                company.getPrintRules(),
+                company.getPrintSync()
         );
     }
 
@@ -89,6 +98,9 @@ public record CompanyOperationDTO(
                 company.baseDeliveryDistanceKM(),
                 company.baseDeliveryTax(),
                 company.taxPerExtraKM(),
+                null,
+                null,
+                null,
                 null
         );
     }

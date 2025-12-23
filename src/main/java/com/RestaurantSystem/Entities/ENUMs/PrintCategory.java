@@ -1,7 +1,7 @@
 package com.RestaurantSystem.Entities.ENUMs;
 
 public enum PrintCategory {
-    COMPLETEORDER,
+    FULLORDER,
     FOODS,
     DESSERTS,
     DRINKS,
