@@ -4,6 +4,7 @@ import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.MarkOrderPrintSyncPr
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.ENUMs.CustomOrderPriceRule;
+import com.RestaurantSystem.Entities.ENUMs.PrintCategory;
 import com.RestaurantSystem.Entities.Order.DTOs.*;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
@@ -40,10 +41,11 @@ public class OrderService {
     private final ShiftRepo shiftRepo;
     private final VerificationsServices verificationsServices;
     private final PrintSyncService printSyncService;
+    private final PrintSyncRepo printSyncRepo;
     private final SignalR signalR;
 
     public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, OrdersItemsCancelledRepo ordersItemsCancelledRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo,
-                        ShiftRepo shiftRepo, VerificationsServices verificationsServices, PrintSyncService printSyncService, SignalR signalR) {
+                        ShiftRepo shiftRepo, VerificationsServices verificationsServices, PrintSyncService printSyncService, PrintSyncRepo printSyncRepo, SignalR signalR) {
         this.orderRepo = orderRepo;
         this.ordersItemsRepo = ordersItemsRepo;
         this.ordersItemsCancelledRepo = ordersItemsCancelledRepo;
@@ -52,6 +54,7 @@ public class OrderService {
         this.shiftRepo = shiftRepo;
         this.verificationsServices = verificationsServices;
         this.printSyncService = printSyncService;
+        this.printSyncRepo = printSyncRepo;
         this.signalR = signalR;
     }
 
@@ -139,6 +142,7 @@ public class OrderService {
         order.getOrderItems().addAll(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
+        createPrintSyncTable(company, order, ordersItems, "add");
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
@@ -158,7 +162,7 @@ public class OrderService {
 
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
-//        printSyncRepo.save(new PrintSync(order, ordersItemsToCancel, "del"));
+        createPrintSyncTable(company, order, ordersItemsToCancel, "del");
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing orderItemsIDs."));
@@ -304,7 +308,7 @@ public class OrderService {
             order.setNotes((order.getNotes() != null ? order.getNotes() + " \n | " : "") + "Cancellation Reason: " + cancelOrderDTO.cancellationReason());
             order.setCompletedOrderDateUtc(LocalDateTime.now(ZoneOffset.UTC));
 
-            signalR.sendShiftOperationSigr(company);
+//            signalR.sendShiftOperationSigr(company);
             return orderRepo.save(order);
         } else {
             throw new RuntimeException("Invalid admin password.");
@@ -437,6 +441,32 @@ public class OrderService {
 
         return newTableNumber;
     }
+
+    // <>---------------------------- PRINT SYNC HELPERS -----------------------------------<>
+    private void createPrintSyncTable(Company company, Order order, List<OrdersItems> ordersItems, String action) {
+        List<PrintSync> printSyncCreate = new ArrayList<>();
+//        if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.FULLORDER) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createTableItemsPrint(company, order, PrintCategory.FULLORDER, ordersItems, action.equals("del"))));
+//
+//        } else if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.FOODS) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.FOODS, printSyncService.createTableItemsPrint(company, order, PrintCategory.FOODS, ordersItems, action.equals("del"))));
+//
+//        } else if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.DESSERTS) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.DESSERTS, printSyncService.createTableItemsPrint(company, order, PrintCategory.DESSERTS, ordersItems, action.equals("del"))));
+//
+//        } else if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.DRINKS) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.DRINKS, printSyncService.createTableItemsPrint(company, order, PrintCategory.DRINKS,ordersItems, action.equals("del"))));
+//
+//        } else if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.BEVERAGES) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.BEVERAGES, printSyncService.createTableItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"))));
+//
+//        }
+
+        printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createTableItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"))));
+
+        if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+    }
+
 // <>---------------------------- END || CREATE/UPDATE ORDERS HELPERS || END -----------------------------------<>
 
 //    public void markOrderAsPrinted(String requesterID, MarkOrderPrintSyncPrintedDTO dto) {

@@ -1,14 +1,19 @@
 package com.RestaurantSystem.Services.AuxsServices;
 
 import com.RestaurantSystem.Entities.Company.Company;
+import com.RestaurantSystem.Entities.ENUMs.PrintCategory;
 import com.RestaurantSystem.Entities.Order.Order;
+import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Printer.DTOs.DeletePrintSyncsDTO;
+import com.RestaurantSystem.Entities.Printer.DTOs.PrintSyncOrderItemsDTO;
 import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.PrintSyncRepo;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class PrintSyncService {
@@ -16,6 +21,7 @@ public class PrintSyncService {
     private final String leftCommand = "{-Left-}";
     private final String rightCommand = "{-Right-}";
     private final String cutCommand = "{-CutHere-}";
+    private final String separatorLne = "\n--------------------------------\n";
 
     private final PrintSyncRepo printSyncRepo;
     private final VerificationsServices verificationsServices;
@@ -26,16 +32,40 @@ public class PrintSyncService {
     }
 
     // <>------------ Methods ------------<>
+    public String createTableItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isCancelled) {
+        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup"))
+            return "";
+
+        String header = getHeader(company);
+        String date = getDate(order);
+        String orderNum = getOrderNumber(order);
+        String tableNum = "\nMesa: " + order.getTableNumberOrDeliveryOrPickup() + "\n\n";
+
+
+        String itemsText = switch (printCategory) {
+//            case FOODS -> getOrderItemsText(orderItems, false, isCancelled);
+//            case DESSERTS -> getOrderItemsText(orderItems, false, isCancelled);
+//            case DRINKS -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
+//            case BEVERAGES -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
+            default -> getOrderItemsText(orderItems, false, isCancelled);
+        };
+
+        String finalText = centerCommand + header + date + tableNum + leftCommand + separatorLne + (isCancelled ? getCancelledText() : "") +
+                itemsText + (isCancelled ? getCancelledText() : "") + getFooter();
+
+        return finalText;
+    }
 
     public String createDeliveryPrint(Company company, Order order) {
+        String dispatchOrOperation = "Dispacho \n\n";
         String header = getHeader(company);
         String date = getDate(order);
         String orderNum = getOrderNumber(order);
         String address = getAddress(order);
 
-        String finalText = centerCommand + header + leftCommand + orderNum + date +  getSeparatorLine() + address + getSeparatorLine() + getFooter();
+        String finalText = centerCommand + dispatchOrOperation + header + leftCommand + orderNum + date + separatorLne + address + separatorLne + getFooter();
 
-        return getSeparatorLine() + getSeparatorLine() + getFooter() + cutCommand + finalText;
+        return separatorLne + separatorLne + getFooter() + cutCommand + finalText;
     }
 
     public void deletePrintSyncs(DeletePrintSyncsDTO dto, String requesterID) {
@@ -45,7 +75,7 @@ public class PrintSyncService {
 
         List<PrintSync> printSyncsToDelete = printSyncRepo.findAllById(dto.printSyncsToDeleteIDs());
 
-        if(!printSyncsToDelete.isEmpty()) {
+        if (!printSyncsToDelete.isEmpty()) {
             List<PrintSync> filteredPrintSyncs = printSyncsToDelete.stream()
                     .filter(ps -> ps.getCompany().getId().equals(company.getId()))
                     .toList();
@@ -55,15 +85,9 @@ public class PrintSyncService {
 
 
     // <>------------ Helpers ------------<>
-    private String getSeparatorLine(){
-        return "\n--------------------------------\n";
-    }
-
     private String getHeader(Company company) {
-        return "Dispacho \n\n" + company.getCompanyName() + "\n";
+        return company.getCompanyName() + "\n";
     }
-
-
 
     private String getDate(Order order) {
         String day = String.valueOf(order.getOpenOrderDateUtc().getDayOfMonth());
@@ -73,6 +97,10 @@ public class PrintSyncService {
         String minute = String.valueOf(order.getOpenOrderDateUtc().getMinute());
 
         return day + "/" + month + "/" + year + " - " + hour + ":" + minute + "\n";
+    }
+
+    private String getCancelledText() {
+        return separatorLne + "***! CANCELAMENTO !***" + separatorLne;
     }
 
     private String getOrderNumber(Order order) {
@@ -93,7 +121,32 @@ public class PrintSyncService {
                 order.getCustomer().getComplement() + "\n" + "Telefone: " + order.getCustomer().getPhone();
     }
 
+    private String getOrderItemsText(List<OrdersItems> orderItems, Boolean withPrice, boolean isCancelled) {
+        List<PrintSyncOrderItemsDTO> ordersToCreateText = new ArrayList<>();
+        orderItems.forEach(x -> {
+            PrintSyncOrderItemsDTO foundEqual = ordersToCreateText.stream().filter(y -> Objects.equals(y.getProductId(), x.getProductId()) && Objects.equals(y.getProductPrice(), x.getProductPrice()) &&
+                    Objects.equals(y.getProductOptions(), x.getProductOptions()) && Objects.equals(y.getName(), x.getName()) && Objects.equals(y.getPrice(), x.getPrice()) &&
+                            Objects.equals(y.getIsThirdSupplierPrice(), x.getIsThirdSupplierPrice()) && Objects.equals(y.getNotes(), x.getNotes())).findFirst().orElse(null);
 
+            if (foundEqual != null) {
+                foundEqual.setQuantity(foundEqual.getQuantity() + 1);
+            } else {
+                ordersToCreateText.add(new PrintSyncOrderItemsDTO(x));
+            }
+        });
+
+        StringBuilder itemsText = new StringBuilder();
+        ordersToCreateText.forEach(x -> {
+            itemsText.append(x.getQuantity())
+                    .append(" x ")
+                    .append(x.getName())
+                    .append(x.getNotes() != null ? "\n  -" + x.getNotes() : "")
+                    .append(isCancelled ? " (CANCELADO)" : "")
+                    .append(separatorLne);
+        });
+
+        return itemsText.toString();
+    }
 
     private String getFooter() {
         return "\n\n\n\n\n";
