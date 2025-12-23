@@ -25,7 +25,6 @@ public class PrintSyncController {
     @PutMapping("/delete-print-syncs")
     private ResponseEntity deletePrintSync(@RequestBody DeletePrintSyncsDTO dto,
                                            @RequestHeader("Authorization") String authorizationHeader) {
-
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         printSyncService.deletePrintSyncs(dto, requesterID);
