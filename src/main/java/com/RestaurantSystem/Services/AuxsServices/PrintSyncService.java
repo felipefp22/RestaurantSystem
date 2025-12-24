@@ -20,6 +20,17 @@ public class PrintSyncService {
     private final String centerCommand = "{-Center-}";
     private final String leftCommand = "{-Left-}";
     private final String rightCommand = "{-Right-}";
+
+    private final String italic = "{-Italic-}";
+    private final String italicOff = "{-Normal-}";
+
+    private final String underlining1 = "{-Underline-}";
+    private final String underliningOff2 = "{-Underline2-}";
+    private final String underliningOff = "{-UnderlineOff-}";
+
+    private final String boldOn = "{-Bold-}"; // Bold ON
+    private final String boldOff = "{-BoldOff-}"; // Bold OFF
+
     private final String cutCommand = "{-CutHere-}";
     private final String separatorLne = "\n--------------------------------\n";
 
@@ -86,7 +97,7 @@ public class PrintSyncService {
 
     // <>------------ Helpers ------------<>
     private String getHeader(Company company) {
-        return company.getCompanyName() + "\n";
+        return boldOn + company.getCompanyName() + boldOff + "\n";
     }
 
     private String getDate(Order order) {
@@ -126,7 +137,7 @@ public class PrintSyncService {
         orderItems.forEach(x -> {
             PrintSyncOrderItemsDTO foundEqual = ordersToCreateText.stream().filter(y -> Objects.equals(y.getProductId(), x.getProductId()) && Objects.equals(y.getProductPrice(), x.getProductPrice()) &&
                     Objects.equals(y.getProductOptions(), x.getProductOptions()) && Objects.equals(y.getName(), x.getName()) && Objects.equals(y.getPrice(), x.getPrice()) &&
-                            Objects.equals(y.getIsThirdSupplierPrice(), x.getIsThirdSupplierPrice()) && Objects.equals(y.getNotes(), x.getNotes())).findFirst().orElse(null);
+                    Objects.equals(y.getIsThirdSupplierPrice(), x.getIsThirdSupplierPrice()) && Objects.equals(y.getNotes(), x.getNotes())).findFirst().orElse(null);
 
             if (foundEqual != null) {
                 foundEqual.setQuantity(foundEqual.getQuantity() + 1);
@@ -139,8 +150,8 @@ public class PrintSyncService {
         ordersToCreateText.forEach(x -> {
             itemsText.append(x.getQuantity())
                     .append(" x ")
-                    .append(x.getName())
-                    .append(x.getNotes() != null ? "\n  -" + x.getNotes() : "")
+                    .append(boldOn + x.getName().toUpperCase().replaceAll("/", " / ") + boldOff)
+                    .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n   - " + x.getNotes() + italicOff : "")
                     .append(isCancelled ? " (CANCELADO)" : "")
                     .append(separatorLne);
         });
