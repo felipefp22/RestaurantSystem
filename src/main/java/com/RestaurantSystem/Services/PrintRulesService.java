@@ -3,8 +3,10 @@ package com.RestaurantSystem.Services;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Printer.DTOs.UpdatePrintRulesDTO;
 import com.RestaurantSystem.Entities.Printer.PrintRules;
+import com.RestaurantSystem.Entities.Printer.PrintersAndCopies;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.PrintRulesRepo;
+import com.RestaurantSystem.Repositories.PrintersAndCopiesRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +18,12 @@ public class PrintRulesService {
 
     private final PrintRulesRepo printRulesRepo;
     private final VerificationsServices verificationsServices;
+    private final PrintersAndCopiesRepo printersAndCopiesRepo;
 
-    public PrintRulesService(PrintRulesRepo printRulesRepo, VerificationsServices verificationsServices) {
+    public PrintRulesService(PrintRulesRepo printRulesRepo, VerificationsServices verificationsServices, PrintersAndCopiesRepo printersAndCopiesRepo) {
         this.printRulesRepo = printRulesRepo;
         this.verificationsServices = verificationsServices;
+        this.printersAndCopiesRepo = printersAndCopiesRepo;
     }
 
     // <> ---------- Methods ---------- <>
@@ -41,11 +45,30 @@ public class PrintRulesService {
                 .findFirst()
                 .orElse(new PrintRules(company, dto.printCategory()));
 
-        printRulesToUpdate.setPrinterID(dto.printerID());
-        printRulesToUpdate.setCopies(dto.copies());
+        if (dto.printAndCopiesID() == null && dto.printerID() != null && dto.copies() != null) {
+            PrintersAndCopies pAndCopiesFound = printRulesToUpdate.getPrintersAndCopies().stream()
+                    .filter(pc -> pc.getPrinterID().equals(dto.printerID()))
+                    .findFirst()
+                    .orElse(new PrintersAndCopies(printRulesToUpdate, dto.printerID(), dto.copies()));
+            pAndCopiesFound.setCopies(dto.copies());
+            printRulesToUpdate.getPrintersAndCopies().add(pAndCopiesFound);
+            printersAndCopiesRepo.save(pAndCopiesFound);
+
+        } else if (dto.printAndCopiesID() != null) {
+            PrintersAndCopies pAndCopiesToUpdate = printRulesToUpdate.getPrintersAndCopies().stream()
+                    .filter(pc -> pc.getId().equals(dto.printAndCopiesID()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("PrintersAndCopies with ID " + dto.printAndCopiesID() + " not found."));
+            if(dto.printerID() == null) {
+                printRulesToUpdate.getPrintersAndCopies().remove(pAndCopiesToUpdate);
+                printersAndCopiesRepo.delete(pAndCopiesToUpdate);
+            } else {
+                pAndCopiesToUpdate.setPrinterID(dto.printerID());
+                pAndCopiesToUpdate.setCopies(dto.copies());
+            }
+        }
 
         printRulesRepo.save(printRulesToUpdate);
-
         return company.getPrintRules();
     }
 

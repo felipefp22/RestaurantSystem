@@ -5,6 +5,8 @@ import com.RestaurantSystem.Entities.ENUMs.PrintCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -21,8 +23,9 @@ public class PrintRules {
     //Can not Repeat
     @Enumerated(EnumType.STRING)
     private PrintCategory printCategory;
-    private UUID printerID;
-    private Integer copies;
+
+    @OneToMany(mappedBy = "printRules", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PrintersAndCopies> printersAndCopies;
 
     //<>------------ Constructors ------------<>
     private PrintRules() {
@@ -47,19 +50,8 @@ public class PrintRules {
         return printCategory;
     }
 
-    public UUID getPrinterID() {
-        return printerID;
-    }
-
-    public void setPrinterID(UUID printerID) {
-        this.printerID = printerID;
-    }
-
-    public Integer getCopies() {
-        return copies;
-    }
-
-    public void setCopies(Integer copies) {
-        this.copies = copies;
+    public List<PrintersAndCopies> getPrintersAndCopies() {
+        if (printersAndCopies == null) return new ArrayList<>();
+        return printersAndCopies;
     }
 }
