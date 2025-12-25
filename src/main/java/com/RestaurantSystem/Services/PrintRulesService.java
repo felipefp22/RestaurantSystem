@@ -44,6 +44,7 @@ public class PrintRulesService {
                 .filter(prr -> prr.getPrintCategory().equals(dto.printCategory()))
                 .findFirst()
                 .orElse(new PrintRules(company, dto.printCategory()));
+        if (printRulesToUpdate.getId() == null) printRulesRepo.save(printRulesToUpdate);
 
         if (dto.printAndCopiesID() == null && dto.printerID() != null && dto.copies() != null) {
             PrintersAndCopies pAndCopiesFound = printRulesToUpdate.getPrintersAndCopies().stream()
@@ -51,7 +52,7 @@ public class PrintRulesService {
                     .findFirst()
                     .orElse(new PrintersAndCopies(printRulesToUpdate, dto.printerID(), dto.copies()));
             pAndCopiesFound.setCopies(dto.copies());
-            printRulesToUpdate.getPrintersAndCopies().add(pAndCopiesFound);
+            if (pAndCopiesFound.getId() == null) printRulesToUpdate.getPrintersAndCopies().add(pAndCopiesFound);
             printersAndCopiesRepo.save(pAndCopiesFound);
 
         } else if (dto.printAndCopiesID() != null) {
@@ -59,7 +60,7 @@ public class PrintRulesService {
                     .filter(pc -> pc.getId().equals(dto.printAndCopiesID()))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("PrintersAndCopies with ID " + dto.printAndCopiesID() + " not found."));
-            if(dto.printerID() == null) {
+            if (dto.printerID() == null) {
                 printRulesToUpdate.getPrintersAndCopies().remove(pAndCopiesToUpdate);
                 printersAndCopiesRepo.delete(pAndCopiesToUpdate);
             } else {
@@ -71,5 +72,6 @@ public class PrintRulesService {
         printRulesRepo.save(printRulesToUpdate);
         return company.getPrintRules();
     }
+
 
 }

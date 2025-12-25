@@ -4,8 +4,10 @@ import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Printer.DTOs.DeletePrinterDTO;
 import com.RestaurantSystem.Entities.Printer.DTOs.CreateOrUpdatePrinterDTO;
 import com.RestaurantSystem.Entities.Printer.Printer;
+import com.RestaurantSystem.Entities.Printer.PrintersAndCopies;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.PrinterRepo;
+import com.RestaurantSystem.Repositories.PrintersAndCopiesRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +18,16 @@ import java.util.UUID;
 public class PrinterService {
     private final PrinterRepo printerRepo;
     private final VerificationsServices verificationsServices;
+    private final PrintersAndCopiesRepo printersAndCopiesRepo;
 
-    public PrinterService(PrinterRepo printerRepo, VerificationsServices verificationsServices) {
+    public PrinterService(PrinterRepo printerRepo, VerificationsServices verificationsServices, PrintersAndCopiesRepo printersAndCopiesRepo) {
         this.printerRepo = printerRepo;
         this.verificationsServices = verificationsServices;
+        this.printersAndCopiesRepo = printersAndCopiesRepo;
     }
+
+
+    // <> ---------- Methods ---------- <>
 
     public List<Printer> getPrinters(UUID companyID, String requesterID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
@@ -73,6 +80,12 @@ public class PrinterService {
                 .filter(prn -> prn.getId().equals(dto.printerID()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Printer not found"));
+
+        company.getPrintRules().forEach(prr -> {
+            List<PrintersAndCopies> pAndCopiesToDelete = prr.getPrintersAndCopies().stream().filter(pac -> pac.getPrinterID().equals(printerToDelete.getId())).toList();
+            prr.getPrintersAndCopies().removeAll(pAndCopiesToDelete);
+            printersAndCopiesRepo.deleteAll(pAndCopiesToDelete);
+        });
 
         company.getPrinters().remove(printerToDelete);
         printerRepo.delete(printerToDelete);
