@@ -3,6 +3,7 @@ package com.RestaurantSystem.Entities.Printer.DTOs;
 import com.RestaurantSystem.Entities.Order.OrdersItems;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PrintSyncOrderItemsDTO {
     private List<String> productId;
@@ -16,6 +17,7 @@ public class PrintSyncOrderItemsDTO {
     private String imagePath;
     private String status;
     private String notes;
+    private Integer printPriority;
 
     // <>------------ Constructor ------------<>
     public PrintSyncOrderItemsDTO(){
@@ -124,5 +126,12 @@ public class PrintSyncOrderItemsDTO {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public Integer getPrintPriority() {
+        return printPriority;
+    }
+    public void setPrintPriority(Integer printPriority) {
+        this.printPriority = printPriority;
     }
 }

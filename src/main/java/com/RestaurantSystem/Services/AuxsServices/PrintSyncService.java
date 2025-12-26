@@ -7,13 +7,14 @@ import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Printer.DTOs.DeletePrintSyncsDTO;
 import com.RestaurantSystem.Entities.Printer.DTOs.PrintSyncOrderItemsDTO;
 import com.RestaurantSystem.Entities.Printer.PrintSync;
+import com.RestaurantSystem.Entities.Product.Product;
+import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.PrintSyncRepo;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PrintSyncService {
@@ -58,7 +59,7 @@ public class PrintSyncService {
 //            case DESSERTS -> getOrderItemsText(orderItems, false, isCancelled);
 //            case DRINKS -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
 //            case BEVERAGES -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
-            default -> getOrderItemsText(orderItems, false, isCancelled);
+            default -> getOrderItemsText(company, orderItems, false, isCancelled);
         };
 
         String finalText = centerCommand + header + date + tableNum + leftCommand + separatorLne + (isCancelled ? getCancelledText() : "") +
@@ -132,7 +133,9 @@ public class PrintSyncService {
                 order.getCustomer().getComplement() + "\n" + "Telefone: " + order.getCustomer().getPhone();
     }
 
-    private String getOrderItemsText(List<OrdersItems> orderItems, Boolean withPrice, boolean isCancelled) {
+    private String getOrderItemsText(Company company, List<OrdersItems> orderItems, Boolean withPrice, boolean isCancelled) {
+        Map<UUID, Integer> printPriorityMap = getProductPrintSortMap(company);
+
         List<PrintSyncOrderItemsDTO> ordersToCreateText = new ArrayList<>();
         orderItems.forEach(x -> {
             PrintSyncOrderItemsDTO foundEqual = ordersToCreateText.stream().filter(y -> Objects.equals(y.getProductId(), x.getProductId()) && Objects.equals(y.getProductPrice(), x.getProductPrice()) &&
@@ -145,6 +148,7 @@ public class PrintSyncService {
                 ordersToCreateText.add(new PrintSyncOrderItemsDTO(x));
             }
         });
+        ordersToCreateText.sort(Comparator.comparing(x -> printPriorityMap.get(UUID.fromString(x.getProductId().get(0))), Comparator.nullsLast(Integer::compareTo)));
 
         StringBuilder itemsText = new StringBuilder();
         ordersToCreateText.forEach(x -> {
@@ -157,6 +161,29 @@ public class PrintSyncService {
         });
 
         return itemsText.toString();
+    }
+    
+    private Map<UUID, Integer> getProductPrintSortMap(Company company) {
+        int ifPriorityNullNextFakeValue = 100000;
+        Map<UUID, Integer> map = new HashMap<>();
+
+        List<ProductCategory> pCategories = company.getProductsCategories();
+        pCategories.sort(Comparator
+                .comparing(ProductCategory::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(ProductCategory::getCategoryName, String.CASE_INSENSITIVE_ORDER));
+
+        for (ProductCategory pc : pCategories) {
+            Integer printPriority = pc.getPrintPriority();
+            if (printPriority == null) {
+                printPriority = ifPriorityNullNextFakeValue;
+                ifPriorityNullNextFakeValue += 1;
+            }
+            for (Product product : pc.getProducts()) {
+                map.put(product.getId(), printPriority);
+            }
+        }
+
+        return map;
     }
 
     private String getFooter() {
