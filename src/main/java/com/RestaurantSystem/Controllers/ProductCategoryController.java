@@ -1,6 +1,7 @@
 package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
+import com.RestaurantSystem.Entities.ProductCategory.DTOs.SortPrintPriorityDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.UpdateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
@@ -50,6 +51,16 @@ public class ProductCategoryController {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = productCategoryService.updateCategory(requesterID, updateDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/sort-print-priority")
+    public ResponseEntity<List<ProductCategory>> sortPrintPriority(@RequestHeader("Authorization") String authorizationHeader,
+                                                                @RequestBody SortPrintPriorityDTO dto) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = productCategoryService.sortPrintPriority(requesterID, dto);
 
         return ResponseEntity.ok(response);
     }

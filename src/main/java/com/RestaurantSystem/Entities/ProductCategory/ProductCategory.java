@@ -40,14 +40,17 @@ public class ProductCategory {
     @Enumerated(EnumType.STRING)
     private PrintCategory printCategory;
 
+    private Integer printPriority;
+
     //<>------------ Constructors ------------<>
     public ProductCategory() {
     }
 
-    public ProductCategory(CreateProductCategoryDTO createDTO, Company company) {
+    public ProductCategory(CreateProductCategoryDTO createDTO, Company company, Integer printPriority) {
         this.company = company;
         this.categoryName = createDTO.categoryName();
         this.description = createDTO.description();
+        this.printPriority = printPriority;
     }
 
 
@@ -113,5 +116,13 @@ public class ProductCategory {
     }
     public void setPrintCategory(PrintCategory printCategory) {
         this.printCategory = printCategory;
+    }
+
+    public Integer getPrintPriority() {
+        return printPriority;
+    }
+
+    public void setPrintPriority(Integer printPriority) {
+        this.printPriority = printPriority;
     }
 }
