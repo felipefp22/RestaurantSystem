@@ -15,7 +15,6 @@ import com.RestaurantSystem.Repositories.PrintSyncRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class PrintSyncService {
@@ -47,7 +46,7 @@ public class PrintSyncService {
     }
 
     // <>------------ Methods ------------<>
-    public String createTableItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isCancelled) {
+    public String createPreparationItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isCancelled) {
         if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup"))
             return "";
 
@@ -138,23 +137,30 @@ public class PrintSyncService {
 
     private String getOrderItemsText(Company company, List<OrdersItems> orderItems, Boolean withPrice, boolean isCancelled) {
         Map<UUID, PrintPriorityAndCategoryNameDTO> priorityMap = getProductPrintSortMap(company);
+        Map<String, PrintSyncOrderItemsDTO> grouped = new LinkedHashMap<>();
 
-        List<PrintSyncOrderItemsDTO> ordersToCreateText = new ArrayList<>();
-        orderItems.forEach(x -> {
-            PrintSyncOrderItemsDTO foundEqual = ordersToCreateText.stream().filter(y -> Objects.equals(y.getProductId(), x.getProductId()) && Objects.equals(y.getProductPrice(), x.getProductPrice()) &&
-                    Objects.equals(y.getProductOptions(), x.getProductOptions()) && Objects.equals(y.getName(), x.getName()) && Objects.equals(y.getPrice(), x.getPrice()) &&
-                    Objects.equals(y.getIsThirdSupplierPrice(), x.getIsThirdSupplierPrice()) && Objects.equals(y.getNotes(), x.getNotes())).findFirst().orElse(null);
+        for (OrdersItems x : orderItems) {
+            String key =
+                    x.getProductId() + "|" +
+                            x.getProductPrice() + "|" +
+                            x.getProductOptions() + "|" +
+                            x.getName() + "|" +
+                            x.getPrice() + "|" +
+                            x.getIsThirdSupplierPrice() + "|" +
+                            x.getNotes();
+            PrintSyncOrderItemsDTO dto = grouped.get(key);
 
-            if (foundEqual != null) {
-                foundEqual.setQuantity(foundEqual.getQuantity() + 1);
+            if (dto != null) {
+                dto.setQuantity(dto.getQuantity() + 1);
             } else {
-                PrintSyncOrderItemsDTO dto = new PrintSyncOrderItemsDTO(x);
+                dto = new PrintSyncOrderItemsDTO(x);
                 dto.setPrintPriority(priorityMap.get(UUID.fromString(dto.getProductId().get(0))).printPriority());
                 dto.setCategoryName(priorityMap.get(UUID.fromString(dto.getProductId().get(0))).categoryName());
-                ordersToCreateText.add(dto);
+                grouped.put(key, dto);
             }
-        });
-//        ordersToCreateText.sort(Comparator.comparing(x -> priorityMap.get(UUID.fromString(x.getProductId().get(0))), Comparator.nullsLast(Integer::compareTo)));
+        }
+
+        List<PrintSyncOrderItemsDTO> ordersToCreateText = new ArrayList<>(grouped.values());
         ordersToCreateText.sort(Comparator.comparing(PrintSyncOrderItemsDTO::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
                 .thenComparing(dto -> dto.getNotes() == null || dto.getNotes().isBlank()));
 
@@ -196,29 +202,6 @@ public class PrintSyncService {
             }
             for (Product product : pc.getProducts()) {
                 map.put(product.getId(), new PrintPriorityAndCategoryNameDTO(printPriority, pc.getCategoryName()));
-            }
-        }
-
-        return map;
-    }
-
-    private Map<UUID, Integer> getProductCategoriesNameByPrintSortMap(Company company) {
-        int ifPriorityNullNextFakeValue = 100000;
-        Map<UUID, Integer> map = new HashMap<>();
-
-        List<ProductCategory> pCategories = new ArrayList<>(company.getProductsCategories());
-        pCategories.sort(Comparator
-                .comparing(ProductCategory::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
-                .thenComparing(ProductCategory::getCategoryName, String.CASE_INSENSITIVE_ORDER));
-
-        for (ProductCategory pc : pCategories) {
-            Integer printPriority = pc.getPrintPriority();
-            if (printPriority == null) {
-                printPriority = ifPriorityNullNextFakeValue;
-                ifPriorityNullNextFakeValue += 1;
-            }
-            for (Product product : pc.getProducts()) {
-                map.put(product.getId(), printPriority);
             }
         }
 

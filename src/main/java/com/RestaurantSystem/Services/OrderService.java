@@ -1,6 +1,5 @@
 package com.RestaurantSystem.Services;
 
-import com.RestaurantSystem.Entities.CompaniesCompound.DTOs.MarkOrderPrintSyncPrintedDTO;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.ENUMs.CustomOrderPriceRule;
@@ -446,23 +445,23 @@ public class OrderService {
     private void createPrintSyncTable(Company company, Order order, List<OrdersItems> ordersItems, String action) {
         List<PrintSync> printSyncCreate = new ArrayList<>();
 //        if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.FULLORDER) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
-//            printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createTableItemsPrint(company, order, PrintCategory.FULLORDER, ordersItems, action.equals("del"))));
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.FULLORDER, ordersItems, action.equals("del"))));
 //
 //        } else if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.FOODS) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
-//            printSyncCreate.add(new PrintSync(company, PrintCategory.FOODS, printSyncService.createTableItemsPrint(company, order, PrintCategory.FOODS, ordersItems, action.equals("del"))));
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.FOODS, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.FOODS, ordersItems, action.equals("del"))));
 //
 //        } else if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.DESSERTS) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
-//            printSyncCreate.add(new PrintSync(company, PrintCategory.DESSERTS, printSyncService.createTableItemsPrint(company, order, PrintCategory.DESSERTS, ordersItems, action.equals("del"))));
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.DESSERTS, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.DESSERTS, ordersItems, action.equals("del"))));
 //
 //        } else if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.DRINKS) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
-//            printSyncCreate.add(new PrintSync(company, PrintCategory.DRINKS, printSyncService.createTableItemsPrint(company, order, PrintCategory.DRINKS,ordersItems, action.equals("del"))));
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.DRINKS, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.DRINKS,ordersItems, action.equals("del"))));
 //
 //        } else if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.BEVERAGES) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
-//            printSyncCreate.add(new PrintSync(company, PrintCategory.BEVERAGES, printSyncService.createTableItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"))));
+//            printSyncCreate.add(new PrintSync(company, PrintCategory.BEVERAGES, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"))));
 //
 //        }
 
-        printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createTableItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"))));
+        printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"))));
 
         if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
     }
