@@ -61,7 +61,7 @@ public class PrintSyncService {
 //            case DESSERTS -> getOrderItemsText(orderItems, false, isCancelled);
 //            case DRINKS -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
 //            case BEVERAGES -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
-            default -> getOrderItemsText(company, orderItems, false, isCancelled);
+            default -> getOrderItemsText(company, orderItems, true, isCancelled);
         };
 
         String finalText = centerCommand + header + date + tableNum + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
@@ -168,14 +168,15 @@ public class PrintSyncService {
         Integer lastPrintPriority = null;
         for (PrintSyncOrderItemsDTO x : ordersToCreateText) {
             if (!Objects.equals(lastPrintPriority, x.getPrintPriority()) && !isCancelled) {
-                itemsText.append(itemsText.isEmpty() ? "--------------------------------" : "\n\n" + "--------------------------------")
-                        .append(separatorLne)
-                        .append(boldOn + "      *  " + x.getCategoryName().toUpperCase() + "  *\n\n" + boldOff);
+                itemsText.append(itemsText.isEmpty() ? "--------------------------------" : (!withPrice ? "\n\n--------------------------------" : "\n--------------------------------"))
+                        .append(!withPrice ? separatorLne : "\n")
+                        .append(boldOn + "      *  " + x.getCategoryName().toUpperCase() + (!withPrice ? "  *\n\n" : "  *\n") + boldOff);
             }
-            itemsText.append(!Objects.equals(lastPrintPriority, x.getPrintPriority()) ? "" : separatorLneSmall)
-                    .append(x.getQuantity())
-                    .append(" x ")
+            itemsText.append((!Objects.equals(lastPrintPriority, x.getPrintPriority()) || withPrice) ? "" : separatorLneSmall)
+                    .append((Objects.equals(lastPrintPriority, x.getPrintPriority()) && withPrice) ? "\n" : "")
+                    .append(x.getQuantity() + " x ")
                     .append(boldOn + x.getName().toUpperCase().replaceAll("/", " / ") + boldOff)
+                    .append(withPrice ? (" - R$ " + String.format("%.2f", (x.getPrice() * x.getQuantity()))) : "")
                     .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n   - " + x.getNotes() + italicOff : "")
                     .append(isCancelled ? " (CANCELADO)" : "");
 
