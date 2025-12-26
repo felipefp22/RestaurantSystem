@@ -18,6 +18,7 @@ public class PrintSyncOrderItemsDTO {
     private String status;
     private String notes;
     private Integer printPriority;
+    private String categoryName;
 
     // <>------------ Constructor ------------<>
     public PrintSyncOrderItemsDTO(){
@@ -133,5 +134,12 @@ public class PrintSyncOrderItemsDTO {
     }
     public void setPrintPriority(Integer printPriority) {
         this.printPriority = printPriority;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }

@@ -5,6 +5,7 @@ import com.RestaurantSystem.Entities.ENUMs.PrintCategory;
 import com.RestaurantSystem.Entities.Order.Order;
 import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Printer.DTOs.DeletePrintSyncsDTO;
+import com.RestaurantSystem.Entities.Printer.DTOs.PrintPriorityAndCategoryNameDTO;
 import com.RestaurantSystem.Entities.Printer.DTOs.PrintSyncOrderItemsDTO;
 import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Product.Product;
@@ -26,7 +27,7 @@ public class PrintSyncService {
     private final String italicOff = "{-Normal-}";
 
     private final String underlining1 = "{-Underline-}";
-    private final String underliningOff2 = "{-Underline2-}";
+    private final String underlining2 = "{-Underline2-}";
     private final String underliningOff = "{-UnderlineOff-}";
 
     private final String boldOn = "{-Bold-}"; // Bold ON
@@ -34,6 +35,8 @@ public class PrintSyncService {
 
     private final String cutCommand = "{-CutHere-}";
     private final String separatorLne = "\n--------------------------------\n";
+    private final String separatorLneSmall = "\n-------------------\n";
+
 
     private final PrintSyncRepo printSyncRepo;
     private final VerificationsServices verificationsServices;
@@ -62,8 +65,8 @@ public class PrintSyncService {
             default -> getOrderItemsText(company, orderItems, false, isCancelled);
         };
 
-        String finalText = centerCommand + header + date + tableNum + leftCommand + separatorLne + (isCancelled ? getCancelledText() : "") +
-                itemsText + (isCancelled ? getCancelledText() : "") + getFooter();
+        String finalText = centerCommand + header + date + tableNum + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
+                itemsText + getFooter();
 
         return finalText;
     }
@@ -134,7 +137,7 @@ public class PrintSyncService {
     }
 
     private String getOrderItemsText(Company company, List<OrdersItems> orderItems, Boolean withPrice, boolean isCancelled) {
-        Map<UUID, Integer> printPriorityMap = getProductPrintSortMap(company);
+        Map<UUID, PrintPriorityAndCategoryNameDTO> priorityMap = getProductPrintSortMap(company);
 
         List<PrintSyncOrderItemsDTO> ordersToCreateText = new ArrayList<>();
         orderItems.forEach(x -> {
@@ -145,29 +148,65 @@ public class PrintSyncService {
             if (foundEqual != null) {
                 foundEqual.setQuantity(foundEqual.getQuantity() + 1);
             } else {
-                ordersToCreateText.add(new PrintSyncOrderItemsDTO(x));
+                PrintSyncOrderItemsDTO dto = new PrintSyncOrderItemsDTO(x);
+                dto.setPrintPriority(priorityMap.get(UUID.fromString(dto.getProductId().get(0))).printPriority());
+                dto.setCategoryName(priorityMap.get(UUID.fromString(dto.getProductId().get(0))).categoryName());
+                ordersToCreateText.add(dto);
             }
         });
-        ordersToCreateText.sort(Comparator.comparing(x -> printPriorityMap.get(UUID.fromString(x.getProductId().get(0))), Comparator.nullsLast(Integer::compareTo)));
+//        ordersToCreateText.sort(Comparator.comparing(x -> priorityMap.get(UUID.fromString(x.getProductId().get(0))), Comparator.nullsLast(Integer::compareTo)));
+        ordersToCreateText.sort(Comparator.comparing(PrintSyncOrderItemsDTO::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(dto -> dto.getNotes() == null || dto.getNotes().isBlank()));
 
         StringBuilder itemsText = new StringBuilder();
-        ordersToCreateText.forEach(x -> {
-            itemsText.append(x.getQuantity())
+        Integer lastPrintPriority = null;
+        for (PrintSyncOrderItemsDTO x : ordersToCreateText) {
+            if (!Objects.equals(lastPrintPriority, x.getPrintPriority()) && !isCancelled) {
+                itemsText.append("\n\n" + "--------------------------------")
+                        .append(separatorLne)
+                        .append(boldOn + "      *  " + x.getCategoryName().toUpperCase() + "  *\n\n" + boldOff);
+            }
+            itemsText.append(!Objects.equals(lastPrintPriority, x.getPrintPriority()) ? "" : separatorLneSmall)
+                    .append(x.getQuantity())
                     .append(" x ")
                     .append(boldOn + x.getName().toUpperCase().replaceAll("/", " / ") + boldOff)
                     .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n   - " + x.getNotes() + italicOff : "")
-                    .append(isCancelled ? " (CANCELADO)" : "")
-                    .append(separatorLne);
-        });
+                    .append(isCancelled ? " (CANCELADO)" : "");
+
+            if (!Objects.equals(lastPrintPriority, x.getPrintPriority())) lastPrintPriority = x.getPrintPriority();
+        }
 
         return itemsText.toString();
     }
-    
-    private Map<UUID, Integer> getProductPrintSortMap(Company company) {
+
+    private Map<UUID, PrintPriorityAndCategoryNameDTO> getProductPrintSortMap(Company company) {
+        int ifPriorityNullNextFakeValue = 100000;
+        Map<UUID, PrintPriorityAndCategoryNameDTO> map = new HashMap<>();
+
+        List<ProductCategory> pCategories = new ArrayList<>(company.getProductsCategories());
+        pCategories.sort(Comparator
+                .comparing(ProductCategory::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(ProductCategory::getCategoryName, String.CASE_INSENSITIVE_ORDER));
+
+        for (ProductCategory pc : pCategories) {
+            Integer printPriority = pc.getPrintPriority();
+            if (printPriority == null) {
+                printPriority = ifPriorityNullNextFakeValue;
+                ifPriorityNullNextFakeValue += 1;
+            }
+            for (Product product : pc.getProducts()) {
+                map.put(product.getId(), new PrintPriorityAndCategoryNameDTO(printPriority, pc.getCategoryName()));
+            }
+        }
+
+        return map;
+    }
+
+    private Map<UUID, Integer> getProductCategoriesNameByPrintSortMap(Company company) {
         int ifPriorityNullNextFakeValue = 100000;
         Map<UUID, Integer> map = new HashMap<>();
 
-        List<ProductCategory> pCategories = company.getProductsCategories();
+        List<ProductCategory> pCategories = new ArrayList<>(company.getProductsCategories());
         pCategories.sort(Comparator
                 .comparing(ProductCategory::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
                 .thenComparing(ProductCategory::getCategoryName, String.CASE_INSENSITIVE_ORDER));
