@@ -115,7 +115,7 @@ public class PrintSyncService {
     }
 
     private String getCancelledText() {
-        return separatorLne + "***! CANCELAMENTO !***" + separatorLne;
+        return separatorLne + "      ***! CANCELAMENTO !***" + separatorLne;
     }
 
     private String getOrderNumber(Order order) {
@@ -162,7 +162,7 @@ public class PrintSyncService {
         Integer lastPrintPriority = null;
         for (PrintSyncOrderItemsDTO x : ordersToCreateText) {
             if (!Objects.equals(lastPrintPriority, x.getPrintPriority()) && !isCancelled) {
-                itemsText.append("\n\n" + "--------------------------------")
+                itemsText.append(itemsText.isEmpty() ? "--------------------------------" : "\n\n" + "--------------------------------")
                         .append(separatorLne)
                         .append(boldOn + "      *  " + x.getCategoryName().toUpperCase() + "  *\n\n" + boldOff);
             }
