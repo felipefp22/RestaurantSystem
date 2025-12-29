@@ -53,11 +53,23 @@ public class IFoodService {
 
 
     // <> ------------- Methods ------------- <>
+    public Boolean hasIFoodConnection(String requesterID, UUID companyID) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(companyID);
+        verificationsServices.justOwnerOrManager(company, requester);
+        CompanyIFood companyIFoodData = company.getCompanyIFoodData();
+
+        return companyIFoodData != null && companyIFoodData.getRefreshToken() != null;
+    }
+
     public List<MerchantDataIFoodDTO> getConnectedIFoodStore(String requesterID, UUID companyID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManager(company, requester);
         CompanyIFood companyIFoodData = company.getCompanyIFoodData();
+
+        if (companyIFoodData == null)
+            throw new RuntimeException("No iFood store connected to this company");
 
         var responseFromIFood = webClientLinkRequestIFood.requisitionGenericIFood(companyIFoodData, "/merchant/v1.0/merchants", HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<MerchantDataIFoodDTO>>() {
@@ -72,7 +84,7 @@ public class IFoodService {
         verificationsServices.justOwnerOrManager(company, requester);
 
         CompanyIFood companyIFoodData = company.getCompanyIFoodData();
-        if (companyIFoodData == null) companyIFoodData = new CompanyIFood();
+        if (companyIFoodData == null) companyIFoodData = new CompanyIFood(company);
         if (companyIFoodData.getRefreshToken() != null) {
             throw new RuntimeException("iFood user code already created for this company");
         }
@@ -90,7 +102,6 @@ public class IFoodService {
         companyIFoodData.setLastGeneratedAuthorizationCodeVerifier(responseFrommIFood.authorizationCodeVerifier());
         companyIFoodData.setLastGeneratedFriendlyUrlUserCode(responseFrommIFood.verificationUrlComplete());
         company.setCompanyIFoodData(companyIFoodData);
-        companyIFoodRepo.save(companyIFoodData);
         companyRepo.save(company);
 
         return new ReturnIFoodCodeToUserDTO(companyIFoodData.getLastGeneratedUserCode(), companyIFoodData.getLastGeneratedFriendlyUrlUserCode());
@@ -133,7 +144,6 @@ public class IFoodService {
         CompanyIFood companyIFoodData = company.getCompanyIFoodData();
 
         company.setCompanyIFoodData(null);
-        companyIFoodRepo.delete(companyIFoodData);
         companyRepo.save(company);
     }
 

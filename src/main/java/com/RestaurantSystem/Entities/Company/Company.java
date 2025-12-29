@@ -57,8 +57,7 @@ public class Company {
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PrintSync> printSync;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "last_or_open_shift")
+    @OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Shift lastOrOpenShift;
 
     private int numberOfTables;
@@ -79,7 +78,7 @@ public class Company {
 
 
     @JsonIgnore
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "company_ifood_id")
     private CompanyIFood companyIFoodData;
 

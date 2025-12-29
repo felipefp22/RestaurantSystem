@@ -24,6 +24,15 @@ public class IFoodController {
 
 
     // <> ------------- Methods ------------- <>
+    @GetMapping("/has-ifood-connection/{companyID}")
+    public ResponseEntity<Boolean> hasIFoodConnection(@RequestHeader("Authorization") String authorizationHeader,
+                                                      @PathVariable UUID companyID) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+        var response = ifoodService.hasIFoodConnection(requesterID, companyID);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/get-connected-ifood-store/{companyID}")
     public ResponseEntity<List<MerchantDataIFoodDTO>> getConnectedIFoodStore(@RequestHeader("Authorization") String authorizationHeader,
                                                                              @PathVariable UUID companyID) {
