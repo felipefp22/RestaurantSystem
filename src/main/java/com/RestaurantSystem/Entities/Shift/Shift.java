@@ -26,7 +26,7 @@ public class Shift {
     private LocalDateTime startTimeUTC;
     private LocalDateTime endTimeUTC;
 
-    @OneToMany(mappedBy = "shift", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "shift", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 
     private String employeeOpenedShift;

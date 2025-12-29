@@ -102,6 +102,7 @@ public class IFoodService {
         companyIFoodData.setLastGeneratedAuthorizationCodeVerifier(responseFrommIFood.authorizationCodeVerifier());
         companyIFoodData.setLastGeneratedFriendlyUrlUserCode(responseFrommIFood.verificationUrlComplete());
         company.setCompanyIFoodData(companyIFoodData);
+        companyIFoodRepo.save(companyIFoodData);
         companyRepo.save(company);
 
         return new ReturnIFoodCodeToUserDTO(companyIFoodData.getLastGeneratedUserCode(), companyIFoodData.getLastGeneratedFriendlyUrlUserCode());
@@ -144,6 +145,7 @@ public class IFoodService {
         CompanyIFood companyIFoodData = company.getCompanyIFoodData();
 
         company.setCompanyIFoodData(null);
+        companyIFoodRepo.delete(companyIFoodData);
         companyRepo.save(company);
     }
 

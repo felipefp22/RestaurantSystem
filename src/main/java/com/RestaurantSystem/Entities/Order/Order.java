@@ -63,7 +63,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order")
     private List<OrdersItems> orderItems = new ArrayList<>();
 
     private String deliveryManID;

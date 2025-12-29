@@ -24,7 +24,7 @@ public class PrintRules {
     @Enumerated(EnumType.STRING)
     private PrintCategory printCategory;
 
-    @OneToMany(mappedBy = "printRules", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "printRules", fetch = FetchType.LAZY)
     private List<PrintersAndCopies> printersAndCopies;
 
     //<>------------ Constructors ------------<>

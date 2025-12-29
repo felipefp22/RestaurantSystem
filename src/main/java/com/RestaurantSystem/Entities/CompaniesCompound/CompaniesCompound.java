@@ -25,7 +25,7 @@ public class CompaniesCompound {
     private String compoundName;
     private String compoundDescription;
 
-    @OneToMany(mappedBy = "ownerCompound", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "ownerCompound")
     private List<Company> companies;
 
     // <>------------ Constructors ------------<>

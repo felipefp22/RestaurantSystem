@@ -2,14 +2,9 @@ package com.RestaurantSystem.Entities.ProductCategory.DTOs;
 
 import java.util.UUID;
 
-public record UpdateProductCategoryDTO(
+public record ChangeNewProductsDefaultImgDTO(
         UUID companyID,
         UUID categoryID,
-        String categoryName,
-        String description,
-        Integer customOrderAllowed,
-        String customOrderPriceRule,
         String defaultImageToNewProducts
-
 ) {
 }

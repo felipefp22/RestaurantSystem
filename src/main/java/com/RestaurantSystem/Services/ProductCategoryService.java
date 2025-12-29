@@ -2,6 +2,7 @@ package com.RestaurantSystem.Services;//package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.ENUMs.CustomOrderPriceRule;
+import com.RestaurantSystem.Entities.ProductCategory.DTOs.ChangeNewProductsDefaultImgDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.SortPrintPriorityDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.UpdateProductCategoryDTO;
@@ -83,10 +84,27 @@ public class ProductCategoryService {
         categoryToUpdate.setCustomOrderAllowed(updateDTO.customOrderAllowed());
         if (updateDTO.customOrderPriceRule() != null)
             categoryToUpdate.setCustomOrderPriceRule(CustomOrderPriceRule.valueOf(updateDTO.customOrderPriceRule()));
+        if (updateDTO.defaultImageToNewProducts() != null)
+            categoryToUpdate.setDefaultImageToNewProducts(updateDTO.defaultImageToNewProducts());
 
         productCategoryRepo.save(categoryToUpdate);
         normalizePrintPriorities(company.getProductsCategories());
         return getAllProductAndProductCategories(requesterID, updateDTO.companyID());
+    }
+
+    public List<ProductCategory> changeDefaultNewProductsImage(String requesterID, ChangeNewProductsDefaultImgDTO dto) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(dto.companyID());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
+
+        ProductCategory categoryToUpdate = company.getProductsCategories().stream()
+                .filter(x -> x.getId().equals(dto.categoryID()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        categoryToUpdate.setDefaultImageToNewProducts(dto.defaultImageToNewProducts());
+        productCategoryRepo.save(categoryToUpdate);
+        return getAllProductAndProductCategories(requesterID, company.getId());
     }
 
     public List<ProductCategory> sortPrintPriority(String requesterID, SortPrintPriorityDTO dto) {

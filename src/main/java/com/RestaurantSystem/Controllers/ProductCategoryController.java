@@ -1,5 +1,6 @@
 package com.RestaurantSystem.Controllers;
 
+import com.RestaurantSystem.Entities.ProductCategory.DTOs.ChangeNewProductsDefaultImgDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.CreateProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.SortPrintPriorityDTO;
 import com.RestaurantSystem.Entities.ProductCategory.DTOs.UpdateProductCategoryDTO;
@@ -51,6 +52,16 @@ public class ProductCategoryController {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = productCategoryService.updateCategory(requesterID, updateDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/change-default-new-products-img")
+    public ResponseEntity<List<ProductCategory>> changeDefaultNewProductsImage(@RequestHeader("Authorization") String authorizationHeader,
+                                                                               @RequestBody ChangeNewProductsDefaultImgDTO dto) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = productCategoryService.changeDefaultNewProductsImage(requesterID, dto);
 
         return ResponseEntity.ok(response);
     }

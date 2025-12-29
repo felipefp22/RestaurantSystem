@@ -42,6 +42,8 @@ public class ProductCategory {
 
     private Integer printPriority;
 
+    private String defaultImageToNewProducts;
+
     //<>------------ Constructors ------------<>
     public ProductCategory() {
     }
@@ -124,5 +126,12 @@ public class ProductCategory {
 
     public void setPrintPriority(Integer printPriority) {
         this.printPriority = printPriority;
+    }
+
+    public String getDefaultImageToNewProducts() {
+        return defaultImageToNewProducts;
+    }
+    public void setDefaultImageToNewProducts(String defaultImageToNewProducts) {
+        this.defaultImageToNewProducts = defaultImageToNewProducts;
     }
 }
