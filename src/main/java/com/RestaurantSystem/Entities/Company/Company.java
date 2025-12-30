@@ -76,7 +76,7 @@ public class Company {
     private List<String> noUserDeliveryMans = new ArrayList<>();
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.MERGE)
     private CompanyIfood companyIfoodData;
 
     private String lastShiftNumber;

@@ -14,6 +14,7 @@ import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import com.RestaurantSystem.Services.OrderService;
 import com.RestaurantSystem.Services.WebRequests.WebClientLinkRequestIFood;
 import io.netty.resolver.DefaultAddressResolverGroup;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -24,6 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -149,50 +151,101 @@ public class IFoodService {
     }
 
     // <>------------- Pooling -------------<>
+    @Transactional
     public void poolingIFoodHandle(CompanyThirdSuppliersToPoolingDTO dto) {
         if (dto.companyIfoodData() == null) return;
+        Company company = verificationsServices.retrieveCompany(dto.companyId());
 
         Optional<List<EventsIFoodDTO>> ifoodEvents = webClientLinkRequestIFood.requisitionGenericIFood(dto.companyIfoodData(),
                 "events/v1.0/events:polling", HttpMethod.GET, null, new ParameterizedTypeReference<Optional<List<EventsIFoodDTO>>>() {
                 }, null);
         if (ifoodEvents == null) return;
 
-        ifoodEvents.get().forEach(x -> {
-            Company company = verificationsServices.retrieveCompany(dto.companyId());
-            OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIfoodData(), x.orderId());
+        ifoodEvents.get().stream().filter(ev -> Objects.equals(ev.fullCode(), "PLACED")).forEach(x -> {
 
-//            String tableNumberOrDeliveryOrPickup = "delivery"; //Still needs do make logica
-//            CreateThirdSpOrderDTO thirdSpDTO = new CreateThirdSpOrderDTO(dto, ifoodOrderDetails, tableNumberOrDeliveryOrPickup);
-//            orderService.createThirdSupplierOrder(thirdSpDTO);
+            OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIfoodData(), x.orderId());
+            List<OrderItemDTO> orderItemsDTO = createOrderItemDTO(company, ifoodOrderDetails);
+
             System.out.println("sa");
         });
 
         acknowledgeEventIFood(dto.companyIfoodData(), ifoodEvents.get().stream().map(x -> new AcknowledgeIFoodDTO(x.id())).toList());
-
     }
 
     private List<OrderItemDTO> createOrderItemDTO(Company company, OrderDetailsIFoodDTO ifoodOrderDetails) {
         Map<String, Product> productMap = company.getProductsCategories().stream()
                 .flatMap(c -> c.getProducts().stream())
                 .collect(Collectors.toMap(Product::getIfoodCode, p -> p));
-
         Map<String, ProductOption> productOptsMap = company.getProductsCategories().stream()
                 .flatMap(c -> c.getProductOptions().stream())
                 .collect(Collectors.toMap(ProductOption::getIfoodCode, p -> p));
 
         List<OrderItemDTO> orderItemsDTO = new ArrayList<>();
 
-        ifoodOrderDetails.items().forEach(x -> {
-            List<String> productsPdvCodes = IntStream.range(0, x.quantity()).mapToObj(i -> x.externalCode()).toList();
-            List<String> productOptsPdvCodes =
-                    x.options().stream().flatMap(opt -> IntStream.range(0, opt.quantity()).mapToObj(z -> opt.externalCode())).toList();
+        // <>---------- LEGACY_PIZZA ----------<>
+        ifoodOrderDetails.items().stream().filter(x -> x.type().equals("LEGACY_PIZZA")).forEach(x -> {
+            AtomicBoolean pdvCodeError = new AtomicBoolean(false);
+            List<String> productsPdvCodes =
+                    x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "TOPPING"))
+                            .flatMap(z -> IntStream.range(0, z.quantity()).mapToObj(i -> z.externalCode()))
+                            .filter(code -> {
+                                if (code == null || code.isBlank()) {
+                                    pdvCodeError.set(true);
+                                    return false;
+                                }
+                                return true;
+                            }).toList();
 
-            List<String> productsIDs = productsPdvCodes.stream().map(pdvCode -> productMap.get(pdvCode).getId().toString()).toList();
-            List<String> productOptsIDs = productOptsPdvCodes.stream().map(pdvCode -> productOptsMap.get(pdvCode).getId().toString()).toList();
-            orderItemsDTO.add(new OrderItemDTO(productsIDs, productOptsIDs, x.observations(), 0.0));
+            List<String> productOptsPdvCodes =
+                    x.options().stream().filter(y -> Objects.equals(y.type(), "CRUST"))
+                            .flatMap(opt -> IntStream.range(0, opt.quantity()).mapToObj(z -> opt.externalCode()))
+                            .filter(code -> {
+                                if (code == null || code.isBlank()) {
+                                    pdvCodeError.set(true);
+                                    return false;
+                                }
+                                return true;
+                            }).toList();
+
+            List<String> productsIDs =
+                    productsPdvCodes.stream().map(pdvc -> {if (productMap.get(pdvc) == null) { pdvCodeError.set(true); return null; } return productMap.get(pdvc).getId().toString();})
+                    .filter(Objects::nonNull).toList();
+
+            List<String> productOptsIDs =
+                    productOptsPdvCodes.stream().map(pdvc -> { if (productOptsMap.get(pdvc) == null){ pdvCodeError.set(true); return null; } return productOptsMap.get(pdvc).getId().toString();})
+                    .filter(Objects::nonNull).toList();
+
+            String pdvCodeErrorMsg = !pdvCodeError.get() ? null :
+                    errorMsg_legacyPizza(x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "TOPPING")).map(t -> t.name()).toList(),
+                            x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "CRUST")).map(t -> t.name()).toList());
+            orderItemsDTO.add(new OrderItemDTO(productsIDs, productOptsIDs, x.observations(), pdvCodeErrorMsg, x.totalPrice()));
         });
 
         return orderItemsDTO;
+    }
+//    private void treatProductsPdvCodesNulls(List<String> productsPdvCodes, String notes) {
+//       productsPdvCodes.forEach(p -> {
+//           if (p == null) {
+//               productsPdvCodes.remove(p);
+//               notes = notes + " - foi encontrado um produto com PDV code nulo.";
+//           }
+//       });
+//    }
+//    private String determineOrderDispachTypeIFood(OrderDetailsIFoodDTO ifoodOrderDetails) {
+//        if (Objects.equals(ifoodOrderDetails.orderType(), "DELIVERY")) {
+//            return "delivery";
+//        } else if (ifoodOrderDetails.pickup().isPresent()) {
+//            return "pickup";
+//        } else {
+//            return "dine-in";
+//        }
+//    }
+
+    private String errorMsg_legacyPizza(List<String> toppings, List<String> crusts) {
+        String toppingsPart = (toppings == null || toppings.isEmpty()) ? "" : String.join(" / ", toppings) + " / ";
+        String crustsPart = (crusts == null || crusts.isEmpty()) ? "" : " - Opcionais: " + String.join(" / ", crusts) + " / ";
+
+        return toppingsPart + crustsPart + " |*ERRO| \n Algum item ERRO no codigo PDV, verificar codigos iFood / Sistema.\n * Erro esta no(s) produto(s) faltante.";
     }
 
     // <>------------- IFood Events Actions -------------<>

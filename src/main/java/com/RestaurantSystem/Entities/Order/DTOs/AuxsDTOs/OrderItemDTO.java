@@ -6,6 +6,7 @@ public record OrderItemDTO(
         List<String> productsIDs,
         List<String> productOptsIDs,
         String notes,
+        String ifoodPdvCodeError,
         Double customPrice
 ) {
 }
