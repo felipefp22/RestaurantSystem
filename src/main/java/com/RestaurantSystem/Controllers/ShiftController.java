@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -34,8 +35,8 @@ public class ShiftController {
         return ResponseEntity.ok(response);
     }
     @GetMapping("/get-all-shifts/{companyID}")
-    public ResponseEntity<List<Shift>> getAllShifts(@RequestHeader("Authorization") String authorizationHeader,
-                                                    @PathVariable UUID companyID) {
+    public ResponseEntity<Set<Shift>> getAllShifts(@RequestHeader("Authorization") String authorizationHeader,
+                                                   @PathVariable UUID companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = shiftService.getAllShifts(requesterID, companyID);

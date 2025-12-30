@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -26,8 +27,8 @@ public class PrintRulesController {
     // <> ---------- Methods ---------- <>
 
     @GetMapping("/print-rules/{companyID}")
-    public ResponseEntity<List<PrintRules>> getPrintRules(@PathVariable UUID companyID,
-                                                          @RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<Set<PrintRules>> getPrintRules(@PathVariable UUID companyID,
+                                                         @RequestHeader("Authorization") String authorizationHeader) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = printRulesService.getPrintRules(companyID, requesterID);
@@ -36,7 +37,7 @@ public class PrintRulesController {
     }
 
     @PutMapping("/update-print-rules")
-    public ResponseEntity<List<PrintRules>> updatePrintRules(@RequestBody UpdatePrintRulesDTO dto,
+    public ResponseEntity<Set<PrintRules>> updatePrintRules(@RequestBody UpdatePrintRulesDTO dto,
                                                        @RequestHeader("Authorization") String authorizationHeader) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 

@@ -15,7 +15,6 @@ public class CompanyEmployees {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "company_id")
     private Company company;
 
     @JsonIgnore

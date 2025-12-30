@@ -5,10 +5,11 @@ import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Shift.Shift;
 
 import java.util.List;
+import java.util.Set;
 
 public record ShiftOperationDTO(
         Shift currentShift,
         List<Order> orders,
-        List<PrintSync> printSync
+        Set<PrintSync> printSync
 ) {
 }

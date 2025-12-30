@@ -69,7 +69,7 @@ public class DemonstrationSiteService {
                 25
         );
         Company company = companyService.createCompany(user.getEmail(), createCompanyDTO);
-        user.getCompaniesCompounds().getFirst().getCompanies().add(company);
+        user.getCompaniesCompounds().stream().findFirst().orElseThrow(() -> new RuntimeException("Companie not found")).getCompanies().add(company);
 
         setCompanyGeolocationAndCreateDemonstrationCustomers(user, company, 33.715831, -117.989569);
 

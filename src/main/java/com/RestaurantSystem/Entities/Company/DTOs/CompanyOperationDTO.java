@@ -7,9 +7,11 @@ import com.RestaurantSystem.Entities.Printer.PrintRules;
 import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Printer.Printer;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
+import com.RestaurantSystem.Entities.Shift.DTOs.ShiftDTO;
 import com.RestaurantSystem.Entities.Shift.Shift;
 
 import java.util.List;
+import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.UUID;
 
@@ -23,9 +25,9 @@ public record CompanyOperationDTO(
         Double companyLat,
         Double companyLng,
         String urlCompanyLogo,
-        List<ProductCategory> productsCategories,
-        List<Customer> customers,
-        Shift currentShift,
+        Set<ProductCategory> productsCategories,
+        Set<Customer> customers,
+        ShiftDTO currentShift,
         List<CompanyEmployeesDTO> employees,
         int numberOfTables,
         Integer taxServicePercentage,
@@ -37,13 +39,13 @@ public record CompanyOperationDTO(
         Double baseDeliveryTax,
         Double taxPerExtraKM,
         List<String> noUserDeliveryMans,
-        List<Printer> printers,
-        List<PrintRules> printRules,
-        List<PrintSync> printSync
+        Set<Printer> printers,
+        Set<PrintRules> printRules,
+        Set<PrintSync> printSync
 
 ) {
 
-    public CompanyOperationDTO(Company company, Shift currentShift) {
+    public CompanyOperationDTO(Company company, ShiftDTO currentShift) {
         this(
                 company.getId(),
                 company.getOwnerCompound().getOwner().getEmail(),

@@ -12,6 +12,7 @@ import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -29,7 +30,7 @@ public class PrinterService {
 
     // <> ---------- Methods ---------- <>
 
-    public List<Printer> getPrinters(UUID companyID, String requesterID) {
+    public Set<Printer> getPrinters(UUID companyID, String requesterID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManager(company, requester);

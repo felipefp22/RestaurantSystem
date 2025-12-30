@@ -3,6 +3,7 @@ package com.RestaurantSystem.Entities.Company.DTOs;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
+import com.RestaurantSystem.Entities.Shift.DTOs.ShiftDTO;
 import com.RestaurantSystem.Entities.Shift.Shift;
 
 import java.util.List;
@@ -18,14 +19,14 @@ public record CompanyOperationDeliveryManDTO(
         Double companyLat,
         Double companyLng,
         String urlCompanyLogo,
-        Shift currentShift,
+        ShiftDTO currentShift,
         List<CompanyEmployeesDTO> employees,
         Integer baseDeliveryDistanceKM,
         Double baseDeliveryTax,
         Double taxPerExtraKM
 ) {
 
-    public CompanyOperationDeliveryManDTO(Company company, Shift currentShift, String requesterID) {
+    public CompanyOperationDeliveryManDTO(Company company, ShiftDTO currentShift, String requesterID) {
         this(
                 company.getId(),
                 company.getOwnerCompound().getOwner().getEmail(),

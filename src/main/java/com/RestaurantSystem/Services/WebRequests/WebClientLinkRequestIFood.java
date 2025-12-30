@@ -1,7 +1,7 @@
 package com.RestaurantSystem.Services.WebRequests;
 
 
-import com.RestaurantSystem.Entities.Company.CompanyIFood;
+import com.RestaurantSystem.Entities.Company.CompanyIfood;
 import com.RestaurantSystem.Repositories.CompanyIFoodRepo;
 import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.TokenReturnIFoodDTO;
 import io.netty.resolver.DefaultAddressResolverGroup;
@@ -43,15 +43,15 @@ public class WebClientLinkRequestIFood {
 
     // <>---|Methods|-----------------------------------------------<>
 
-    public <T> T requisitionGenericIFood(CompanyIFood companyIfood, String uri, HttpMethod httpMethod, Object requestBody,
-                                                ParameterizedTypeReference<T> responseType, Map<String, String> headers) {
+    public <T> T requisitionGenericIFood(CompanyIfood companyIfood, String uri, HttpMethod httpMethod, Object requestBody,
+                                         ParameterizedTypeReference<T> responseType, Map<String, String> headers) {
 
         return retryRequestIFood(companyIfood, uri, httpMethod, requestBody, responseType,
                 headers, 5);
     }
 
-    public <T> T retryRequestIFood(CompanyIFood companyIfood, String uri, HttpMethod httpMethod, Object requestBody,
-                                          ParameterizedTypeReference<T> responseType, Map<String, String> headers, int remainingRetries) {
+    public <T> T retryRequestIFood(CompanyIfood companyIfood, String uri, HttpMethod httpMethod, Object requestBody,
+                                   ParameterizedTypeReference<T> responseType, Map<String, String> headers, int remainingRetries) {
 
         try {
             return webClient
@@ -83,7 +83,7 @@ public class WebClientLinkRequestIFood {
         }
     }
 
-    public void getCompanyAccessToken(CompanyIFood companyIfood) {
+    public void getCompanyAccessToken(CompanyIfood companyIfood) {
         var requisitionPath = ("/authentication/v1.0/oauth/token");
 
         TokenReturnIFoodDTO responseFrommIFood = webClient

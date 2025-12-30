@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -26,8 +27,8 @@ public class PrinterController {
     // <> ---------- Methods ---------- <>
 
     @GetMapping("/get-printers/{companyID}")
-    public ResponseEntity<List<Printer>> getPrinters(@PathVariable UUID companyID,
-                                                     @RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<Set<Printer>> getPrinters(@PathVariable UUID companyID,
+                                                    @RequestHeader("Authorization") String authorizationHeader) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = printerService.getPrinters(companyID, requesterID);

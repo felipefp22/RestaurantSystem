@@ -37,11 +37,11 @@ public class AuthUserLogin implements UserDetails {
     private String urlProfilePhoto;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
-    private List<CompaniesCompound> companiesCompounds;
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<CompaniesCompound> companiesCompounds;
 
-    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)
-    private List<CompanyEmployees> worksAtCompanies;
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<CompanyEmployees> worksAtCompanies;
 
     private String ownAdministrativePassword;
 
@@ -59,7 +59,7 @@ public class AuthUserLogin implements UserDetails {
 //        this.username = username;
         this.password = new BCryptPasswordEncoder().encode(password);
 //        this.kindOfUser = kindOfUser;
-        this.companiesCompounds = new ArrayList<>();
+        this.companiesCompounds = new HashSet<>();
         this.role = Role.USER;
         this.emailConfirmed = emailConfirmed;
         this.phoneConfirmed = false;
@@ -72,8 +72,8 @@ public class AuthUserLogin implements UserDetails {
         this.password = new BCryptPasswordEncoder().encode(registerAuthUserDTO.password());
 //        this.kindOfUser = KindOfUser.valueOf(registerAuthUserDTO.kindOfUser().toUpperCase());
         this.name = registerAuthUserDTO.name();
-        this.companiesCompounds = new ArrayList<>();
-        this.worksAtCompanies = new ArrayList<>();
+        this.companiesCompounds = new HashSet<>();
+        this.worksAtCompanies = new HashSet<>();
         this.role = Role.USER;
         this.emailConfirmed = false;
         this.phoneConfirmed = false;
@@ -186,11 +186,11 @@ public class AuthUserLogin implements UserDetails {
         this.urlProfilePhoto = urlProfilePhoto;
     }
 
-    public List<CompaniesCompound> getCompaniesCompounds() {
+    public Set<CompaniesCompound> getCompaniesCompounds() {
         return companiesCompounds;
     }
 
-    public List<CompanyEmployees> getWorksAtCompanies() {
+    public Set<CompanyEmployees> getWorksAtCompanies() {
         return worksAtCompanies;
     }
 

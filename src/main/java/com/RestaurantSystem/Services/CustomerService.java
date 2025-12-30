@@ -12,6 +12,7 @@ import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -50,7 +51,7 @@ public class CustomerService {
 //                .toList();
 //    }
 
-    public List<Customer> getAllCustomers(String requesterID, UUID companyID) {
+    public Set<Customer> getAllCustomers(String requesterID, UUID companyID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.worksOnCompany(company, requester);

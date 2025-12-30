@@ -6,9 +6,7 @@ import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 public class CompaniesCompound {
@@ -25,8 +23,8 @@ public class CompaniesCompound {
     private String compoundName;
     private String compoundDescription;
 
-    @OneToMany(mappedBy = "ownerCompound")
-    private List<Company> companies;
+    @OneToMany(mappedBy = "ownerCompound", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Company> companies;
 
     // <>------------ Constructors ------------<>
     private CompaniesCompound() {
@@ -36,7 +34,7 @@ public class CompaniesCompound {
         this.owner = owner;
         this.compoundName = createOrUpdateCompoundDTO.compoundName();
         this.compoundDescription = createOrUpdateCompoundDTO.compoundDescription();
-        this.companies = new ArrayList<>();;
+        this.companies = new HashSet<>();;
     }
 
     // <>------------ Getters and Setters ------------<>
@@ -69,7 +67,7 @@ public class CompaniesCompound {
         this.owner = owner;
     }
 
-    public List<Company> getCompanies() {
+    public Set<Company> getCompanies() {
         return companies;
     }
 }

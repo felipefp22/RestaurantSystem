@@ -5,6 +5,7 @@ import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyEmployees;
 import com.RestaurantSystem.Entities.Company.DTOs.*;
 import com.RestaurantSystem.Entities.Company.EmployeePosition;
+import com.RestaurantSystem.Entities.Shift.DTOs.ShiftDTO;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
@@ -12,10 +13,12 @@ import com.RestaurantSystem.Repositories.CompanyEmployeesRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -45,15 +48,16 @@ public class CompanyService {
         try {
             currentShift = verificationsServices.retrieveCurrentShift(company);
         } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
             // No active shift found
         }
 
         if (verificationsServices.isDeliveryman(company, requester)) {
-            CompanyOperationDeliveryManDTO dto = new CompanyOperationDeliveryManDTO(company, currentShift, requesterID);
+            CompanyOperationDeliveryManDTO dto = new CompanyOperationDeliveryManDTO(company, new ShiftDTO(currentShift), requesterID);
             return new CompanyOperationDTO(dto);
         }
 
-        return new CompanyOperationDTO(company, currentShift);
+        return new CompanyOperationDTO(company, new ShiftDTO(currentShift));
     }
 
     public Company createCompany(String requesterID, CreateCompanyDTO createCompanyDTO) {
@@ -140,7 +144,7 @@ public class CompanyService {
         return company.getEmployees().stream().map(CompanyEmployeesDTO::new).toList();
     }
 
-    public List<CompanyEmployees> addEmployeeToCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
+    public Set<CompanyEmployees> addEmployeeToCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(employeeDTO.companyId());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
@@ -158,7 +162,7 @@ public class CompanyService {
         return company.getEmployees();
     }
 
-    public List<CompanyEmployees> updateEmployeePosition(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
+    public Set<CompanyEmployees> updateEmployeePosition(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(employeeDTO.companyId());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
@@ -178,7 +182,7 @@ public class CompanyService {
         return company.getEmployees();
     }
 
-    public List<CompanyEmployees> removeEmployeeFromCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
+    public Set<CompanyEmployees> removeEmployeeFromCompany(String requesterID, AddOrUpdateEmployeeDTO employeeDTO) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(employeeDTO.companyId());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);

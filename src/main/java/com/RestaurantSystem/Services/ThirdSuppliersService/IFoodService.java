@@ -1,12 +1,11 @@
 package com.RestaurantSystem.Services.ThirdSuppliersService;
 
 import com.RestaurantSystem.Entities.Company.Company;
-import com.RestaurantSystem.Entities.Company.CompanyIFood;
+import com.RestaurantSystem.Entities.Company.CompanyIfood;
 import com.RestaurantSystem.Entities.Company.DTOs.CompanyThirdSuppliersToPoolingDTO;
 import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
-import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.CreateThirdSpOrderDTO;
 import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.*;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.CompanyIFoodRepo;
@@ -57,21 +56,21 @@ public class IFoodService {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManager(company, requester);
-        CompanyIFood companyIFoodData = company.getCompanyIFoodData();
+        CompanyIfood companyIfoodData = company.getCompanyIFoodData();
 
-        return companyIFoodData != null && companyIFoodData.getRefreshToken() != null;
+        return companyIfoodData != null && companyIfoodData.getRefreshToken() != null;
     }
 
     public List<MerchantDataIFoodDTO> getConnectedIFoodStore(String requesterID, UUID companyID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManager(company, requester);
-        CompanyIFood companyIFoodData = company.getCompanyIFoodData();
+        CompanyIfood companyIfoodData = company.getCompanyIFoodData();
 
-        if (companyIFoodData == null)
+        if (companyIfoodData == null)
             throw new RuntimeException("No iFood store connected to this company");
 
-        var responseFromIFood = webClientLinkRequestIFood.requisitionGenericIFood(companyIFoodData, "/merchant/v1.0/merchants", HttpMethod.GET, null,
+        var responseFromIFood = webClientLinkRequestIFood.requisitionGenericIFood(companyIfoodData, "/merchant/v1.0/merchants", HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<MerchantDataIFoodDTO>>() {
                 }, null);
 
@@ -83,9 +82,9 @@ public class IFoodService {
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManager(company, requester);
 
-        CompanyIFood companyIFoodData = company.getCompanyIFoodData();
-        if (companyIFoodData == null) companyIFoodData = new CompanyIFood(company);
-        if (companyIFoodData.getRefreshToken() != null) {
+        CompanyIfood companyIfoodData = company.getCompanyIFoodData();
+        if (companyIfoodData == null) companyIfoodData = new CompanyIfood(company);
+        if (companyIfoodData.getRefreshToken() != null) {
             throw new RuntimeException("iFood user code already created for this company");
         }
 
@@ -98,21 +97,21 @@ public class IFoodService {
                 .bodyToMono(UserCodeIFoodDTO.class)
                 .block();
 
-        companyIFoodData.setLastGeneratedUserCode(responseFrommIFood.userCode());
-        companyIFoodData.setLastGeneratedAuthorizationCodeVerifier(responseFrommIFood.authorizationCodeVerifier());
-        companyIFoodData.setLastGeneratedFriendlyUrlUserCode(responseFrommIFood.verificationUrlComplete());
-        company.setCompanyIFoodData(companyIFoodData);
-        companyIFoodRepo.save(companyIFoodData);
+        companyIfoodData.setLastGeneratedUserCode(responseFrommIFood.userCode());
+        companyIfoodData.setLastGeneratedAuthorizationCodeVerifier(responseFrommIFood.authorizationCodeVerifier());
+        companyIfoodData.setLastGeneratedFriendlyUrlUserCode(responseFrommIFood.verificationUrlComplete());
+        company.setCompanyIFoodData(companyIfoodData);
+        companyIFoodRepo.save(companyIfoodData);
         companyRepo.save(company);
 
-        return new ReturnIFoodCodeToUserDTO(companyIFoodData.getLastGeneratedUserCode(), companyIFoodData.getLastGeneratedFriendlyUrlUserCode());
+        return new ReturnIFoodCodeToUserDTO(companyIfoodData.getLastGeneratedUserCode(), companyIfoodData.getLastGeneratedFriendlyUrlUserCode());
     }
 
     public void registerAuthorizeUserCode(String requesterID, ReceiveCustomerCodeToRegisterIFoodDTO dto) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(dto.companyID());
         verificationsServices.justOwnerOrManager(company, requester);
-        CompanyIFood companyIFoodData = company.getCompanyIFoodData();
+        CompanyIfood companyIfoodData = company.getCompanyIFoodData();
 
         TokenReturnIFoodDTO responseFrommIFood = webClient
                 .method(HttpMethod.POST)
@@ -121,46 +120,46 @@ public class IFoodService {
                         .with("clientId", webClientLinkRequestIFood.getIfoodClientID())
                         .with("clientSecret", webClientLinkRequestIFood.getIfoodClientSecret())
                         .with("authorizationCode", dto.code())
-                        .with("authorizationCodeVerifier", companyIFoodData.getLastGeneratedAuthorizationCodeVerifier()))
+                        .with("authorizationCodeVerifier", companyIfoodData.getLastGeneratedAuthorizationCodeVerifier()))
                 .retrieve()
                 .bodyToMono(TokenReturnIFoodDTO.class)
                 .block();
 
-        companyIFoodData.setStoreCode(dto.code());
-        companyIFoodData.setStoreAuthorizationCodeVerifier(companyIFoodData.getLastGeneratedAuthorizationCodeVerifier());
-        companyIFoodData.setAccessToken("Bearer " + responseFrommIFood.accessToken());
-        companyIFoodData.setRefreshToken(responseFrommIFood.refreshToken());
+        companyIfoodData.setStoreCode(dto.code());
+        companyIfoodData.setStoreAuthorizationCodeVerifier(companyIfoodData.getLastGeneratedAuthorizationCodeVerifier());
+        companyIfoodData.setAccessToken("Bearer " + responseFrommIFood.accessToken());
+        companyIfoodData.setRefreshToken(responseFrommIFood.refreshToken());
 
         List<MerchantDataIFoodDTO> merchantData = getConnectedIFoodStore(requesterID, dto.companyID());
 //        companyIFoodData.setMerchantID(merchantData.id());
 //        companyIFoodData.setMerchantName(merchantData.name());
 //        companyIFoodData.setCorporateName(merchantData.corporateName());
-        companyIFoodRepo.save(companyIFoodData);
+        companyIFoodRepo.save(companyIfoodData);
     }
 
     public void disconnectIFoodStore(String requesterID, UUID companyID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManager(company, requester);
-        CompanyIFood companyIFoodData = company.getCompanyIFoodData();
+        CompanyIfood companyIfoodData = company.getCompanyIFoodData();
 
         company.setCompanyIFoodData(null);
-        companyIFoodRepo.delete(companyIFoodData);
+        companyIFoodRepo.delete(companyIfoodData);
         companyRepo.save(company);
     }
 
     // <>------------- Pooling -------------<>
     public void poolingIFoodHandle(CompanyThirdSuppliersToPoolingDTO dto) {
-        if (dto.companyIFoodData() == null) return;
+        if (dto.companyIfoodData() == null) return;
 
-        Optional<List<EventsIFoodDTO>> ifoodEvents = webClientLinkRequestIFood.requisitionGenericIFood(dto.companyIFoodData(),
+        Optional<List<EventsIFoodDTO>> ifoodEvents = webClientLinkRequestIFood.requisitionGenericIFood(dto.companyIfoodData(),
                 "events/v1.0/events:polling", HttpMethod.GET, null, new ParameterizedTypeReference<Optional<List<EventsIFoodDTO>>>() {
                 }, null);
         if (ifoodEvents == null) return;
 
         ifoodEvents.get().forEach(x -> {
             Company company = verificationsServices.retrieveCompany(dto.companyId());
-            OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIFoodData(), x.orderId());
+            OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIfoodData(), x.orderId());
 
 //            String tableNumberOrDeliveryOrPickup = "delivery"; //Still needs do make logica
 //            CreateThirdSpOrderDTO thirdSpDTO = new CreateThirdSpOrderDTO(dto, ifoodOrderDetails, tableNumberOrDeliveryOrPickup);
@@ -168,7 +167,7 @@ public class IFoodService {
             System.out.println("sa");
         });
 
-        acknowledgeEventIFood(dto.companyIFoodData(), ifoodEvents.get().stream().map(x -> new AcknowledgeIFoodDTO(x.id())).toList());
+        acknowledgeEventIFood(dto.companyIfoodData(), ifoodEvents.get().stream().map(x -> new AcknowledgeIFoodDTO(x.id())).toList());
 
     }
 
@@ -197,49 +196,49 @@ public class IFoodService {
     }
 
     // <>------------- IFood Events Actions -------------<>
-    private void acknowledgeEventIFood(CompanyIFood companyIFood, List<AcknowledgeIFoodDTO> acknowledgeDTO) {
+    private void acknowledgeEventIFood(CompanyIfood companyIFood, List<AcknowledgeIFoodDTO> acknowledgeDTO) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/events/v1.0/events/acknowledgment", HttpMethod.POST, acknowledgeDTO,
                 new ParameterizedTypeReference<Void>() {
                 }, null);
     }
 
-    private OrderDetailsIFoodDTO getIFoodOrderDetails(CompanyIFood companyIFood, String orderID) {
+    private OrderDetailsIFoodDTO getIFoodOrderDetails(CompanyIfood companyIFood, String orderID) {
         return webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID, HttpMethod.GET, null,
                 new ParameterizedTypeReference<OrderDetailsIFoodDTO>() {
                 }, null);
     }
 
-    private void confirmOrderIFood(CompanyIFood companyIFood, String orderID) {
+    private void confirmOrderIFood(CompanyIfood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/confirm", HttpMethod.POST, null,
                 new ParameterizedTypeReference<Void>() {
                 }, null);
     }
 
-    private void dispatchIFood(CompanyIFood companyIFood, String orderID) {
+    private void dispatchIFood(CompanyIfood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/dispatch", HttpMethod.POST, null,
                 new ParameterizedTypeReference<Void>() {
                 }, null);
     }
 
-    private void readyToPickupIFood(CompanyIFood companyIFood, String orderID) {
+    private void readyToPickupIFood(CompanyIfood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/readyToPickup", HttpMethod.POST, null,
                 new ParameterizedTypeReference<Void>() {
                 }, null);
     }
 
-    private void startPreparationIFood(CompanyIFood companyIFood, String orderID) {
+    private void startPreparationIFood(CompanyIfood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/startPreparation", HttpMethod.POST, null,
                 new ParameterizedTypeReference<Void>() {
                 }, null);
     }
 
-    private void deliveredIFood(CompanyIFood companyIFood, String orderID) {
+    private void deliveredIFood(CompanyIfood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/arrivedAtDestination", HttpMethod.POST, null,
                 new ParameterizedTypeReference<Void>() {

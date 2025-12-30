@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -35,8 +36,8 @@ public class CustomerController {
 //    }
 
     @GetMapping("/get-all-customers/{companyID}")
-    public ResponseEntity<List<Customer>> getAllCustomers(@RequestHeader("Authorization") String authorizationHeader,
-                                                          @PathVariable UUID companyID) {
+    public ResponseEntity<Set<Customer>> getAllCustomers(@RequestHeader("Authorization") String authorizationHeader,
+                                                         @PathVariable UUID companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = customerService.getAllCustomers(requesterID, companyID);

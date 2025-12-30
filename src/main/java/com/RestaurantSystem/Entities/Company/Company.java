@@ -11,9 +11,7 @@ import com.RestaurantSystem.Entities.Shift.Shift;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 public class Company {
@@ -36,28 +34,29 @@ public class Company {
 
     private String urlCompanyLogo;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<CompanyEmployees> employees;
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<CompanyEmployees> employees;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<ProductCategory> productsCategories;
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<ProductCategory> productsCategories;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<Customer> customers;
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Customer> customers;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<Shift> shifts;
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Shift> shifts;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<Printer> printers;
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Printer> printers;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<PrintRules> printRules;
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<PrintRules> printRules;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<PrintSync> printSync;
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<PrintSync> printSync;
 
-    @OneToOne(mappedBy = "company", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_or_open_shift_id")
     private Shift lastOrOpenShift;
 
     private int numberOfTables;
@@ -76,11 +75,11 @@ public class Company {
 
     private List<String> noUserDeliveryMans = new ArrayList<>();
 
-
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_ifood_id")
-    private CompanyIFood companyIFoodData;
+    @OneToOne()
+    private CompanyIfood companyIfoodData;
+
+    private String lastShiftNumber;
 
     //<>------------ Constructors ------------<>
     public Company() {
@@ -96,12 +95,12 @@ public class Company {
 
         this.companyLat = createCompanyDTO.lat();
         this.companyLng = createCompanyDTO.lng();
-        this.employees = new ArrayList<>();
-        this.productsCategories = new ArrayList<>();
-        this.customers = new ArrayList<>();
-        this.shifts = new ArrayList<>();
-        this.printers = new ArrayList<>();
-        this.printRules = new ArrayList<>();
+        this.employees = new HashSet<>();
+        this.productsCategories = new HashSet<>();
+        this.customers = new HashSet<>();
+        this.shifts = new HashSet<>();
+        this.printers = new HashSet<>();
+        this.printRules = new HashSet<>();
         this.numberOfTables = createCompanyDTO.numberOfTables();
         this.noUserDeliveryMans.add("DeliveryMan1");
     }
@@ -173,33 +172,33 @@ public class Company {
         this.urlCompanyLogo = urlCompanyLogo;
     }
 
-    public List<CompanyEmployees> getEmployees() {
+    public Set<CompanyEmployees> getEmployees() {
         return employees;
     }
 
-    public List<ProductCategory> getProductsCategories() {
+    public Set<ProductCategory> getProductsCategories() {
         return productsCategories;
     }
 
-    public List<Customer> getCustomers() {
+    public Set<Customer> getCustomers() {
         return customers;
     }
 
-    public List<Shift> getShifts() {
+    public Set<Shift> getShifts() {
         return shifts;
     }
 
-    public List<Printer> getPrinters() {
-        if (printers == null) printers = new ArrayList<>();
+    public Set<Printer> getPrinters() {
+        if (printers == null) printers = new HashSet<>();
         return printers;
     }
-    public List<PrintRules> getPrintRules() {
-        if (printRules == null) printRules = new ArrayList<>();
+    public Set<PrintRules> getPrintRules() {
+        if (printRules == null) printRules = new HashSet<>();
         return printRules;
     }
 
-    public List<PrintSync> getPrintSync() {
-        if (printSync == null) printSync = new ArrayList<>();
+    public Set<PrintSync> getPrintSync() {
+        if (printSync == null) printSync = new HashSet<>();
         return printSync;
     }
 
@@ -289,11 +288,18 @@ public class Company {
         this.noUserDeliveryMans.remove(deliveryManName);
     }
 
-    public CompanyIFood getCompanyIFoodData() {
-        return companyIFoodData;
+    public CompanyIfood getCompanyIFoodData() {
+        return companyIfoodData;
     }
 
-    public void setCompanyIFoodData(CompanyIFood companyIFoodData) {
-        this.companyIFoodData = companyIFoodData;
+    public void setCompanyIFoodData(CompanyIfood companyIfoodData) {
+        this.companyIfoodData = companyIfoodData;
+    }
+
+    public String getLastShiftNumber() {
+        return lastShiftNumber;
+    }
+    public void setLastShiftNumber(String lastShiftNumber) {
+        this.lastShiftNumber = lastShiftNumber;
     }
 }

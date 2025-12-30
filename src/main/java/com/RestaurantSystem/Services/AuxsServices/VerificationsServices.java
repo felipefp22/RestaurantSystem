@@ -45,7 +45,7 @@ public class VerificationsServices {
     }
 
     public Shift retrieveCurrentShift(Company company) {
-        List<Shift> openedShift = shiftRepo.findAllByCompanyAndEndTimeUTCIsNull(company).orElseThrow(() -> new RuntimeException("No active shift found"));
+        List<Shift> openedShift = shiftRepo.findAllByCompany_IdAndEndTimeUTCIsNull(company.getId()).orElseThrow(() -> new RuntimeException("No active shift found"));
 
         if (openedShift.size() > 1) {
             return openedShift.stream()

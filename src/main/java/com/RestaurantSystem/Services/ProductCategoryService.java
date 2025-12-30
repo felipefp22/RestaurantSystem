@@ -35,17 +35,17 @@ public class ProductCategoryService {
 
 
     // <> ---------- Methods ---------- <>
-    public List<ProductCategory> getAllProductAndProductCategories(String requesterID, UUID companyID) {
+    public Set<ProductCategory> getAllProductAndProductCategories(String requesterID, UUID companyID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.worksOnCompany(company, requester);
-        List<ProductCategory> categories = company.getProductsCategories();
+        Set<ProductCategory> categories = company.getProductsCategories();
 
         if (categories.stream().anyMatch(cat -> cat.getPrintPriority() == null)) normalizePrintPriorities(categories);
         return company.getProductsCategories();
     }
 
-    public List<ProductCategory> createProductCategory(String requesterID, CreateProductCategoryDTO createDTO) {
+    public Set<ProductCategory> createProductCategory(String requesterID, CreateProductCategoryDTO createDTO) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(createDTO.companyID());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
@@ -64,7 +64,7 @@ public class ProductCategoryService {
         return getAllProductAndProductCategories(requesterID, createDTO.companyID());
     }
 
-    public List<ProductCategory> updateCategory(String requesterID, UpdateProductCategoryDTO updateDTO) {
+    public Set<ProductCategory> updateCategory(String requesterID, UpdateProductCategoryDTO updateDTO) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(updateDTO.companyID());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
@@ -92,7 +92,7 @@ public class ProductCategoryService {
         return getAllProductAndProductCategories(requesterID, updateDTO.companyID());
     }
 
-    public List<ProductCategory> changeDefaultNewProductsImage(String requesterID, ChangeNewProductsDefaultImgDTO dto) {
+    public Set<ProductCategory> changeDefaultNewProductsImage(String requesterID, ChangeNewProductsDefaultImgDTO dto) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(dto.companyID());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
@@ -107,46 +107,47 @@ public class ProductCategoryService {
         return getAllProductAndProductCategories(requesterID, company.getId());
     }
 
-    public List<ProductCategory> sortPrintPriority(String requesterID, SortPrintPriorityDTO dto) {
+    public Set<ProductCategory> sortPrintPriority(String requesterID, SortPrintPriorityDTO dto) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(dto.companyID());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
-        List<ProductCategory> categories = company.getProductsCategories();
+        Set<ProductCategory> categories = company.getProductsCategories();
         normalizePrintPriorities(company.getProductsCategories());
 
         ProductCategory target = categories.stream()
                 .filter(c -> c.getId().equals(dto.categoryID()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Category not found"));
-        categories.sort(Comparator.comparingInt(ProductCategory::getPrintPriority));
+        List<ProductCategory> sorted = new ArrayList<>(categories.stream().sorted(Comparator.comparingInt(ProductCategory::getPrintPriority)).toList());
 
-        int index = categories.indexOf(target);
+        int index = sorted.indexOf(target);
 
         switch (dto.action()) {
             case "UP" -> {
                 if (index > 0) {
-                    swap(categories, index, index - 1);
+                    swap(sorted, index, index - 1);
                 }
             }
             case "DOWN" -> {
                 if (index < categories.size() - 1) {
-                    swap(categories, index, index + 1);
+                    swap(sorted, index, index + 1);
                 }
             }
         }
 
         int priority = 1;
-        for (ProductCategory category : categories) {
+        for (ProductCategory category : sorted) {
             category.setPrintPriority(priority++);
         }
-        productCategoryRepo.saveAll(categories);
+        productCategoryRepo.saveAll(sorted);
         return getAllProductAndProductCategories(requesterID, dto.companyID());
     }
 
+
     // <>---------- Auxs methods ---------- <>
 
-    private void normalizePrintPriorities(List<ProductCategory> categories) {
+    private void normalizePrintPriorities(Set<ProductCategory> categories) {
         if (categories == null || categories.isEmpty()) return;
         List<Integer> priorities = categories.stream()
                 .map(ProductCategory::getPrintPriority)
@@ -169,14 +170,20 @@ public class ProductCategoryService {
         }
     }
 
-    private void doNormalize(List<ProductCategory> categories) {
-        categories.sort(Comparator.comparing(ProductCategory::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
-                .thenComparing(ProductCategory::getId));
+    private void doNormalize(Set<ProductCategory> categories) {
+        List<ProductCategory> sorted = categories.stream().sorted(Comparator.comparing(ProductCategory::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(ProductCategory::getId)).toList();
 
         int priority = 1;
-        for (ProductCategory category : categories) {
+        for (ProductCategory category : sorted) {
             category.setPrintPriority(priority++);
         }
-        productCategoryRepo.saveAll(categories);
+        productCategoryRepo.saveAll(sorted);
     }
+
+//    private Set<ProductCategory> sortCategoriesByPriority(Set<ProductCategory> categories) {
+//        List<ProductCategory> sorted = categories.stream().sorted(Comparator.comparing(ProductCategory::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
+//                .thenComparing(ProductCategory::getId)).toList();
+//        return new LinkedHashSet<>(sorted);
+//    }
 }

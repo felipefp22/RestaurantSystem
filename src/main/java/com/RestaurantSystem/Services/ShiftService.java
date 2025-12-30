@@ -10,6 +10,7 @@ import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
 import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -43,7 +45,7 @@ public class ShiftService {
         return getShiftOperationRequesterAlreadyVerified(company);
     }
 
-    public List<Shift> getAllShifts(String requesterID, UUID companyID) {
+    public Set<Shift> getAllShifts(String requesterID, UUID companyID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
@@ -51,6 +53,7 @@ public class ShiftService {
         return company.getShifts();
     }
 
+    @Transactional
     public Shift createShift(String requesterID, UUID companyID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
@@ -63,11 +66,13 @@ public class ShiftService {
                     throw new RuntimeException("There is already an active shift");
                 });
 
-        String shiftNumber = String.valueOf(company.getShifts().size() + 1);
+        String shiftNumber = company.getLastShiftNumber() == null ? "1" : String.valueOf(Integer.valueOf(company.getLastShiftNumber()) + 1);
         Shift shift = new Shift(company, shiftNumber, requester);
 
         Shift shiftSaved = shiftRepo.save(shift);
-        company.setLastOrOpenShift(shift);
+        company.setLastOrOpenShift(shiftSaved);
+        company.setLastShiftNumber(shiftSaved.getShiftNumber());
+        company.getShifts().add(shiftSaved);
         companyRepo.save(company);
 
         return shiftSaved;

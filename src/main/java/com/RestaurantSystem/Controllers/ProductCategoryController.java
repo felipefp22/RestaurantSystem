@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -27,7 +28,7 @@ public class ProductCategoryController {
     // <>------------ Methods ------------<>
 
     @GetMapping("/get-all-categories-of-company/{companyID}")
-    public ResponseEntity<List<ProductCategory>> getAllProductAndProductCategories(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<Set<ProductCategory>> getAllProductAndProductCategories(@RequestHeader("Authorization") String authorizationHeader,
                                                                                    @PathVariable UUID companyID) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
@@ -37,7 +38,7 @@ public class ProductCategoryController {
     }
 
     @PostMapping("/create-product-category")
-    public ResponseEntity<List<ProductCategory>> createProductCategory(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<Set<ProductCategory>> createProductCategory(@RequestHeader("Authorization") String authorizationHeader,
                                                                        @RequestBody CreateProductCategoryDTO createDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
@@ -47,7 +48,7 @@ public class ProductCategoryController {
     }
 
     @PutMapping("/update-category")
-    public ResponseEntity<List<ProductCategory>> updateCategory(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<Set<ProductCategory>> updateCategory(@RequestHeader("Authorization") String authorizationHeader,
                                                                 @RequestBody UpdateProductCategoryDTO updateDTO) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
@@ -57,8 +58,8 @@ public class ProductCategoryController {
     }
 
     @PutMapping("/change-default-new-products-img")
-    public ResponseEntity<List<ProductCategory>> changeDefaultNewProductsImage(@RequestHeader("Authorization") String authorizationHeader,
-                                                                               @RequestBody ChangeNewProductsDefaultImgDTO dto) {
+    public ResponseEntity<Set<ProductCategory>> changeDefaultNewProductsImage(@RequestHeader("Authorization") String authorizationHeader,
+                                                                              @RequestBody ChangeNewProductsDefaultImgDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
         var response = productCategoryService.changeDefaultNewProductsImage(requesterID, dto);
@@ -67,7 +68,7 @@ public class ProductCategoryController {
     }
 
     @PutMapping("/sort-print-priority")
-    public ResponseEntity<List<ProductCategory>> sortPrintPriority(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<Set<ProductCategory>> sortPrintPriority(@RequestHeader("Authorization") String authorizationHeader,
                                                                 @RequestBody SortPrintPriorityDTO dto) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 

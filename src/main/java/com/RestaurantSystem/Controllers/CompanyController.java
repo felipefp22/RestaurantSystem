@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -80,8 +81,8 @@ public class CompanyController {
     }
 
     @PutMapping("/add-employees")
-    public ResponseEntity<List<CompanyEmployees>> addEmployeeToCompany(@RequestHeader("Authorization") String authorizationHeader,
-                                                                       @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
+    public ResponseEntity<Set<CompanyEmployees>> addEmployeeToCompany(@RequestHeader("Authorization") String authorizationHeader,
+                                                                      @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
 
@@ -91,7 +92,7 @@ public class CompanyController {
     }
 
     @PutMapping("/update-employee-position")
-    public ResponseEntity<List<CompanyEmployees>> updateEmployeePosition(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<Set<CompanyEmployees>> updateEmployeePosition(@RequestHeader("Authorization") String authorizationHeader,
                                                                          @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
@@ -102,7 +103,7 @@ public class CompanyController {
     }
 
     @PutMapping("/remove-employee")
-    public ResponseEntity<List<CompanyEmployees>> removeEmployeeFromCompany(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<Set<CompanyEmployees>> removeEmployeeFromCompany(@RequestHeader("Authorization") String authorizationHeader,
                                                                             @RequestBody AddOrUpdateEmployeeDTO employeeDTO) {
 
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);

@@ -6,14 +6,14 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-public class CompanyIFood {
+public class CompanyIfood {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "companyIFoodData")
+    @OneToOne(mappedBy = "companyIfoodData")
     private Company company;
 
     // <>- Temporary Codes -<>
@@ -35,9 +35,9 @@ public class CompanyIFood {
     private String refreshToken;
 
     // <>------------ Constructors ------------<>
-    public CompanyIFood() {
+    public CompanyIfood() {
     }
-    public CompanyIFood(Company company) {
+    public CompanyIfood(Company company) {
         this.company = company;
     }
 

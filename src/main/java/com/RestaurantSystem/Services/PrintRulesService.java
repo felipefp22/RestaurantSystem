@@ -11,6 +11,7 @@ import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -27,7 +28,7 @@ public class PrintRulesService {
     }
 
     // <> ---------- Methods ---------- <>
-    public List<PrintRules> getPrintRules(UUID companyID, String requesterID) {
+    public Set<PrintRules> getPrintRules(UUID companyID, String requesterID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(companyID);
         verificationsServices.justOwnerOrManager(company, requester);
@@ -35,7 +36,7 @@ public class PrintRulesService {
         return company.getPrintRules();
     }
 
-    public List<PrintRules> updatePrintRules(UpdatePrintRulesDTO dto, String requesterID) {
+    public Set<PrintRules> updatePrintRules(UpdatePrintRulesDTO dto, String requesterID) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(dto.companyID());
         verificationsServices.justOwnerOrManager(company, requester);
