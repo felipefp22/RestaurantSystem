@@ -76,7 +76,7 @@ public class Company {
     private List<String> noUserDeliveryMans = new ArrayList<>();
 
     @JsonIgnore
-    @OneToOne()
+    @OneToOne(fetch = FetchType.EAGER)
     private CompanyIfood companyIfoodData;
 
     private String lastShiftNumber;

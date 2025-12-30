@@ -1,369 +1,203 @@
-{
-  "benefits": null,
-  "orderType": "DELIVERY",
-  "payments": {
-    "methods": [
-      {
-        "wallet": null,
-        "method": "MEAL_VOUCHER",
-        "prepaid": true,
-        "currency": "BRL",
-        "type": "ONLINE",
-        "value": 27.0,
-        "cash": null,
-        "card": {
-          "brand": "SODEXO"
-        },
-        "transaction": null
-      }
-    ],
-    "pending": 0.0,
-    "prepaid": 27.0
-  },
-  "merchant": {
-    "id": "a5222691-77b3-403d-8748-269981a9a162",
-    "name": "Teste - felipe-ferreira-de-p"
-  },
-  "salesChannel": "IFOOD",
-  "category": "FOOD",
-  "picking": {
-    "picker": "DEFAULT",
-    "replacementOptions": null
-  },
-  "orderTiming": "IMMEDIATE",
-  "createdAt": "2025-12-05T04:18:20.366",
-  "total": {
-    "benefits": 0.0,
-    "deliveryFee": 5.0,
-    "orderAmount": 27.0,
-    "subTotal": 21.0,
-    "additionalFees": 1.0
-  },
-  "preparationStartDateTime": "2025-12-05T04:18:20.366",
-  "id": "c107d774-6e67-4888-b19b-4d3f9d1f1bde",
-  "displayId": "4975",
-  "items": [
-    {
-      "unitPrice": 5.0,
-      "copies": 1.0,
-      "externalCode": 8410,
-      "totalPrice": 5.0,
-      "index": 1.0,
-      "unit": "UN",
-      "ean": "",
-      "price": 5.0,
-      "scalePrices": null,
-      "observations": "",
-      "imageUrl": "https://static-images.ifood.com.br/image/upload/t_high/pratos/e078d2e1-0af0-49c3-ba0d-ea4effffbd54/202305121137_XIHJ_i.jpg",
-      "name": "PRODUTO 1 - NÃO ENTREGAR - Primeiro Nível",
-      "type": null,
-      "options": [],
-      "id": "5b0eaff9-7504-4ac3-ae5c-c65e483d0b1c",
-      "optionsPrice": 0.0
-    },
-    {
-      "unitPrice": 5.0,
-      "copies": 1.0,
-      "externalCode": 2133,
-      "totalPrice": 16.0,
-      "index": 2.0,
-      "unit": "UN",
-      "ean": "",
-      "price": 5.0,
-      "scalePrices": null,
-      "observations": "",
-      "imageUrl": "https://static-images.ifood.com.br/image/upload/t_high/pratos/e078d2e1-0af0-49c3-ba0d-ea4effffbd54/202305121137_XIHJ_i.jpg",
-      "name": "PRODUTO 2 (COMBO) - NÃO ENTREGAR - Primeiro Nível",
-      "type": "COMBO_V2",
-      "options": [
-        {
-          "unitPrice": 2.0,
-          "unit": "UN",
-          "ean": "",
-          "copies": 1.0,
-          "externalCode": 3474,
-          "price": 2.0,
-          "name": "Complemento 1 - Segundo Nível",
-          "groupName": "Adicione mais ingredientes",
-          "type": "SPECIFICATION",
-          "index": 3.0,
-          "id": "3e933999-87bd-424b-a6bb-5e29d6bb0e2f",
-          "addition": 0.0,
-          "customization": null
-        },
-        {
-          "unitPrice": 2.0,
-          "unit": "UN",
-          "ean": "",
-          "copies": 1.0,
-          "externalCode": 3880,
-          "price": 2.0,
-          "name": "Complemento 2 - Segundo Nível",
-          "groupName": "Deseja adicionar molhos?",
-          "type": "OFFER_UNIT",
-          "index": 4.0,
-          "id": "ec5ae16d-66b0-4154-b198-c2129981fae9",
-          "addition": 0.0,
-          "customization": null
-        },
-        {
-          "unitPrice": 2.0,
-          "unit": "UN",
-          "ean": "",
-          "copies": 1.0,
-          "externalCode": 3901,
-          "price": 2.0,
-          "name": "Complemento 3 - Segundo Nível",
-          "groupName": "Escolha seu acompanhamento",
-          "type": "OFFER_UNIT",
-          "index": 5.0,
-          "id": "35e5e914-eb85-495a-8409-f253bcffdc55",
-          "addition": 0.0,
-          "customization": null
-        },
-        {
-          "unitPrice": 2.0,
-          "unit": "UN",
-          "ean": "",
-          "copies": 1.0,
-          "externalCode": 4152,
-          "price": 2.0,
-          "name": "Complemento 4 - Segundo Nível",
-          "groupName": "Meu sanduíche favorito",
-          "type": "MAIN",
-          "index": 6.0,
-          "id": "ca7596e0-c4c2-4e5c-907e-3aaeb78c5277",
-          "addition": 0.0,
-          "customization": null
-        }
+"OrderDetailsIFoodDTO"[
+   "benefits=null",
+   "orderType=DELIVERY",
+   "payments=Payments"[
+      "methods="[
+         "Methods"[
+            "wallet=null",
+            "method=CREDIT",
+            "prepaid=true",
+            "currency=BRL",
+            "type=ONLINE",
+            value=117.89,
+            "cash=null",
+            "card=Card"[
+               "brand=VISA"
+            ],
+            "transaction=null"
+         ]
       ],
-      "id": "331e3f05-c063-4e69-96a1-4fb2a4f20a93",
-      "optionsPrice": 8.0
-    }
-  ],
-  "customer": {
-    "phone": {
-      "number": "0800 700 3021",
-      "localizer": 33549715,
-      "localizerExpiration": "2025-12-05T08:18:20.366Z"
-    },
-    "documentNumber": "123456789-00",
-    "name": "Pedido de teste de integracao",
-    "ordersCountOnMerchant": 0.0,
-    "segmentation": "Cliente",
-    "id": "dace8b15-e2be-408e-9b98-91b4e72e029f"
-  },
-  "extraInfo": null,
-  "additionalFees": [
-    {
-      "type": "SMALL_ORDER_FEE_35_PROMOTIONS",
-      "value": 1.0,
-      "description": "Taxa de Serviço",
-      "fullDescription": "Cobramos uma taxa que nos ajuda a cobrir os custos operacionais e manter a melhor experiência de compra para você.",
-      "liabilities": [
-        {
-          "name": "IFOOD",
-          "percentage": 100.0
-        }
-      ]
-    }
-  ],
-  "delivery": {
-    "mode": "DEFAULT",
-    "pickupCode": 4574,
-    "description": "Padrão",
-    "deliveredBy": "MERCHANT",
-    "deliveryAddress": {
-      "reference": "TESTE",
-      "country": "XX",
-      "streetName": "Rua TESTE",
-      "formattedAddress": "Rua TESTE, 999999",
-      "streetNumber": 999999,
-      "city": "TESTE",
-      "postalCode": "99999999",
-      "coordinates": {
-        "latitude": 0.0,
-        "longitude": 0.0
-      },
-      "neighborhood": "Bairro TESTE",
-      "state": "XX",
-      "complement": "Complemento TESTE"
-    },
-    "deliveryDateTime": "2025-12-05T05:03:20.366"
-  },
-  "schedule": null,
-  "indoor": null,
-  "dineIn": null,
-  "takeout": null,
-  "error": null
-}
-
-
-<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-{
-  "benefits": null,
-  "orderType": "DELIVERY",
-  "payments": {
-    "methods": [
-      {
-        "wallet": null,
-        "method": "CREDIT",
-        "prepaid": true,
-        "currency": "BRL",
-        "type": "ONLINE",
-        "value": 89.89,
-        "cash": null,
-        "card": {
-          "brand": "VISA"
-        },
-        "transaction": null
-      }
-    ],
-    "pending": 0.0,
-    "prepaid": 89.89
-  },
-  "merchant": {
-    "id": "a5222691-77b3-403d-8748-269981a9a162",
-    "name": "Teste - felipe-ferreira-de-p"
-  },
-  "salesChannel": "IFOOD",
-  "category": "FOOD",
-  "picking": {
-    "picker": "DEFAULT",
-    "replacementOptions": null
-  },
-  "orderTiming": "IMMEDIATE",
-  "createdAt": "2025-12-05T06:36:38.962",
-  "total": {
-    "benefits": 0.0,
-    "deliveryFee": 8.9,
-    "orderAmount": 89.89,
-    "subTotal": 80.0,
-    "additionalFees": 0.99
-  },
-  "preparationStartDateTime": "2025-12-05T06:36:38.962",
-  "id": "d466dee5-85e5-49d4-9a84-38b4b016240c",
-  "displayId": "7459",
-  "items": [
-    {
-      "unitPrice": 0.0,
-      "copies": 1,
-      "externalCode": null,
-      "totalPrice": 80.0,
-      "index": 1.0,
-      "unit": "UN",
-      "ean": "",
-      "price": 0.0,
-      "scalePrices": null,
-      "observations": "",
-      "imageUrl": "https://static-images.ifood.com.br/image/upload/t_high/pratos/e078d2e1-0af0-49c3-ba0d-ea4effffbd54/202305121137_XIHJ_i.jpg",
-      "name": "PEDIDO DE TESTE - GRA",
-      "type": "LEGACY_PIZZA",
-      "options": [
-        {
-          "unitPrice": 0.0,
-          "unit": "UN",
-          "ean": "",
-          "copies": 1,
-          "externalCode": "",
-          "price": 0.0,
-          "name": "Massa Tradicional + Borda Tradicional",
-          "groupName": "Escolha a sua Preferência",
-          "type": "CRUST",
-          "index": 2.0,
-          "id": "abd351cb-7285-3233-a55a-367bfd53579e",
-          "addition": 0.0,
-          "customization": null
-        },
-        {
-          "unitPrice": 40.0,
-          "unit": "UN",
-          "ean": "",
-          "copies": 1,
-          "externalCode": "",
-          "price": 40.0,
-          "name": "1/2 Pizza Atum",
-          "groupName": "Escolha um sabor",
-          "type": "TOPPING",
-          "index": 3.0,
-          "id": "e84aa8a8-db42-3cdf-93ed-572c8e17b9db",
-          "addition": 0.0,
-          "customization": null
-        },
-        {
-          "unitPrice": 40.0,
-          "unit": "UN",
-          "ean": "",
-          "copies": 1,
-          "externalCode": "",
-          "price": 40.0,
-          "name": "1/2 Pizza Salame",
-          "groupName": "Escolha o segundo sabor",
-          "type": "TOPPING",
-          "index": 4.0,
-          "id": "0fb16864-017d-3531-a081-c479fdb4d867",
-          "addition": 0.0,
-          "customization": null
-        }
+      pending=0.0,
+      prepaid=117.89
+   ],
+   "merchant=Merchant"[
+      id=a5222691-77b3-403d-8748-269981a9a162,
+      "name=Teste - felipe-ferreira-de-p"
+   ],
+   "salesChannel=IFOOD",
+   "category=FOOD",
+   "picking=Picking"[
+      "picker=DEFAULT",
+      "replacementOptions=null"
+   ],
+   "orderTiming=IMMEDIATE",
+   "createdAt=2025-12-30T06":"35":50.366,
+   "total=Total"[
+      benefits=0.0,
+      deliveryFee=8.9,
+      orderAmount=117.89,
+      subTotal=107.0,
+      additionalFees=1.99
+   ],
+   "preparationStartDateTime=2025-12-30T06":"35":50.366,
+   id=39a0eea2-4328-4a2f-bb0f-d529d381b2d3,
+   displayId=2583,
+   "items="[
+      "Items"[
+         unitPrice=0.0,
+         quantity=1,
+         "externalCode=null",
+         totalPrice=99.0,
+         index=1.0,
+         "unit=UN",
+         "ean=",
+         price=0.0,
+         "scalePrices=null",
+         "observations=",
+         "imageUrl=https"://static-images.ifood.com.br/image/upload/t_high/pratos/e078d2e1-0af0-49c3-ba0d-ea4effffbd54/202305121137_XIHJ_i.jpg,
+         "name=PEDIDO DE TESTE - GRA",
+         "type=LEGACY_PIZZA",
+         "options="[
+            "Options"[
+               unitPrice=0.0,
+               "unit=UN",
+               "ean=",
+               quantity=1,
+               "externalCode=",
+               price=0.0,
+               "name=Massa Tradicional + Borda Tradicional",
+               "groupName=Escolha a sua Preferência",
+               "type=CRUST",
+               index=2.0,
+               id=844404cc-fb17-31e3-86f4-697945d19881,
+               addition=0.0,
+               "customization=null"
+            ],
+            "Options"[
+               unitPrice=26.33,
+               "unit=UN",
+               "ean=",
+               quantity=1,
+               "externalCode=alhoG",
+               price=33.0,
+               name=1/3 Alho,
+               "groupName=Escolha um sabor",
+               "type=TOPPING",
+               index=3.0,
+               id=ad8329b6-349e-3ed1-a5f2-ffdb843fc1e0,
+               addition=6.67,
+               "customization=null"
+            ],
+            "Options"[
+               unitPrice=26.33,
+               "unit=UN",
+               "ean=",
+               quantity=1,
+               "externalCode=alhoG",
+               price=33.0,
+               name=1/3 Alho,
+               "groupName=Escolha o segundo sabor",
+               "type=TOPPING",
+               index=4.0,
+               id=63756f96-4baa-3a81-becc-dc5f362e5583,
+               addition=6.67,
+               "customization=null"
+            ],
+            "Options"[
+               unitPrice=33.0,
+               "unit=UN",
+               "ean=",
+               quantity=1,
+               "externalCode=setecopasG",
+               price=33.0,
+               name=1/3 Sete Copas(carne seca),
+               "groupName=Escolha o terceiro sabor",
+               "type=TOPPING",
+               index=5.0,
+               id=0d1161b2-b823-3744-9e9d-25d0ea1bc48b,
+               addition=0.0,
+               "customization=null"
+            ]
+         ],
+         id=82cb8bd5-9453-3e4a-8c00-7c1a43fcd747,
+         optionsPrice=99.0
       ],
-      "id": "fc3bb71d-ef36-31ca-85ca-99326443cb4a",
-      "optionsPrice": 80.0
-    }
-  ],
-  "customer": {
-    "phone": {
-      "number": "0800 705 1020",
-      "localizer": "37974012",
-      "localizerExpiration": "2025-12-05T10:36:38.962Z"
-    },
-    "documentNumber": null,
-    "name": "PEDIDO DE TESTE - Felipe Ferreira de Paula",
-    "ordersCountOnMerchant": 0.0,
-    "segmentation": "Cliente",
-    "id": "afd362ec-fc46-43ff-8590-68f44f6d9fc9"
-  },
-  "extraInfo": null,
-  "additionalFees": [
-    {
-      "type": "RESTAURANT_SERVICE_FEE_BRASIL_099_LESS_THAN_100",
-      "value": 0.99,
-      "description": "Taxa de serviço",
-      "fullDescription": "A cobrança da taxa de serviço inclui o licenciamento de uso da Plataforma e contribui com custos operacionais, como desenvolvimento, atualização e suporte, além de viabilizar investimentos contínuos em segurança e inovação.",
-      "liabilities": [
-        {
-          "name": "IFOOD",
-          "percentage": 100.0
-        }
+      "Items"[
+         unitPrice=8.0,
+         quantity=1,
+         externalCode=coca350,
+         totalPrice=8.0,
+         index=6.0,
+         "unit=GRAMS",
+         ean=7894900010022,
+         price=8.0,
+         "scalePrices=null",
+         "observations=",
+         "imageUrl=https"://static-images.ifood.com.br/image/upload/t_high/pratos/e078d2e1-0af0-49c3-ba0d-ea4effffbd54/202305121137_XIHJ_i.jpg,
+         "name=PEDIDO DE TESTE - Coc",
+         "type=DEFAULT",
+         "options=null",
+         id=e1656c16-2186-4732-b7a3-f8992c146326,
+         optionsPrice=0.0
       ]
-    }
-  ],
-  "delivery": {
-    "mode": "DEFAULT",
-    "pickupCode": "5610",
-    "description": "Padrão",
-    "deliveredBy": "MERCHANT",
-    "deliveryAddress": {
-      "reference": "TESTE",
-      "country": "XX",
-      "streetName": "Rua TESTE",
-      "formattedAddress": "Rua TESTE, 999999",
-      "streetNumber": "999999",
-      "city": "TESTE",
-      "postalCode": "99999999",
-      "coordinates": {
-        "latitude": 0.0,
-        "longitude": 0.0
-      },
-      "neighborhood": "Bairro TESTE",
-      "state": "XX",
-      "complement": "Complemento TESTE"
-    },
-    "deliveryDateTime": "2025-12-05T07:16:38.962"
-  },
-  "schedule": null,
-  "indoor": null,
-  "dineIn": null,
-  "takeout": null,
-  "error": null
-}
+   ],
+   "customer=Customer"[
+      "phone=Phone"[
+         number=0800 705 1020,
+         localizer=41297615,
+         "localizerExpiration=2025-12-30T10":"35":50.366Z
+      ],
+      "documentNumber=null",
+      "name=PEDIDO DE TESTE - Felipe Ferreira de Paula",
+      ordersCountOnMerchant=0.0,
+      "segmentation=Cliente",
+      id=afd362ec-fc46-43ff-8590-68f44f6d9fc9
+   ],
+   "extraInfo=null",
+   "additionalFees="[
+      "AdditionalFees"[
+         type=RESTAURANT_SERVICE_FEE_BRASIL_199,
+         value=1.99,
+         "description=Taxa de serviço",
+         "fullDescription=A cobrança da taxa de serviço inclui o licenciamento de uso da Plataforma e contribui com custos operacionais",
+         "como desenvolvimento",
+         "atualização e suporte",
+         "além de viabilizar investimentos contínuos em segurança e inovação.",
+         "liabilities="[
+            "Liabilities"[
+               "name=IFOOD",
+               percentage=100.0
+            ]
+         ]
+      ]
+   ],
+   "delivery=Delivery"[
+      "mode=DEFAULT",
+      pickupCode=4883,
+      "description=Padrão",
+      "deliveredBy=MERCHANT",
+      "deliveryAddress=DeliveryAddress"[
+         "reference=TESTE",
+         "country=XX",
+         "streetName=Rua TESTE",
+         "formattedAddress=Rua TESTE",
+         999999,
+         streetNumber=999999,
+         "city=TESTE",
+         postalCode=99999999,
+         "coordinates=Coordinates"[
+            latitude=0.0,
+            longitude=0.0
+         ],
+         "neighborhood=Bairro TESTE",
+         "state=XX",
+         "complement=Complemento TESTE"
+      ],
+      "deliveryDateTime=2025-12-30T07":"15":50.366
+   ],
+   "schedule=null",
+   "indoor=null",
+   "dineIn=null",
+   "takeout=null",
+   "error=null"
+]
