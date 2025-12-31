@@ -17,7 +17,7 @@ public record OrderDetailsIFoodDTO(
         LocalDateTime preparationStartDateTime,
         String id,
         String displayId,
-        List<Items> items,
+        List<ItemsIfood> items,
         Customer customer,
         String extraInfo,
         List<AdditionalFees> additionalFees,
@@ -114,7 +114,7 @@ public record OrderDetailsIFoodDTO(
     ) {
     }
 
-    public record Items(
+    public record ItemsIfood(
             Double unitPrice,
             Integer quantity,
             String externalCode,

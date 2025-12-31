@@ -32,6 +32,7 @@ import java.util.stream.IntStream;
 @Service
 public class IFoodService {
 
+    private final String noCodePvcAcceptedDonotThrowError = "semcodigo";
     private WebClient webClient;
     private final CompanyIFoodRepo companyIFoodRepo;
     private final CompanyRepo companyRepo;
@@ -162,11 +163,8 @@ public class IFoodService {
         if (ifoodEvents == null) return;
 
         ifoodEvents.get().stream().filter(ev -> Objects.equals(ev.fullCode(), "PLACED")).forEach(x -> {
-
             OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIfoodData(), x.orderId());
             List<OrderItemDTO> orderItemsDTO = createOrderItemDTO(company, ifoodOrderDetails);
-
-            System.out.println("sa");
         });
 
         acknowledgeEventIFood(dto.companyIfoodData(), ifoodEvents.get().stream().map(x -> new AcknowledgeIFoodDTO(x.id())).toList());
@@ -184,45 +182,100 @@ public class IFoodService {
 
         // <>---------- LEGACY_PIZZA ----------<>
         ifoodOrderDetails.items().stream().filter(x -> x.type().equals("LEGACY_PIZZA")).forEach(x -> {
-            AtomicBoolean pdvCodeError = new AtomicBoolean(false);
-            List<String> productsPdvCodes =
-                    x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "TOPPING"))
-                            .flatMap(z -> IntStream.range(0, z.quantity()).mapToObj(i -> z.externalCode()))
-                            .filter(code -> {
-                                if (code == null || code.isBlank()) {
-                                    pdvCodeError.set(true);
-                                    return false;
-                                }
-                                return true;
-                            }).toList();
+            IntStream.range(0, x.quantity()).forEach(nothing -> {
+                AtomicBoolean pdvCodeError = new AtomicBoolean(false);
+                List<OrderDetailsIFoodDTO.ItemsIfood.Options> toppings = x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "TOPPING")).toList();
+                List<OrderDetailsIFoodDTO.ItemsIfood.Options> crusts = x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "CRUST")).toList();
 
-            List<String> productOptsPdvCodes =
-                    x.options().stream().filter(y -> Objects.equals(y.type(), "CRUST"))
-                            .flatMap(opt -> IntStream.range(0, opt.quantity()).mapToObj(z -> opt.externalCode()))
-                            .filter(code -> {
-                                if (code == null || code.isBlank()) {
-                                    pdvCodeError.set(true);
-                                    return false;
-                                }
-                                return true;
-                            }).toList();
+                List<String> productsPdvCodes = toppings.stream().flatMap(z -> IntStream.range(0, z.quantity()).mapToObj(i -> z.externalCode()))
+                        .filter(code -> {
+                            if (code == null || code.isBlank()) {
+                                pdvCodeError.set(true);
+                                return false;
+                            }
+                            return true;
+                        }).toList();
 
-            List<String> productsIDs =
-                    productsPdvCodes.stream().map(pdvc -> {if (productMap.get(pdvc) == null) { pdvCodeError.set(true); return null; } return productMap.get(pdvc).getId().toString();})
-                    .filter(Objects::nonNull).toList();
+                List<String> productOptsPdvCodes = crusts.stream().flatMap(opt -> IntStream.range(0, opt.quantity()).mapToObj(z -> opt.externalCode()))
+                        .filter(code -> {
+                            if (code == null || code.isBlank()) {
+                                pdvCodeError.set(true);
+                                return false;
+                            }
+                            return true;
+                        }).toList();
 
-            List<String> productOptsIDs =
-                    productOptsPdvCodes.stream().map(pdvc -> { if (productOptsMap.get(pdvc) == null){ pdvCodeError.set(true); return null; } return productOptsMap.get(pdvc).getId().toString();})
-                    .filter(Objects::nonNull).toList();
+                List<String> productsIDs = getProductIDsFromPdvCodes(productMap, productsPdvCodes, pdvCodeError);
+                List<String> productOptsIDs = getProductOptsIDsFromPdvCodes(productOptsMap, productOptsPdvCodes, pdvCodeError);
 
-            String pdvCodeErrorMsg = !pdvCodeError.get() ? null :
-                    errorMsg_legacyPizza(x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "TOPPING")).map(t -> t.name()).toList(),
-                            x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "CRUST")).map(t -> t.name()).toList());
-            orderItemsDTO.add(new OrderItemDTO(productsIDs, productOptsIDs, x.observations(), pdvCodeErrorMsg, x.totalPrice()));
+                String pdvCodeErrorMsg = !pdvCodeError.get() ? null : createErrorMsg(toppings, crusts);
+                orderItemsDTO.add(new OrderItemDTO(productsIDs, productOptsIDs, x.observations(), pdvCodeErrorMsg, x.totalPrice()));
+            });
+        });
+
+        // <>---------- DEFAULT ----------<>
+        ifoodOrderDetails.items().stream().filter(x -> x.type().equals("DEFAULT")).forEach(x -> {
+            IntStream.range(0, x.quantity()).forEach(nothing -> {
+                AtomicBoolean pdvCodeError = new AtomicBoolean(false);
+                Product product = productMap.get(x.externalCode());
+
+                List<OrderDetailsIFoodDTO.ItemsIfood.Options> options = x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "CRUST")).toList();
+                List<String> productOptsPdvCodes = options.stream().flatMap(opt -> IntStream.range(0, opt.quantity()).mapToObj(z -> opt.externalCode()))
+                        .filter(code -> {
+                            if (code == null || code.isBlank()) {
+                                pdvCodeError.set(true);
+                                return false;
+                            }
+                            return true;
+                        }).toList();
+
+                List<String> productsIDs = List.of(product.getId().toString());
+                List<String> productOptsIDs = getProductOptsIDsFromPdvCodes(productOptsMap, productOptsPdvCodes, pdvCodeError);
+                if(product == null) pdvCodeError.set(true);
+
+                String pdvCodeErrorMsg = (product != null ? "" : x.externalCode() +" R$" + x.unitPrice() + " - produto nao encontrado") +
+                        (!pdvCodeError.get() ? null : createErrorMsg(new ArrayList<>(), options));
+                orderItemsDTO.add(new OrderItemDTO(productsIDs, productOptsIDs, x.observations(), pdvCodeErrorMsg, x.totalPrice()));
+            });
         });
 
         return orderItemsDTO;
     }
+
+    private List<String> getProductIDsFromPdvCodes(Map<String, Product> productMap, List<String> productsPdvCodes, AtomicBoolean pdvCodeError) {
+        return productsPdvCodes.stream().map(pdvc -> {
+                    Product product = productMap.get(pdvc);
+                    if (product == null) {
+                        if (!Objects.equals(pdvc, noCodePvcAcceptedDonotThrowError)) pdvCodeError.set(true);
+                        return null;
+                    }
+                    return product.getId().toString();
+                })
+                .filter(Objects::nonNull).toList();
+    }
+
+    private List<String> getProductOptsIDsFromPdvCodes(Map<String, ProductOption> productOptsMap, List<String> productOptsPdvCodes, AtomicBoolean pdvCodeError) {
+        return productOptsPdvCodes.stream().map(pdvc -> {
+                    ProductOption productOpt = productOptsMap.get(pdvc);
+                    if (productOpt == null) {
+                        if (!Objects.equals(pdvc, noCodePvcAcceptedDonotThrowError)) pdvCodeError.set(true);
+                        return null;
+                    }
+                    return productOpt.getId().toString();
+                })
+                .filter(Objects::nonNull).toList();
+    }
+
+    private String createErrorMsg(List<OrderDetailsIFoodDTO.ItemsIfood.Options> products, List<OrderDetailsIFoodDTO.ItemsIfood.Options> options) {
+        List<String> productsNames = products.stream().map(t -> t.name()).toList();
+        List<String> optionsNames = options.stream().map(c -> c.name()).toList();
+
+        String toppingsPart = productsNames.isEmpty() ? "" : String.join(" / ", productsNames);
+        String crustsPart = optionsNames.isEmpty() ? "" : " | Opcionais: " + String.join(" / ", optionsNames);
+
+        return toppingsPart + crustsPart + " |*ERRO| \n Algum item ERRO no codigo PDV, verificar codigos iFood / Sistema.\n * Erro esta no(s) produto(s) faltante.";
+    }
+
 //    private void treatProductsPdvCodesNulls(List<String> productsPdvCodes, String notes) {
 //       productsPdvCodes.forEach(p -> {
 //           if (p == null) {
@@ -241,12 +294,6 @@ public class IFoodService {
 //        }
 //    }
 
-    private String errorMsg_legacyPizza(List<String> toppings, List<String> crusts) {
-        String toppingsPart = (toppings == null || toppings.isEmpty()) ? "" : String.join(" / ", toppings) + " / ";
-        String crustsPart = (crusts == null || crusts.isEmpty()) ? "" : " - Opcionais: " + String.join(" / ", crusts) + " / ";
-
-        return toppingsPart + crustsPart + " |*ERRO| \n Algum item ERRO no codigo PDV, verificar codigos iFood / Sistema.\n * Erro esta no(s) produto(s) faltante.";
-    }
 
     // <>------------- IFood Events Actions -------------<>
     private void acknowledgeEventIFood(CompanyIfood companyIFood, List<AcknowledgeIFoodDTO> acknowledgeDTO) {
