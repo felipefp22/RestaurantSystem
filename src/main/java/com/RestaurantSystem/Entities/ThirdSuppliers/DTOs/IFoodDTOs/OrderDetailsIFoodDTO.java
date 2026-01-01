@@ -252,7 +252,8 @@ public record OrderDetailsIFoodDTO(
 
     public record Takeout(
             String mode,
-            LocalDateTime takeoutDateTime
+            LocalDateTime takeoutDateTime,
+            String observations
     ) {
     }
 

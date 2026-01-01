@@ -3,13 +3,16 @@ package com.RestaurantSystem.Services.ThirdSuppliersService;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyIfood;
 import com.RestaurantSystem.Entities.Company.DTOs.CompanyThirdSuppliersToPoolingDTO;
+import com.RestaurantSystem.Entities.ENUMs.PrintCategory;
 import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
+import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.*;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.CompanyIFoodRepo;
 import com.RestaurantSystem.Repositories.CompanyRepo;
+import com.RestaurantSystem.Repositories.PrintSyncRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import com.RestaurantSystem.Services.OrderService;
 import com.RestaurantSystem.Services.WebRequests.WebClientLinkRequestIFood;
@@ -39,8 +42,9 @@ public class IFoodService {
     private final VerificationsServices verificationsServices;
     private final WebClientLinkRequestIFood webClientLinkRequestIFood;
     private final OrderService orderService;
+    private final PrintSyncRepo printSyncRepo;
 
-    public IFoodService(VerificationsServices verificationsServices, @Value("${ifood.url}") String ifoodURL, CompanyIFoodRepo companyIFoodRepo, CompanyRepo companyRepo, WebClientLinkRequestIFood webClientLinkRequestIFood, OrderService orderService) {
+    public IFoodService(VerificationsServices verificationsServices, @Value("${ifood.url}") String ifoodURL, CompanyIFoodRepo companyIFoodRepo, CompanyRepo companyRepo, WebClientLinkRequestIFood webClientLinkRequestIFood, OrderService orderService, PrintSyncRepo printSyncRepo) {
         webClient = WebClient.builder()
                 .baseUrl(ifoodURL)
                 .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
@@ -51,6 +55,7 @@ public class IFoodService {
         this.companyRepo = companyRepo;
         this.webClientLinkRequestIFood = webClientLinkRequestIFood;
         this.orderService = orderService;
+        this.printSyncRepo = printSyncRepo;
     }
 
 
@@ -163,8 +168,19 @@ public class IFoodService {
         if (ifoodEvents == null) return;
 
         ifoodEvents.get().stream().filter(ev -> Objects.equals(ev.fullCode(), "PLACED")).forEach(x -> {
-            OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIfoodData(), x.orderId());
-            List<OrderItemDTO> orderItemsDTO = createOrderItemDTO(company, ifoodOrderDetails);
+            confirmOrderIFood(company.getCompanyIFoodData(), x.orderId());
+
+            String ifoodOrderID = null;
+            try {
+                OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIfoodData(), x.orderId());
+                ifoodOrderID = ifoodOrderDetails.displayId() != null ? ifoodOrderDetails.displayId() : ifoodOrderDetails.id();
+                List<OrderItemDTO> orderItemsDTO = createOrderItemDTO(company, ifoodOrderDetails);
+                iFoodCreateOrderDTO ifoodToCreateOrder = new iFoodCreateOrderDTO(company, ifoodOrderDetails, orderItemsDTO);
+                System.out.println("ifoodToCreateOrder -> " + ifoodToCreateOrder);
+            } catch (Exception e){
+                System.out.println("Error on create iFood order: " + e.getMessage());
+//                printSyncRepo.save(new PrintSync(company, PrintCategory.FULLORDER, "\n\n\nErro ao criar pedido iFood ID:\n " + ifoodOrderID + ". Verificar na plataforma iFood.\n\n[Contate nosso 'Comanda Rapida' Suporte e informe o erro]\n\n\n\n\n\n\n"));
+            }
         });
 
         acknowledgeEventIFood(dto.companyIfoodData(), ifoodEvents.get().stream().map(x -> new AcknowledgeIFoodDTO(x.id())).toList());
@@ -219,7 +235,7 @@ public class IFoodService {
                 AtomicBoolean pdvCodeError = new AtomicBoolean(false);
                 Product product = productMap.get(x.externalCode());
 
-                List<OrderDetailsIFoodDTO.ItemsIfood.Options> options = x.options().stream().filter(pdi -> Objects.equals(pdi.type(), "CRUST")).toList();
+                List<OrderDetailsIFoodDTO.ItemsIfood.Options> options = x.options() == null || x.options().isEmpty() ? List.of() : x.options().stream().toList();
                 List<String> productOptsPdvCodes = options.stream().flatMap(opt -> IntStream.range(0, opt.quantity()).mapToObj(z -> opt.externalCode()))
                         .filter(code -> {
                             if (code == null || code.isBlank()) {
@@ -229,11 +245,11 @@ public class IFoodService {
                             return true;
                         }).toList();
 
-                List<String> productsIDs = List.of(product.getId().toString());
+                List<String> productsIDs = product != null ? List.of(product.getId().toString()) : List.of();
                 List<String> productOptsIDs = getProductOptsIDsFromPdvCodes(productOptsMap, productOptsPdvCodes, pdvCodeError);
                 if(product == null) pdvCodeError.set(true);
 
-                String pdvCodeErrorMsg = (product != null ? "" : x.externalCode() +" R$" + x.unitPrice() + " - produto nao encontrado") +
+                String pdvCodeErrorMsg = (product != null ? "" : x.externalCode() + "|" + x.name() + " R$" + x.unitPrice() + " - produto nao encontrado") +
                         (!pdvCodeError.get() ? null : createErrorMsg(new ArrayList<>(), options));
                 orderItemsDTO.add(new OrderItemDTO(productsIDs, productOptsIDs, x.observations(), pdvCodeErrorMsg, x.totalPrice()));
             });
@@ -267,8 +283,8 @@ public class IFoodService {
     }
 
     private String createErrorMsg(List<OrderDetailsIFoodDTO.ItemsIfood.Options> products, List<OrderDetailsIFoodDTO.ItemsIfood.Options> options) {
-        List<String> productsNames = products.stream().map(t -> t.name()).toList();
-        List<String> optionsNames = options.stream().map(c -> c.name()).toList();
+        List<String> productsNames = products == null || products.isEmpty() ? List.of() : products.stream().map(t -> t.name()).toList();
+        List<String> optionsNames = options == null || options.isEmpty() ? List.of() : options.stream().map(c -> c.name()).toList();
 
         String toppingsPart = productsNames.isEmpty() ? "" : String.join(" / ", productsNames);
         String crustsPart = optionsNames.isEmpty() ? "" : " | Opcionais: " + String.join(" / ", optionsNames);
