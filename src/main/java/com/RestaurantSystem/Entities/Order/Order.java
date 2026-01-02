@@ -94,6 +94,11 @@ public class Order {
     private String thirdSpComplementAddress;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String thirdSpAddressReference; // its like complement extension
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isThirdSpPaid;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpOrderResume;
+
 
     // <>------------ Constructors ------------<>
     public Order() {
@@ -103,7 +108,7 @@ public class Order {
         this.shift = shift;
         this.orderNumberOnShift = orderNumberOnShift;
         this.tableNumberOrDeliveryOrPickup = createOrderDTO.tableNumberOrDeliveryOrPickup();
-        this.customer = null;
+        this.customer = customer;
         this.pickupName = createOrderDTO.pickupName();
         this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
         this.openedByUser = requester;
@@ -138,6 +143,7 @@ public class Order {
         this.thirdSpAddressNumber = ifoodDTO.spotNumber();
         this.thirdSpComplementAddress = ifoodDTO.addressComplement();
         this.thirdSpAddressReference = ifoodDTO.addressReference();
+        this.isThirdSpPaid = (ifoodDTO.prePaid() >= ifoodDTO.orderAmount()) ? true : null;
     }
 
     // <>------------ Methods ------------<>
@@ -396,5 +402,21 @@ public class Order {
 
     public void setThirdSpAddressReference(String thirdSpAddressReference) {
         this.thirdSpAddressReference = thirdSpAddressReference;
+    }
+
+    public Boolean getThirdSpPaid() {
+        return isThirdSpPaid;
+    }
+
+    public void setThirdSpPaid(Boolean thirdSpPaid) {
+        isThirdSpPaid = thirdSpPaid;
+    }
+
+    public String getThirdSpOrderResume() {
+        return thirdSpOrderResume;
+    }
+
+    public void setThirdSpOrderResume(String thirdSpOrderResume) {
+        this.thirdSpOrderResume = thirdSpOrderResume;
     }
 }
