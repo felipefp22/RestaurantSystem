@@ -47,13 +47,13 @@ public class OrdersItems {
         this.imagePath = product.getImagePath();
         this.status = "ACTIVE";
     }
-    public OrdersItems(Order order, List<Product> products, Double productPrice, List<ProductOption> productOpts, String notes) {
+    public OrdersItems(Order order, List<Product> products, Double productPrice, Double totalPrice, List<String> productOpts, String notes) {
         this.order = order;
         this.productId = products.stream().map(p -> p.getId().toString()).sorted().toList();
         this.productPrice = productPrice;
-        this.productOptions = productOpts.stream().map(po -> po.getId().toString()+"|"+po.getName()+"|"+po.getPrice()).sorted().toList();
+        this.productOptions = productOpts;
         this.name = products.stream().map(Product::getName).sorted().reduce((a, b) -> a + "/" + b).orElse("");
-        this.price = productPrice + productOpts.stream().mapToDouble(ProductOption::getPrice).sum();
+        this.price = totalPrice;
         this.isThirdSupplierPrice = false;
         this.description = products.stream().map(Product::getDescription).sorted().reduce((a, b) -> a + " / " + b).orElse("");
         this.imagePath = null;

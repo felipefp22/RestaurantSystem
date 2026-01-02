@@ -13,8 +13,7 @@ import com.RestaurantSystem.Entities.Order.OrdersItems;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.Shift.Shift;
-import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.AddressThirdSpOrderDTO;
-import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.CreateThirdSpOrderDTO;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.IFoodCreateOrderDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.*;
 import com.RestaurantSystem.Services.AuxsServices.PrintSyncService;
@@ -80,34 +79,26 @@ public class OrderService {
         order.setDeliveryTax(calculateDeliveryTax(company, orderToCreate.deliveryDistanceKM(), orderToCreate.tableNumberOrDeliveryOrPickup()));
         Order orderCreated = orderRepo.save(order);
 
-        List<OrdersItems> ordersItems = mapOrderItems(orderCreated, orderToCreate.orderItemsIDs(), company);
+        List<OrdersItems> ordersItems = mapOrderItems(orderCreated, orderToCreate.orderItemsIDs(), company, null);
 
         orderCreated.setOrderItems(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(orderCreated);
-        signalR.sendShiftOperationSigr(company);
+//        signalR.sendShiftOperationSigr(company);
 
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
     }
 
-    public void createThirdSupplierOrder(CreateThirdSpOrderDTO thirdSpDTO) {
-        Company company = verificationsServices.retrieveCompany(thirdSpDTO.companyData().companyId());
+    @Transactional
+    public void createThirdSupplierOrder(IFoodCreateOrderDTO ifoodDTO) {
+        Company company = ifoodDTO.company();
         Shift currentShift = verificationsServices.retrieveCurrentShift(company);
-        if (currentShift.getOrders().stream().filter(x -> x.getThirdSpOrderID() != null && x.getIsThirdSpOrder().equals(thirdSpDTO.isThirdSpOrder()))
-                .anyMatch(x -> x.getThirdSpOrderID().equals(thirdSpDTO.thirdSpOrderID()))) return;
 
-        AddressThirdSpOrderDTO addressDTO = new AddressThirdSpOrderDTO(thirdSpDTO);
-        Order order = new Order(currentShift, (currentShift.getOrders().size() + 1), thirdSpDTO, addressDTO);
+        Order order = new Order(currentShift, (currentShift.getOrders().size() + 1), ifoodDTO);
         Order orderCreated = orderRepo.save(order);
 
-        List<OrdersItems> ordersItems = mapOrderItems(orderCreated, thirdSpDTO.orderItemsIDs(), company);
+        List<OrdersItems> ordersItems = mapOrderItems(orderCreated, ifoodDTO.orderItemsDTOs(), company, ifoodDTO);
         orderCreated.setOrderItems(ordersItems);
-
-        order.setPrice(thirdSpDTO.price());
-        order.setServiceTax(0.0);
-        order.setDiscount(thirdSpDTO.discount());
-        order.setTotalPrice(thirdSpDTO.totalPrice());
-        order.setDeliveryTax(thirdSpDTO.deliveryFee());
         orderRepo.save(orderCreated);
     }
 
@@ -136,7 +127,7 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.OPEN)
             throw new RuntimeException("Can't add orderItemsIDs to no open orders.");
 
-        List<OrdersItems> ordersItems = mapOrderItems(order, productsToAdd.orderItemsIDs(), company);
+        List<OrdersItems> ordersItems = mapOrderItems(order, productsToAdd.orderItemsIDs(), company, null);
 
         order.getOrderItems().addAll(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
@@ -329,13 +320,16 @@ public class OrderService {
                 .collect(Collectors.toMap(ProductOption::getId, p -> p));
     }
 
-    private List<OrdersItems> mapOrderItems(Order order, List<OrderItemDTO> orderItemsToAddIDs, Company company) {
+    private List<OrdersItems> mapOrderItems(Order order, List<OrderItemDTO> orderItemsToAddIDs, Company company, IFoodCreateOrderDTO thirdSpData) {
         List<OrdersItems> ordersItems = new ArrayList<>();
         Map<UUID, Product> productMap = getProductMap(company);
         Map<UUID, ProductOption> productOptsMap = getProductOptsMap(company);
 
         if (orderItemsToAddIDs != null) {
             orderItemsToAddIDs.forEach(x -> {
+                if ((x.productsIDs() == null || x.productsIDs().isEmpty()) && thirdSpData == null)
+                    throw new RuntimeException("Products are required to add order items.");
+
                 List<Product> products = x.productsIDs().stream().map(id -> productMap.get(UUID.fromString(id))).toList();
                 if (products.stream().anyMatch(Objects::isNull))
                     throw new RuntimeException("Product not found: " + x.productsIDs());
@@ -345,15 +339,30 @@ public class OrderService {
                 if (productOptions.stream().anyMatch(Objects::isNull))
                     throw new RuntimeException("Product Option not found: " + x.productOptsIDs());
 
-                Double totalProductPrice;
-                if (products.size() <= 1) {
-                    totalProductPrice = products.get(0).getPrice();
+                Double productPrice = 0.0;
+                Double totalPrice;
+                if (products.size() <= 1 && thirdSpData == null) {
+                    productPrice = products.get(0).getPrice();
                 } else {
-                    totalProductPrice = products.get(0).getProductCategory().getCustomOrderPriceRule().equals(CustomOrderPriceRule.BIGGESTPRICE) ?
-                            products.stream().mapToDouble(Product::getPrice).max().orElse(0.0) : products.stream().mapToDouble(Product::getPrice).average().orElse(0.0);
+                    if (thirdSpData == null)
+                        productPrice = products.get(0).getProductCategory().getCustomOrderPriceRule().equals(CustomOrderPriceRule.BIGGESTPRICE) ?
+                                products.stream().mapToDouble(Product::getPrice).max().orElse(0.0) : products.stream().mapToDouble(Product::getPrice).average().orElse(0.0);
                 }
 
-                ordersItems.add(new OrdersItems(order, products, totalProductPrice, productOptions, x.notes()));
+                if (thirdSpData != null && x.customPrice() != null) {
+                    productPrice = x.customPrice();
+                    totalPrice = x.customPrice();
+                } else {
+                    totalPrice = productPrice + productOptions.stream().mapToDouble(ProductOption::getPrice).sum();
+                }
+
+                List<String> productOpts = productOptions.stream().map(po -> po.getId().toString() + "|" + po.getName() + " R$ " + po.getPrice()).sorted().toList();
+
+                String notes = x.notes();
+                if (thirdSpData != null && x.ifoodPdvCodeError() != null)
+                    notes = x.ifoodPdvCodeError() + (x.notes() != null ? " \n" + x.notes() : "");
+
+                ordersItems.add(new OrdersItems(order, products, productPrice, totalPrice, productOpts, notes));
             });
         }
 

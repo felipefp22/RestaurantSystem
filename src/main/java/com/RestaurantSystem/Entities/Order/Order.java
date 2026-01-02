@@ -3,10 +3,8 @@ package com.RestaurantSystem.Entities.Order;
 import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.ENUMs.OrderStatus;
 import com.RestaurantSystem.Entities.Order.DTOs.CreateOrderDTO;
-import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Shift.Shift;
-import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.AddressThirdSpOrderDTO;
-import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.CreateThirdSpOrderDTO;
+import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.IFoodCreateOrderDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -77,6 +75,12 @@ public class Order {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String thirdSpOrderID;
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpOrderNumber;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpPhone;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpPhoneLocalizer;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Double thirdSpLat;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Double thirdSpLng;
@@ -85,7 +89,11 @@ public class Order {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String thirdSpAddress;
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpAddressNumber;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String thirdSpComplementAddress;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpAddressReference; // its like complement extension
 
     // <>------------ Constructors ------------<>
     public Order() {
@@ -95,7 +103,7 @@ public class Order {
         this.shift = shift;
         this.orderNumberOnShift = orderNumberOnShift;
         this.tableNumberOrDeliveryOrPickup = createOrderDTO.tableNumberOrDeliveryOrPickup();
-        this.customer = customer;
+        this.customer = null;
         this.pickupName = createOrderDTO.pickupName();
         this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
         this.openedByUser = requester;
@@ -103,24 +111,33 @@ public class Order {
         this.status = OrderStatus.OPEN;
     }
 
-    public Order(Shift shift, int orderNumberOnShift, CreateThirdSpOrderDTO thirdSpDTO, AddressThirdSpOrderDTO addressDTO) {
+    public Order(Shift shift, int orderNumberOnShift, IFoodCreateOrderDTO ifoodDTO) {
         this.shift = shift;
         this.orderNumberOnShift = orderNumberOnShift;
-        this.tableNumberOrDeliveryOrPickup = thirdSpDTO.tableNumberOrDeliveryOrPickup();
+        this.tableNumberOrDeliveryOrPickup = ifoodDTO.pickupOrDelivery();
         this.customer = null;
-        this.pickupName = thirdSpDTO.customerName();
+        this.pickupName = ifoodDTO.customerName();
         this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
-        this.notes = thirdSpDTO.notes();
+        this.notes = null;
         this.status = OrderStatus.OPEN;
-        this.isThirdSpOrder = thirdSpDTO.isThirdSpOrder();
+        this.totalPrice = ifoodDTO.orderAmount();
+
+        this.deliveryTax = ifoodDTO.deliveryFee();
+
+        this.isThirdSpOrder = ThirdSuppliersEnum.IFOOD;
         this.isUserEditBlocked = true;
-        this.isThirdSpAddr = addressDTO.isThirdSpAddr();
-        this.thirdSpOrderID = thirdSpDTO.thirdSpOrderID();
-        this.thirdSpLat = addressDTO.lat();
-        this.thirdSpLng = addressDTO.lng();
-        this.thirdSpZipCode = addressDTO.zipCode();
-        this.thirdSpAddress = addressDTO.address();
-        this.thirdSpComplementAddress = addressDTO.complementAddress();
+        this.isThirdSpAddr = true;
+        this.thirdSpOrderID = ifoodDTO.ifoodOrderID();
+        this.thirdSpOrderNumber = ifoodDTO.orderNumber();
+        this.thirdSpPhone = ifoodDTO.phoneIfood();
+        this.thirdSpPhoneLocalizer = ifoodDTO.localizer();
+        this.thirdSpLat = ifoodDTO.lat();
+        this.thirdSpLng = ifoodDTO.lng();
+        this.thirdSpZipCode = ifoodDTO.postalCode();
+        this.thirdSpAddress = ifoodDTO.street();
+        this.thirdSpAddressNumber = ifoodDTO.spotNumber();
+        this.thirdSpComplementAddress = ifoodDTO.addressComplement();
+        this.thirdSpAddressReference = ifoodDTO.addressReference();
     }
 
     // <>------------ Methods ------------<>
@@ -301,6 +318,30 @@ public class Order {
         this.thirdSpOrderID = thirdSpOrderID;
     }
 
+    public String getThirdSpOrderNumber() {
+        return thirdSpOrderNumber;
+    }
+
+    public void setThirdSpOrderNumber(String thirdSpOrderNumber) {
+        this.thirdSpOrderNumber = thirdSpOrderNumber;
+    }
+
+    public String getThirdSpPhone() {
+        return thirdSpPhone;
+    }
+
+    public void setThirdSpPhone(String thirdSpPhone) {
+        this.thirdSpPhone = thirdSpPhone;
+    }
+
+    public String getThirdSpPhoneLocalizer() {
+        return thirdSpPhoneLocalizer;
+    }
+
+    public void setThirdSpPhoneLocalizer(String thirdSpPhoneLocalizer) {
+        this.thirdSpPhoneLocalizer = thirdSpPhoneLocalizer;
+    }
+
     public Double getThirdSpLat() {
         return thirdSpLat;
     }
@@ -333,6 +374,14 @@ public class Order {
         this.thirdSpAddress = thirdSpAddress;
     }
 
+    public String getThirdSpAddressNumber() {
+        return thirdSpAddressNumber;
+    }
+
+    public void setThirdSpAddressNumber(String thirdSpAddressNumber) {
+        this.thirdSpAddressNumber = thirdSpAddressNumber;
+    }
+
     public String getThirdSpComplementAddress() {
         return thirdSpComplementAddress;
     }
@@ -340,5 +389,12 @@ public class Order {
     public void setThirdSpComplementAddress(String thirdSpComplementAddress) {
         this.thirdSpComplementAddress = thirdSpComplementAddress;
     }
-}
 
+    public String getThirdSpAddressReference() {
+        return thirdSpAddressReference;
+    }
+
+    public void setThirdSpAddressReference(String thirdSpAddressReference) {
+        this.thirdSpAddressReference = thirdSpAddressReference;
+    }
+}

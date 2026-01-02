@@ -6,8 +6,9 @@ import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record iFoodCreateOrderDTO(
+public record IFoodCreateOrderDTO(
         Company company,
+        String ifoodOrderID,
         String orderNumber,
         String pickupOrDelivery,
         LocalDateTime createdAtUTC,
@@ -26,13 +27,16 @@ public record iFoodCreateOrderDTO(
         String city,
         String spotNumber,
         String postalCode,
+        String addressComplement,
+        String addressReference,
         Double lat,
         Double lng,
         List<OrderItemDTO> orderItemsDTOs
 ) {
-    public iFoodCreateOrderDTO(Company company, OrderDetailsIFoodDTO ifoodOrderDetails, List<OrderItemDTO> orderItemsDTOs) {
+    public IFoodCreateOrderDTO(Company company, OrderDetailsIFoodDTO ifoodOrderDetails, List<OrderItemDTO> orderItemsDTOs) {
         this(
                 company,
+                ifoodOrderDetails.id(),
                 ifoodOrderDetails.displayId(),
                 getPickupOrDelivery(ifoodOrderDetails),
                 ifoodOrderDetails.createdAt(),
@@ -46,13 +50,15 @@ public record iFoodCreateOrderDTO(
                 ifoodOrderDetails.customer().phone().localizer(),
                 ifoodOrderDetails.customer().name(),
                 ifoodOrderDetails.customer().documentNumber(),
-                ifoodOrderDetails.delivery().pickupCode(),
-                ifoodOrderDetails.delivery().deliveryAddress().streetName(),
-                ifoodOrderDetails.delivery().deliveryAddress().city(),
-                ifoodOrderDetails.delivery().deliveryAddress().streetNumber(),
-                ifoodOrderDetails.delivery().deliveryAddress().postalCode(),
-                ifoodOrderDetails.delivery().deliveryAddress().coordinates().latitude(),
-                ifoodOrderDetails.delivery().deliveryAddress().coordinates().longitude(),
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().pickupCode() : null,
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().deliveryAddress().streetName() : null,
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().deliveryAddress().city() : null,
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().deliveryAddress().streetNumber() : null,
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().deliveryAddress().postalCode() : null,
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().deliveryAddress().complement() : null,
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().deliveryAddress().reference() : null,
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().deliveryAddress().coordinates().latitude() : null,
+                ifoodOrderDetails.delivery() != null ? ifoodOrderDetails.delivery().deliveryAddress().coordinates().longitude() : null,
                 orderItemsDTOs
         );
     }
@@ -62,7 +68,7 @@ public record iFoodCreateOrderDTO(
     private static String getPickupOrDelivery(OrderDetailsIFoodDTO ifoodOrderDetails) {
         switch (ifoodOrderDetails.orderType()) {
             case "TAKEOUT":
-                return "pickuo";
+                return "pickup";
             case "DELIVERY":
                 return "delivery";
             default:

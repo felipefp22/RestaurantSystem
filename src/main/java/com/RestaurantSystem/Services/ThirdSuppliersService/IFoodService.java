@@ -3,9 +3,7 @@ package com.RestaurantSystem.Services.ThirdSuppliersService;
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Company.CompanyIfood;
 import com.RestaurantSystem.Entities.Company.DTOs.CompanyThirdSuppliersToPoolingDTO;
-import com.RestaurantSystem.Entities.ENUMs.PrintCategory;
 import com.RestaurantSystem.Entities.Order.DTOs.AuxsDTOs.OrderItemDTO;
-import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.*;
@@ -175,8 +173,8 @@ public class IFoodService {
                 OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIfoodData(), x.orderId());
                 ifoodOrderID = ifoodOrderDetails.displayId() != null ? ifoodOrderDetails.displayId() : ifoodOrderDetails.id();
                 List<OrderItemDTO> orderItemsDTO = createOrderItemDTO(company, ifoodOrderDetails);
-                iFoodCreateOrderDTO ifoodToCreateOrder = new iFoodCreateOrderDTO(company, ifoodOrderDetails, orderItemsDTO);
-                System.out.println("ifoodToCreateOrder -> " + ifoodToCreateOrder);
+                IFoodCreateOrderDTO ifoodToCreateOrder = new IFoodCreateOrderDTO(company, ifoodOrderDetails, orderItemsDTO);
+                orderService.createThirdSupplierOrder(ifoodToCreateOrder);
             } catch (Exception e){
                 System.out.println("Error on create iFood order: " + e.getMessage());
 //                printSyncRepo.save(new PrintSync(company, PrintCategory.FULLORDER, "\n\n\nErro ao criar pedido iFood ID:\n " + ifoodOrderID + ". Verificar na plataforma iFood.\n\n[Contate nosso 'Comanda Rapida' Suporte e informe o erro]\n\n\n\n\n\n\n"));

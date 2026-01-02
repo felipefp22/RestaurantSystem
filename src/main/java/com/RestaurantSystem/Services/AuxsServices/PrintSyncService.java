@@ -177,6 +177,7 @@ public class PrintSyncService {
                     .append(x.getQuantity() + " x ")
                     .append(boldOn + x.getName().toUpperCase().replaceAll("/", " / ") + boldOff)
                     .append(withPrice ? (" - R$ " + String.format("%.2f", (x.getPrice() * x.getQuantity()))) : "")
+                    .append(x.getProductOptions() != null && !x.getProductOptions().isEmpty() ? x.getProductOptions().stream().map(option -> "\n - " + option).reduce("", String::concat) : "")
                     .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n   - " + x.getNotes() + italicOff : "")
                     .append(isCancelled ? " (CANCELADO)" : "");
 
