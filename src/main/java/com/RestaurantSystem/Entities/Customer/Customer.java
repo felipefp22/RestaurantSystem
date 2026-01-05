@@ -34,8 +34,10 @@ public class Customer {
     private Double lat;
     private Double lng;
     private String complement;
+    private Double extraDeliveryFee;
 
     private Integer distanceFromStoreKM;
+    private Double cachedRawDeliveryFee;
 
     //<>------------ Constructors ------------<>
     public Customer() {
@@ -53,6 +55,7 @@ public class Customer {
         this.lat = createDTO.lat();
         this.lng = createDTO.lng();
         this.complement = createDTO.complement();
+        this.extraDeliveryFee = createDTO.extraDeliveryFee();
     }
 
     //<>------------ Getters and setters ------------<>
@@ -149,11 +152,27 @@ public class Customer {
         this.complement = complement;
     }
 
+    public Double getExtraDeliveryFee() {
+        return extraDeliveryFee;
+    }
+
+    public void setExtraDeliveryFee(Double extraDeliveryFee) {
+        this.extraDeliveryFee = extraDeliveryFee;
+    }
+
     public Integer getDistanceFromStoreKM() {
         return distanceFromStoreKM;
     }
 
     public void setDistanceFromStoreKM(Integer distanceFromStoreKM) {
         this.distanceFromStoreKM = distanceFromStoreKM;
+    }
+
+    public Double getCachedRawDeliveryFee() {
+        return cachedRawDeliveryFee;
+    }
+
+    public void setCachedRawDeliveryFee(Double cachedRawDeliveryFee) {
+        this.cachedRawDeliveryFee = cachedRawDeliveryFee;
     }
 }

@@ -14,7 +14,8 @@ public record CreateOrUpdateCustomerDTO(
         String zipCode,
         Double lat,
         Double lng,
-        String complement
+        String complement,
+        Double extraDeliveryFee
 ) {
 
 }

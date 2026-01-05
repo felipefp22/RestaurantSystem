@@ -1,10 +1,7 @@
 package com.RestaurantSystem.Controllers;
 
 import com.RestaurantSystem.Entities.Customer.Customer;
-import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
-import com.RestaurantSystem.Entities.Customer.DTOs.CustomerResumeDTO;
-import com.RestaurantSystem.Entities.Customer.DTOs.FindCustomerDTO;
-import com.RestaurantSystem.Entities.Customer.DTOs.SearchCustomerDTO;
+import com.RestaurantSystem.Entities.Customer.DTOs.*;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.CustomerService;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +40,17 @@ public class CustomerController {
         var response = customerService.getAllCustomers(requesterID, companyID);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/calculate-address-distance-and-price")
+    public ResponseEntity<ReturnCustomerDistanceAndPriceDTO> calculateAddressDistanceAndPrice(@RequestHeader("Authorization") String authorizationHeader,
+                                                                 @RequestBody CalculateDistanceAndPriceDTO dto) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        var response = customerService.calculateAddressDistanceAndPrice(requesterID, dto);
+
+        return ResponseEntity.ok(response);
+
     }
 
     @PostMapping("/create-customer")

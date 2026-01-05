@@ -2,8 +2,10 @@ package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Customer.Customer;
+import com.RestaurantSystem.Entities.Customer.DTOs.CalculateDistanceAndPriceDTO;
 import com.RestaurantSystem.Entities.Customer.DTOs.CreateOrUpdateCustomerDTO;
 import com.RestaurantSystem.Entities.Customer.DTOs.FindCustomerDTO;
+import com.RestaurantSystem.Entities.Customer.DTOs.ReturnCustomerDistanceAndPriceDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
@@ -11,9 +13,11 @@ import com.RestaurantSystem.Repositories.CustomerRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static com.RestaurantSystem.Services.Utils.DeliveryFeeAndDistance.calculateDeliveryRawFee;
+import static com.RestaurantSystem.Services.Utils.DeliveryFeeAndDistance.calculateEstimatedKm;
 
 @Service
 public class CustomerService {
@@ -59,6 +63,17 @@ public class CustomerService {
         return company.getCustomers();
     }
 
+    public ReturnCustomerDistanceAndPriceDTO calculateAddressDistanceAndPrice(String requesterID, CalculateDistanceAndPriceDTO dto) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(dto.companyID());
+        verificationsServices.worksOnCompany(company, requester);
+
+        int distance = calculateEstimatedKm(dto.lat(), dto.lng(), company.getCompanyLat(), company.getCompanyLng());
+        Double rawDeliveryFee = calculateDeliveryRawFee(company, distance);
+
+        return new ReturnCustomerDistanceAndPriceDTO(distance, rawDeliveryFee);
+    }
+
     public Customer createCustomer(String requesterID, CreateOrUpdateCustomerDTO customerToCreateDTO) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
         Company company = verificationsServices.retrieveCompany(customerToCreateDTO.companyID());
@@ -68,6 +83,7 @@ public class CustomerService {
             throw new RuntimeException("thisPhoneAlreadyInUse");
 
         Customer newCustomer = new Customer(company, customerToCreateDTO);
+        saveDeliveryFeeAndDistance(company, newCustomer);
 
         customerRepo.save(newCustomer);
 
@@ -97,8 +113,10 @@ public class CustomerService {
         existingCustomer.setLat(customerToUpdateDTO.lat());
         existingCustomer.setLng(customerToUpdateDTO.lng());
         existingCustomer.setComplement(customerToUpdateDTO.complement());
+        existingCustomer.setExtraDeliveryFee(customerToUpdateDTO.extraDeliveryFee());
+        saveDeliveryFeeAndDistance(company, existingCustomer);
 
-        customerRepo.save(existingCustomer);
+        Customer savedCustomer = customerRepo.save(existingCustomer);
 
         return existingCustomer;
     }
@@ -119,4 +137,20 @@ public class CustomerService {
 
         customerRepo.deleteById(existingCustomer.getId());
     }
+
+
+    // <> ---------- Auxs Services ---------- <>
+    private void saveDeliveryFeeAndDistance(Company company, Customer customer) {
+        if (customer.getLat() != null && customer.getLng() != null) {
+            int distance = calculateEstimatedKm(customer.getLat(), customer.getLng(), company.getCompanyLat(), company.getCompanyLng());
+            customer.setDistanceFromStoreKM(distance);
+
+            Double deliveryFee = calculateDeliveryRawFee(company, distance);
+            customer.setCachedRawDeliveryFee(deliveryFee);
+        } else {
+            customer.setDistanceFromStoreKM(null);
+            customer.setCachedRawDeliveryFee(null);
+        }
+    }
+
 }

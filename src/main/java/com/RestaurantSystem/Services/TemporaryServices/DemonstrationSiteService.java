@@ -145,7 +145,8 @@ public class DemonstrationSiteService {
                     "10001",
                     point.lat,
                     point.lng,
-                    name + " Apt"
+                    name + " Apt",
+                    0.0
             );
             customerService.createCustomer(user.getEmail(), CreateOrUpdateCustomerDTO);
         }

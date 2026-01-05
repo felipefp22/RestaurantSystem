@@ -28,6 +28,8 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.RestaurantSystem.Services.Utils.DeliveryFeeAndDistance.*;
+
 @Service
 public class OrderService {
 
@@ -76,7 +78,7 @@ public class OrderService {
             isTableAvailable(company, orderToCreate.tableNumberOrDeliveryOrPickup(), null);
 
         Order order = new Order(requester, currentShift, (currentShift.getOrders().size() + 1), orderToCreate, customer);
-        order.setDeliveryTax(calculateDeliveryTax(company, orderToCreate.deliveryDistanceKM(), orderToCreate.tableNumberOrDeliveryOrPickup()));
+        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) order.setDeliveryTax(customerDeliveryFeePlusExtraFee(company, customer));
         Order orderCreated = orderRepo.save(order);
 
         List<OrdersItems> ordersItems = mapOrderItems(orderCreated, orderToCreate.orderItemsIDs(), company, null);
@@ -173,7 +175,7 @@ public class OrderService {
         if (changeOrderTableDTO.tableNumberOrDeliveryOrPickup().equals("delivery")) {
             deliveryVerifications(company, customer, changeOrderTableDTO.deliveryDistanceKM());
 
-            order.setDeliveryTax(calculateDeliveryTax(company, changeOrderTableDTO.deliveryDistanceKM(), changeOrderTableDTO.tableNumberOrDeliveryOrPickup()));
+            order.setDeliveryTax(customerDeliveryFeePlusExtraFee(company, customer));
             order.setCustomer(customer);
             order.setPickupName(null);
             order.setTableNumberOrDeliveryOrPickup("delivery");
@@ -391,16 +393,6 @@ public class OrderService {
 
             order.setTotalPrice(order.getPrice() + order.getServiceTax() + order.getDiscount() + order.getDeliveryTax());
         }
-    }
-
-    private Double calculateDeliveryTax(Company company, Integer deliveryDistanceKM, String tableNumberOrDeliveryOrPickup) {
-        if (!tableNumberOrDeliveryOrPickup.equals("delivery")) return null;
-        Double priceToSet = company.getBaseDeliveryTax();
-        Integer extraKm = deliveryDistanceKM > company.getBaseDeliveryDistanceKM() ? (int) Math.ceil(deliveryDistanceKM - company.getBaseDeliveryDistanceKM()) : 0;
-
-        priceToSet += extraKm * company.getTaxPerExtraKM();
-
-        return priceToSet;
     }
 
     private Boolean thisServiceHasTaxOrNot(Company company, String tableNumberOrDeliveryOrPickup) {
