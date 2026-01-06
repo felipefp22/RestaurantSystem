@@ -360,7 +360,7 @@ public class OrderService {
                     totalPrice = productPrice + productOptions.stream().mapToDouble(ProductOption::getPrice).sum();
                 }
 
-                List<String> productOpts = productOptions.stream().map(po -> po.getId().toString() + "|" + po.getName() + " R$ " + po.getPrice()).sorted().toList();
+                List<String> productOpts = productOptions.stream().map(po -> po.getId().toString() + "|" + po.getName() + "| R$ " + po.getPrice()).sorted().toList();
 
                 String notes = x.notes();
                 if (thirdSpData != null && x.ifoodPdvCodeError() != null)
@@ -447,6 +447,10 @@ public class OrderService {
 
     // <>---------------------------- PRINT SYNC HELPERS -----------------------------------<>
     private void createPrintSyncTable(Company company, Order order, List<OrdersItems> ordersItems, String action) {
+        String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, false, action.equals("del"));
+        String tableString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, true, action.equals("del"));
+        String printFinalString = preparationString + "\n\n" + printSyncService.getCutCommand() + tableString;
+
         List<PrintSync> printSyncCreate = new ArrayList<>();
 //        if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.FULLORDER) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
 //            printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.FULLORDER, ordersItems, action.equals("del"))));
@@ -465,7 +469,7 @@ public class OrderService {
 //
 //        }
 
-        printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"))));
+        printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printFinalString));
 
         if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
     }

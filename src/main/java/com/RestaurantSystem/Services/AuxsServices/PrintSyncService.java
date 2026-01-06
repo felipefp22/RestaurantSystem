@@ -46,7 +46,7 @@ public class PrintSyncService {
     }
 
     // <>------------ Methods ------------<>
-    public String createPreparationItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isCancelled) {
+    public String createPreparationItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isWithPrice, Boolean isCancelled) {
         if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup"))
             return "";
 
@@ -61,7 +61,7 @@ public class PrintSyncService {
 //            case DESSERTS -> getOrderItemsText(orderItems, false, isCancelled);
 //            case DRINKS -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
 //            case BEVERAGES -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
-            default -> getOrderItemsText(company, orderItems, true, isCancelled);
+            default -> getOrderItemsText(company, orderItems, isWithPrice, isCancelled);
         };
 
         String finalText = centerCommand + header + date + tableNum + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
@@ -95,6 +95,10 @@ public class PrintSyncService {
                     .toList();
             printSyncRepo.deleteAll(filteredPrintSyncs);
         }
+    }
+
+    public String getCutCommand() {
+        return cutCommand;
     }
 
 
@@ -177,8 +181,8 @@ public class PrintSyncService {
                     .append(x.getQuantity() + " x ")
                     .append(boldOn + x.getName().toUpperCase().replaceAll("/", " / ") + boldOff)
                     .append(withPrice ? (" - R$ " + String.format("%.2f", (x.getPrice() * x.getQuantity()))) : "")
-                    .append(x.getProductOptions() != null && !x.getProductOptions().isEmpty() ? x.getProductOptions().stream().map(option -> "\n - " + option).reduce("", String::concat) : "")
-                    .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n   - " + x.getNotes() + italicOff : "")
+                    .append(x.getProductOptions() != null && !x.getProductOptions().isEmpty() ? x.getProductOptions().stream().map(option -> "\n - " + option.split("\\|")[1]).reduce("", String::concat) : "")
+                    .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n  -- " + x.getNotes() + italicOff : "")
                     .append(isCancelled ? " (CANCELADO)" : "");
 
             if (!Objects.equals(lastPrintPriority, x.getPrintPriority())) lastPrintPriority = x.getPrintPriority();
