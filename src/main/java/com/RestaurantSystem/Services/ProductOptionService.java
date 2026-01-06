@@ -5,17 +5,14 @@ import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductOptionDTO
 import com.RestaurantSystem.Entities.Product.DTOs.FindProductOptionDTO;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
+import com.RestaurantSystem.Entities.ProductCategory.DTOs.AddOrRemoveProductOptToProductCategoryDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.*;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -29,22 +26,49 @@ public class ProductOptionService {
     }
 
     // <> ---------- Methods ---------- <>
-    public ProductOption createProductOption(String requesterID, CreateOrUpdateProductOptionDTO productToCreate) {
+    public ProductOption createProductOption(String requesterID, CreateOrUpdateProductOptionDTO productOptToCreate) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
-        Company company = verificationsServices.retrieveCompany(productToCreate.companyID());
+        Company company = verificationsServices.retrieveCompany(productOptToCreate.companyID());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
-        ProductCategory productCategoryToAddProductOpt = company.getProductsCategories().stream()
-                .filter(pc -> pc.getId().equals(UUID.fromString(productToCreate.productCategoryID())))
+//        ProductCategory productCategoryToAddProductOpt = company.getProductsCategories().stream()
+//                .filter(pc -> pc.getId().equals(UUID.fromString(productOptToCreate.productCategoryID())))
+//                .findFirst()
+//                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        ProductOption productOpt = new ProductOption(company, productOptToCreate);
+        productOptionRepo.save(productOpt);
+        productOpt.setIfoodCode(productOpt.getId().toString()); //default code before validation, DO NOT REMOVE
+        productOpt.setIfoodCode(validateNewIfoodCodeProductOption(company, productOpt, productOptToCreate.ifoodCode()));
+
+        return productOptionRepo.save(productOpt);
+    }
+
+    public ProductOption addOrRemoveProductOptToProductCategory(String requesterID, AddOrRemoveProductOptToProductCategoryDTO dto){
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(dto.companyID());
+        verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
+
+        Set<ProductOption> allProductOpts = company.getProductOptions();
+
+        ProductOption productOptToAddOrRemove = allProductOpts.stream().filter(p -> p.getId().equals(dto.productOptID())).findFirst()
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        ProductCategory productCategoryToAddProduct = company.getProductsCategories().stream()
+                .filter(pc -> pc.getId().equals(dto.productCategoryID()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        ProductOption productOpt = new ProductOption(productToCreate, productCategoryToAddProductOpt);
-        productOptionRepo.save(productOpt);
-        productOpt.setIfoodCode(productOpt.getId().toString()); //default code before validation, DO NOT REMOVE
-        productOpt.setIfoodCode(validateNewIfoodCodeProductOption(company, productOpt, productToCreate.ifoodCode()));
-
-        return productOptionRepo.save(productOpt);
+        if(dto.action().equals("add")){
+            productOptToAddOrRemove.getProductCategories().add(productCategoryToAddProduct);
+            productCategoryToAddProduct.getProductOptions().add(productOptToAddOrRemove);
+            return productOptionRepo.save(productOptToAddOrRemove);
+        } else if (dto.action().equals("remove")) {
+            productOptToAddOrRemove.getProductCategories().remove(productCategoryToAddProduct);
+            productCategoryToAddProduct.getProductOptions().remove(productOptToAddOrRemove);
+            return productOptionRepo.save(productOptToAddOrRemove);
+        } else {
+            throw new RuntimeException("Action not recognized, use 'add' or 'remove'");
+        }
     }
 
     public ProductOption updateProductOption(String requesterID, CreateOrUpdateProductOptionDTO productToUpdateDTO) {
@@ -52,7 +76,7 @@ public class ProductOptionService {
         Company company = verificationsServices.retrieveCompany(productToUpdateDTO.companyID());
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
-        List<ProductOption> allProductOpts = company.getProductsCategories().stream().flatMap(pc -> pc.getProductOptions().stream()).toList();
+        Set<ProductOption> allProductOpts = company.getProductOptions();
 
         ProductOption productOptToUpdate = allProductOpts.stream().filter(p -> p.getId().equals(productToUpdateDTO.productOptID())).findFirst()
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -68,10 +92,10 @@ public class ProductOptionService {
         productOptToUpdate.setImagePath(productToUpdateDTO.imagePath());
         productOptToUpdate.setIfoodCode(validateNewIfoodCodeProductOption(company, productOptToUpdate, productToUpdateDTO.ifoodCode()));
 
-//        if (productOptToUpdate.getProductCategory() != productCategoryToAddProduct) {
+//        if (productOptToUpdate.getProductCategories() != productCategoryToAddProduct) {
 //            if (!company.getProductsCategories().contains(productCategoryToAddProduct))
 //                throw new RuntimeException("Category not found, create it first");
-//            productOptToUpdate.setProductCategory(productCategoryToAddProduct);
+//            productOptToUpdate.setProductCategories(productCategoryToAddProduct);
 //        }
 
         return productOptionRepo.save(productOptToUpdate);

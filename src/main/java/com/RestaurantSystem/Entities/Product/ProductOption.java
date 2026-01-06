@@ -1,11 +1,13 @@
 package com.RestaurantSystem.Entities.Product;
 
-import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductDTO;
+import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Product.DTOs.CreateOrUpdateProductOptionDTO;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -17,7 +19,11 @@ public class ProductOption {
 
     @JsonIgnore
     @ManyToOne
-    private ProductCategory productCategory;
+    private Company company;
+
+    @JsonIgnore
+    @ManyToMany
+    private Set<ProductCategory> productCategories;
 
     private String name;
     private double price;
@@ -29,8 +35,8 @@ public class ProductOption {
     // <>------------ Constructors ------------<>
     public ProductOption() {
     }
-    public ProductOption(CreateOrUpdateProductOptionDTO productOptToCreate, ProductCategory productCategory) {
-        this.productCategory = productCategory;
+    public ProductOption(Company company, CreateOrUpdateProductOptionDTO productOptToCreate) {
+        this.company = company;
         this.name = productOptToCreate.name();
         this.price = productOptToCreate.price();
         this.description = productOptToCreate.description();
@@ -43,11 +49,12 @@ public class ProductOption {
         return id;
     }
 
-    public ProductCategory getProductCategory() {
-        return productCategory;
+    public Company getCompany() {
+        return company;
     }
-    public void setProductCategory(ProductCategory productCategory) {
-        this.productCategory = productCategory;
+
+    public Set<ProductCategory> getProductCategories() {
+        return productCategories;
     }
 
     public String getName() {

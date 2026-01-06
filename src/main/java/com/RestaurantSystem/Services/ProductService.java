@@ -110,10 +110,10 @@ public class ProductService {
         productToUpdate.setImagePath(productToUpdateDTO.imagePath());
         productToUpdate.setIfoodCode(validateNewIfoodCodeProduct(company, productToUpdate, productToUpdateDTO.ifoodCode()));
 
-//        if (productToUpdate.getProductCategory() != productCategoryToAddProduct) {
+//        if (productToUpdate.getProductCategories() != productCategoryToAddProduct) {
 //            if (!company.getProductsCategories().contains(productCategoryToAddProduct))
 //                throw new RuntimeException("Category not found, create it first");
-//            productToUpdate.setProductCategory(productCategoryToAddProduct);
+//            productToUpdate.setProductCategories(productCategoryToAddProduct);
 //        }
 
         return productRepo.save(productToUpdate);

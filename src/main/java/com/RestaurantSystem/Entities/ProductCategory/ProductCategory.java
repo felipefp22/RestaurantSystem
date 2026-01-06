@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -23,11 +24,11 @@ public class ProductCategory {
     @ManyToOne
     private Company company;
 
-    @OneToMany(mappedBy = "productCategory")
-    private List<Product> products;
+    @OneToMany(mappedBy = "productCategory", cascade = CascadeType.MERGE)
+    private Set<Product> products;
 
-    @OneToMany(mappedBy = "productCategory")
-    private List<ProductOption> productOptions;
+    @ManyToMany(mappedBy = "productCategories", cascade = CascadeType.MERGE)
+    private Set<ProductOption> productOptions;
 
     private String categoryName;
     private String description;
@@ -70,14 +71,14 @@ public class ProductCategory {
         this.company = company;
     }
 
-    public List<Product> getProducts() {
+    public Set<Product> getProducts() {
         return products;
     }
 
-    public void setProducts(List<Product> products) {
+    public void setProducts(Set<Product> products) {
         this.products = products;
     }
-    public List<ProductOption> getProductOptions() {
+    public Set<ProductOption> getProductOptions() {
         return productOptions;
     }
 

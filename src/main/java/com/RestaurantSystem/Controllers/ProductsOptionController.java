@@ -6,6 +6,7 @@ import com.RestaurantSystem.Entities.Product.DTOs.FindProductDTO;
 import com.RestaurantSystem.Entities.Product.DTOs.FindProductOptionDTO;
 import com.RestaurantSystem.Entities.Product.Product;
 import com.RestaurantSystem.Entities.Product.ProductOption;
+import com.RestaurantSystem.Entities.ProductCategory.DTOs.AddOrRemoveProductOptToProductCategoryDTO;
 import com.RestaurantSystem.Services.AuxsServices.RetriveAuthInfosService;
 import com.RestaurantSystem.Services.ProductOptionService;
 import com.RestaurantSystem.Services.ProductService;
@@ -30,6 +31,15 @@ public class ProductsOptionController {
                                                              @RequestBody CreateOrUpdateProductOptionDTO productToCreate) {
         String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
         var response = productOptionService.createProductOption(requesterID, productToCreate);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/add-or-remove-to-category")
+    public ResponseEntity<ProductOption> addOrRemoveProductOptToProductCategory(@RequestHeader("Authorization") String authorizationHeader,
+                                                                                @RequestBody AddOrRemoveProductOptToProductCategoryDTO dto) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+        var response = productOptionService.addOrRemoveProductOptToProductCategory(requesterID, dto);
 
         return ResponseEntity.ok(response);
     }

@@ -78,7 +78,8 @@ public class OrderService {
             isTableAvailable(company, orderToCreate.tableNumberOrDeliveryOrPickup(), null);
 
         Order order = new Order(requester, currentShift, (currentShift.getOrders().size() + 1), orderToCreate, customer);
-        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) order.setDeliveryTax(customerDeliveryFeePlusExtraFee(company, customer));
+        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery"))
+            order.setDeliveryTax(customerDeliveryFeePlusExtraFee(company, customer));
         Order orderCreated = orderRepo.save(order);
 
         List<OrdersItems> ordersItems = mapOrderItems(orderCreated, orderToCreate.orderItemsIDs(), company, null);
@@ -166,6 +167,8 @@ public class OrderService {
         verificationsServices.worksOnCompany(company, requester);
 
         Order order = verificationsServices.retrieveOrderOpenedDoesnoteMatterShift(company, changeOrderTableDTO.orderID());
+        if (order.getIsThirdSpOrder() != null) throw new RuntimeException("Cannot update third party supplier orders.");
+
         if (!order.getStatus().equals(OrderStatus.OPEN))
             throw new RuntimeException("toUpdateOrderReopenFirst");
 
@@ -234,7 +237,7 @@ public class OrderService {
             orderRepo.save(order);
         });
 
-        signalR.sendShiftOperationSigr(company);
+//        signalR.sendShiftOperationSigr(company);
     }
 
     public Order confirmPaidOrder(String requesterID, FindOrderDTO dto) {
@@ -285,10 +288,9 @@ public class OrderService {
         AuthUserLogin manager = authUserRepository.findById(cancelOrderDTO.managerID()).orElseThrow(() -> new RuntimeException("Manager not found"));
         verificationsServices.justOwnerOrManagerOrSupervisor(company, requester);
 
-        Shift currentShift = verificationsServices.retrieveCurrentShift(company);
-
         List<Order> orderOpened = orderRepo.findByStatusInAndShift_Company(List.of(OrderStatus.OPEN, OrderStatus.CLOSEDWAITINGPAYMENT), company);
-        Order order = orderOpened.stream().filter(x -> x.getId().equals(cancelOrderDTO.orderID())).findFirst().orElseThrow(() -> new RuntimeException("Order not found on that company."));
+        Order order = verificationsServices.retrieveOrderOpenedDoesnoteMatterShift(company, cancelOrderDTO.orderID());
+        if (order.getIsThirdSpOrder() != null) throw new RuntimeException("Cannot cancel third party supplier orders.");
 
         if (order.getStatus() != OrderStatus.CLOSEDWAITINGPAYMENT && order.getStatus() != OrderStatus.OPEN)
             throw new RuntimeException("Only orders with status 'OPEN or CLOSEDWAITINGPAYMENT' can be cancelled.");
@@ -374,6 +376,7 @@ public class OrderService {
     }
 
     private void calculateTotalPriceTaxAndDiscount(Company company, Order order, OrderToCloseDTO orderToCloseDTO) {
+        if (order.getIsThirdSpOrder() != null) return;
         order.setPrice(0.0);
 
         order.getOrderItems().stream().filter(x -> x.getStatus().equals("ACTIVE" +

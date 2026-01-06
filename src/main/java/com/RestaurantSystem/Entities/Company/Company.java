@@ -6,6 +6,7 @@ import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Printer.PrintRules;
 import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Printer.Printer;
+import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,6 +40,9 @@ public class Company {
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<ProductCategory> productsCategories;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<ProductOption> productOptions;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Customer> customers;
@@ -178,6 +182,10 @@ public class Company {
 
     public Set<ProductCategory> getProductsCategories() {
         return productsCategories;
+    }
+
+    public Set<ProductOption> getProductOptions() {
+        return productOptions;
     }
 
     public Set<Customer> getCustomers() {

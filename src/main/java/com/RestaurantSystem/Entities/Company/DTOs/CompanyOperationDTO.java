@@ -6,6 +6,7 @@ import com.RestaurantSystem.Entities.Customer.Customer;
 import com.RestaurantSystem.Entities.Printer.PrintRules;
 import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Printer.Printer;
+import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.ProductCategory.ProductCategory;
 import com.RestaurantSystem.Entities.Shift.DTOs.ShiftDTO;
 import com.RestaurantSystem.Entities.Shift.Shift;
@@ -26,6 +27,7 @@ public record CompanyOperationDTO(
         Double companyLng,
         String urlCompanyLogo,
         Set<ProductCategory> productsCategories,
+        Set<ProductOption> productOptions,
         Set<Customer> customers,
         ShiftDTO currentShift,
         List<CompanyEmployeesDTO> employees,
@@ -57,6 +59,7 @@ public record CompanyOperationDTO(
                 company.getCompanyLng(),
                 company.getUrlCompanyLogo(),
                 company.getProductsCategories(),
+                company.getProductOptions(),
                 company.getCustomers(),
                 currentShift,
                 company.getEmployees().stream().map(CompanyEmployeesDTO::new).toList(),
@@ -87,6 +90,7 @@ public record CompanyOperationDTO(
                 company.companyLat(),
                 company.companyLng(),
                 company.urlCompanyLogo(),
+                null,
                 null,
                 null,
                 company.currentShift(),
