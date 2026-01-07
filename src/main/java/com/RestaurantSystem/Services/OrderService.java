@@ -87,6 +87,15 @@ public class OrderService {
         orderCreated.setOrderItems(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(orderCreated);
+        if (!order.getTableNumberOrDeliveryOrPickup().equals("pickup") && !order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+            createPrintSyncTable(company, orderCreated, ordersItems, "add");
+        } else if (order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
+            createPrintSyncTable(company, orderCreated, ordersItems, "add");
+        } else if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+            createPrintSyncTable(company, orderCreated, ordersItems, "add");
+        }
+
+
 //        signalR.sendShiftOperationSigr(company);
 
         return orderRepo.findById(orderCreated.getId()).orElseThrow(() -> new RuntimeException("Order not found after creation."));
@@ -447,9 +456,9 @@ public class OrderService {
 
     // <>---------------------------- PRINT SYNC HELPERS -----------------------------------<>
     private void createPrintSyncTable(Company company, Order order, List<OrdersItems> ordersItems, String action) {
-        String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, false, action.equals("del"));
-        String tableString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, true, action.equals("del"));
-        String printFinalString = preparationString + "\n\n" + printSyncService.getCutCommand() + tableString;
+        String dispatchString = printSyncService.createDispatchItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, true);
+        String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"));
+        String printFinalString = dispatchString + "\n\n" + printSyncService.getCutCommand() + preparationString;
 
         List<PrintSync> printSyncCreate = new ArrayList<>();
 //        if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.FULLORDER) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {

@@ -46,23 +46,51 @@ public class PrintSyncService {
     }
 
     // <>------------ Methods ------------<>
-    public String createPreparationItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isWithPrice, Boolean isCancelled) {
-        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup"))
-            return "";
+    public String createDispatchItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isWithPrice) {
+        String header = getHeader(company);
+        String date = getDate(order);
+        String orderNum = "";
+        String tableOrDeliveryOrPickupNum = order.getTableNumberOrDeliveryOrPickup().equals("delivery") ? "* DELIVERY *\n\n" : order.getTableNumberOrDeliveryOrPickup().equals("pickup") ? "* RETIRADA *\n\n" : "";
+        String thirdSp = "";
+        String customerData = getAddress(order);
 
+        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
+            orderNum = getOrderNumber(order);
+            if (order.getIsThirdSpOrder() != null) thirdSp = separatorLne + order.getIsThirdSpOrder() + separatorLne;
+        } else {
+            tableOrDeliveryOrPickupNum = "\nMesa: " + order.getTableNumberOrDeliveryOrPickup() + "\n\n";
+        }
+
+        List<PrintSyncOrderItemsDTO> itemsToCreateText = switch (printCategory) {
+//            case FOODS -> getPrintSyncOrderItemsDTO(orderItems, false, isCancelled);
+//            case DESSERTS -> getPrintSyncOrderItemsDTO(orderItems, false, isCancelled);
+//            case DRINKS -> getPrintSyncOrderItemsDTO(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
+//            case BEVERAGES -> getPrintSyncOrderItemsDTO(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
+            default -> getPrintSyncOrderItemsDTO(company, orderItems);
+        };
+
+        String itemsText = createPreparationText(itemsToCreateText, isWithPrice, false, true);
+
+        String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + thirdSp + customerData + leftCommand + itemsText + getFooter();
+
+        return finalText;
+    }
+
+    public String createPreparationItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isCancelled) {
         String header = getHeader(company);
         String date = getDate(order);
         String orderNum = getOrderNumber(order);
         String tableNum = "\nMesa: " + order.getTableNumberOrDeliveryOrPickup() + "\n\n";
 
-
-        String itemsText = switch (printCategory) {
-//            case FOODS -> getOrderItemsText(orderItems, false, isCancelled);
-//            case DESSERTS -> getOrderItemsText(orderItems, false, isCancelled);
-//            case DRINKS -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
-//            case BEVERAGES -> getOrderItemsText(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
-            default -> getOrderItemsText(company, orderItems, isWithPrice, isCancelled);
+        List<PrintSyncOrderItemsDTO> itemsToCreateText = switch (printCategory) {
+//            case FOODS -> getPrintSyncOrderItemsDTO(orderItems, false, isCancelled);
+//            case DESSERTS -> getPrintSyncOrderItemsDTO(orderItems, false, isCancelled);
+//            case DRINKS -> getPrintSyncOrderItemsDTO(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
+//            case BEVERAGES -> getPrintSyncOrderItemsDTO(orderItems.stream().filter(x -> x.getPrinCategoy), true, isCancelled);
+            default -> getPrintSyncOrderItemsDTO(company, orderItems);
         };
+
+        String itemsText = createPreparationText(itemsToCreateText, false, isCancelled, false);
 
         String finalText = centerCommand + header + date + tableNum + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
                 itemsText + getFooter();
@@ -126,21 +154,75 @@ public class PrintSyncService {
     }
 
     private String getAddress(Order order) {
-        String fullName = order.getCustomer().getCustomerName().trim();
-        String[] parts = fullName.split("\\s+");
+        try {
+            String systemCustomer = (order.getCustomer() != null && order.getCustomer().getCustomerName() != null) ?
+                    order.getCustomer().getCustomerName() : ((order.getPickupName() != null) ? order.getPickupName() : "");
 
-        String displayName = parts[0];
-        if (parts.length > 1) {
-            displayName += " " + parts[1];
+            if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+
+                if (order.getIsThirdSpOrder() != null) {
+                    return separatorLne + order.getPickupName() + "\n" +
+                            order.getThirdSpAddress() + ", " + order.getThirdSpAddressNumber() + "\n" +
+                            (order.getThirdSpComplementAddress() != null ? "Compl:" + order.getThirdSpComplementAddress() + "\n" : "") +
+                            ((order.getThirdSpAddressReference() != null) ? "Ref: " + order.getThirdSpAddressReference() + "\n" : "") +
+                            ((order.getThirdSpPhone() != null) ? "Tel: " + order.getThirdSpPhone() + "\n" : "") +
+                            ((order.getThirdSpPhoneLocalizer() != null) ? "Localizador: " + order.getThirdSpPhoneLocalizer() : "")
+                            + separatorLne;
+                } else {
+                    return "";
+                }
+
+            } else if (order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
+                if (order.getIsThirdSpOrder() != null) {
+                    return "";
+                } else {
+                    return systemCustomer;
+                }
+            } else {
+                return systemCustomer;
+            }
+        } catch (Exception e) {
+            return separatorLne + "Erro ao pegar dados do usuario, conferir no " + order.getIsThirdSpOrder() +
+                    ((order.getThirdSpOrderNumber() != null) ? ", pedido numero " + order.getOrderNumberOnShift() : "") +
+                    "\n\nERRO descrição: " + e.getMessage() + separatorLne;
         }
-
-        return "Entrega Para \n" +
-                displayName + "\n" +
-                order.getCustomer().getComplement() + "\n" + "Telefone: " + order.getCustomer().getPhone();
     }
 
-    private String getOrderItemsText(Company company, List<OrdersItems> orderItems, Boolean withPrice, boolean isCancelled) {
-        Map<UUID, PrintPriorityAndCategoryNameDTO> priorityMap = getProductPrintSortMap(company);
+    private String getFooter() {
+        return "\n\n\n\n\n";
+    }
+
+
+    private String createPreparationText(List<PrintSyncOrderItemsDTO> ordersToCreateText, Boolean withPrice, boolean isCancelled, Boolean saveSpace) {
+        StringBuilder itemsText = new StringBuilder();
+        Integer lastPrintPriority = null;
+        for (PrintSyncOrderItemsDTO x : ordersToCreateText) {
+            Boolean isHalfHalf = x.getProductId().size() == 2;
+            Boolean isOneThird = x.getProductId().size() == 3;
+            Boolean isOneQuarter = x.getProductId().size() == 4;
+            if (!Objects.equals(lastPrintPriority, x.getPrintPriority()) && !isCancelled) {
+                itemsText.append(itemsText.isEmpty() ? "--------------------------------" : (!saveSpace ? "\n\n--------------------------------" : "\n--------------------------------"))
+                        .append(!saveSpace ? separatorLne : "\n")
+                        .append(boldOn + "      *  " + x.getCategoryName().toUpperCase() + (!saveSpace ? "  *\n\n" : "  *\n") + boldOff);
+            }
+            itemsText.append((!Objects.equals(lastPrintPriority, x.getPrintPriority()) || saveSpace) ? "" : separatorLneSmall)
+                    .append((Objects.equals(lastPrintPriority, x.getPrintPriority()) && saveSpace) ? "\n" : "")
+                    .append(boldOn + x.getQuantity() + boldOff + " x ")
+                    .append(saveSpace ? "" : isHalfHalf ? "[ 1/2 - Meia ]\n" : (isOneThird ? "[ 1/3 - Terco ]\n" : (isOneQuarter ? "[ 1/4 - Quarto ]\n" : "")))
+                    .append(boldOn + x.getName().toUpperCase().replaceAll("/", " / ") + boldOff)
+                    .append(withPrice ? (" - R$ " + String.format("%.2f", (x.getPrice() * x.getQuantity()))) : "")
+                    .append(x.getProductOptions() != null && !x.getProductOptions().isEmpty() ? x.getProductOptions().stream().map(option -> "\n - " + option.split("\\|")[1]).reduce("", String::concat) : "")
+                    .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n  -- " + x.getNotes() + italicOff : "")
+                    .append(isCancelled ? " (CANCELADO)" : "");
+
+            if (!Objects.equals(lastPrintPriority, x.getPrintPriority())) lastPrintPriority = x.getPrintPriority();
+        }
+
+        return itemsText.toString();
+    }
+
+    private List<PrintSyncOrderItemsDTO> getPrintSyncOrderItemsDTO(Company company, List<OrdersItems> orderItems) {
+        Map<UUID, PrintPriorityAndCategoryNameDTO> priorityMap = getProductSortPrintPriorityMap(company);
         Map<String, PrintSyncOrderItemsDTO> grouped = new LinkedHashMap<>();
 
         for (OrdersItems x : orderItems) {
@@ -168,30 +250,10 @@ public class PrintSyncService {
         ordersToCreateText.sort(Comparator.comparing(PrintSyncOrderItemsDTO::getPrintPriority, Comparator.nullsLast(Integer::compareTo))
                 .thenComparing(dto -> dto.getNotes() == null || dto.getNotes().isBlank()));
 
-        StringBuilder itemsText = new StringBuilder();
-        Integer lastPrintPriority = null;
-        for (PrintSyncOrderItemsDTO x : ordersToCreateText) {
-            if (!Objects.equals(lastPrintPriority, x.getPrintPriority()) && !isCancelled) {
-                itemsText.append(itemsText.isEmpty() ? "--------------------------------" : (!withPrice ? "\n\n--------------------------------" : "\n--------------------------------"))
-                        .append(!withPrice ? separatorLne : "\n")
-                        .append(boldOn + "      *  " + x.getCategoryName().toUpperCase() + (!withPrice ? "  *\n\n" : "  *\n") + boldOff);
-            }
-            itemsText.append((!Objects.equals(lastPrintPriority, x.getPrintPriority()) || withPrice) ? "" : separatorLneSmall)
-                    .append((Objects.equals(lastPrintPriority, x.getPrintPriority()) && withPrice) ? "\n" : "")
-                    .append(x.getQuantity() + " x ")
-                    .append(boldOn + x.getName().toUpperCase().replaceAll("/", " / ") + boldOff)
-                    .append(withPrice ? (" - R$ " + String.format("%.2f", (x.getPrice() * x.getQuantity()))) : "")
-                    .append(x.getProductOptions() != null && !x.getProductOptions().isEmpty() ? x.getProductOptions().stream().map(option -> "\n - " + option.split("\\|")[1]).reduce("", String::concat) : "")
-                    .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n  -- " + x.getNotes() + italicOff : "")
-                    .append(isCancelled ? " (CANCELADO)" : "");
-
-            if (!Objects.equals(lastPrintPriority, x.getPrintPriority())) lastPrintPriority = x.getPrintPriority();
-        }
-
-        return itemsText.toString();
+        return ordersToCreateText;
     }
 
-    private Map<UUID, PrintPriorityAndCategoryNameDTO> getProductPrintSortMap(Company company) {
+    private Map<UUID, PrintPriorityAndCategoryNameDTO> getProductSortPrintPriorityMap(Company company) {
         int ifPriorityNullNextFakeValue = 100000;
         Map<UUID, PrintPriorityAndCategoryNameDTO> map = new HashMap<>();
 
@@ -212,9 +274,5 @@ public class PrintSyncService {
         }
 
         return map;
-    }
-
-    private String getFooter() {
-        return "\n\n\n\n\n";
     }
 }
