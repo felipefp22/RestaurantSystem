@@ -80,7 +80,14 @@ public class PrintSyncService {
         String header = getHeader(company);
         String date = getDate(order);
         String orderNum = getOrderNumber(order);
-        String tableNum = "\nMesa: " + order.getTableNumberOrDeliveryOrPickup() + "\n\n";
+        String tableOrDeliveryOrPickupNum = order.getTableNumberOrDeliveryOrPickup().equals("delivery") ? "* DELIVERY *\n\n" : order.getTableNumberOrDeliveryOrPickup().equals("pickup") ? "* RETIRADA *\n\n" :
+                "\nMesa: " + order.getTableNumberOrDeliveryOrPickup() + "\n\n";
+        String thirdSp = "";
+
+        if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
+            orderNum = getOrderNumber(order);
+            if (order.getIsThirdSpOrder() != null) thirdSp = separatorLne + order.getIsThirdSpOrder() + separatorLne;
+        }
 
         List<PrintSyncOrderItemsDTO> itemsToCreateText = switch (printCategory) {
 //            case FOODS -> getPrintSyncOrderItemsDTO(orderItems, false, isCancelled);
@@ -92,7 +99,7 @@ public class PrintSyncService {
 
         String itemsText = createPreparationText(itemsToCreateText, false, isCancelled, false);
 
-        String finalText = centerCommand + header + date + tableNum + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
+        String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + thirdSp + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
                 itemsText + getFooter();
 
         return finalText;
@@ -156,7 +163,8 @@ public class PrintSyncService {
     private String getAddress(Order order) {
         try {
             String systemCustomer = (order.getCustomer() != null && order.getCustomer().getCustomerName() != null) ?
-                    order.getCustomer().getCustomerName() : ((order.getPickupName() != null) ? order.getPickupName() : "");
+                    separatorLne + order.getCustomer().getCustomerName() + separatorLne : ((order.getPickupName() != null) ?
+                    separatorLne + order.getPickupName() + separatorLne : "");
 
             if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
 
