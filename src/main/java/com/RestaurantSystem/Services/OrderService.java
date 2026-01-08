@@ -85,15 +85,16 @@ public class OrderService {
         List<OrdersItems> ordersItems = mapOrderItems(orderCreated, toCreateDTO.orderItemsIDs(), company, null);
 
         orderCreated.setOrderItems(ordersItems);
-        if(toCreateDTO.discountValue() != null) orderCreated.setDiscount(toCreateDTO.discountValue());
+        if (toCreateDTO.discountValue() != null) orderCreated.setDiscount(toCreateDTO.discountValue());
         calculateTotalPriceTaxAndDiscount(company, order, null);
 
-        if(toCreateDTO.money() != null) orderCreated.setMoney(toCreateDTO.money());
-        if(toCreateDTO.pix() != null) orderCreated.setPix(toCreateDTO.pix());
-        if(toCreateDTO.debit() != null) orderCreated.setDebit(toCreateDTO.debit());
-        if(toCreateDTO.credit() != null) orderCreated.setCredit(toCreateDTO.credit());
-        if(toCreateDTO.valeRefeicao() != null) orderCreated.setValeRefeicao(toCreateDTO.valeRefeicao());
-        if(toCreateDTO.othersPaymentModes() != null) orderCreated.setOthersPaymentModes(toCreateDTO.othersPaymentModes());
+        if (toCreateDTO.money() != null) orderCreated.setMoney(toCreateDTO.money());
+        if (toCreateDTO.pix() != null) orderCreated.setPix(toCreateDTO.pix());
+        if (toCreateDTO.debit() != null) orderCreated.setDebit(toCreateDTO.debit());
+        if (toCreateDTO.credit() != null) orderCreated.setCredit(toCreateDTO.credit());
+        if (toCreateDTO.valeRefeicao() != null) orderCreated.setValeRefeicao(toCreateDTO.valeRefeicao());
+        if (toCreateDTO.othersPaymentModes() != null)
+            orderCreated.setOthersPaymentModes(toCreateDTO.othersPaymentModes());
 
         orderRepo.save(orderCreated);
         if (!order.getTableNumberOrDeliveryOrPickup().equals("pickup") && !order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
@@ -248,7 +249,8 @@ public class OrderService {
                 order.setDeliveryTax(0.0);
             }
 
-            if(orderToCloseDTO.discountValue() != null && orderToCloseDTO.discountValue() > 0) order.setDiscount(orderToCloseDTO.discountValue());
+            if (orderToCloseDTO.discountValue() != null && orderToCloseDTO.discountValue() > 0)
+                order.setDiscount(orderToCloseDTO.discountValue());
             calculateTotalPriceTaxAndDiscount(company, order, orderToCloseDTO);
             order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
             order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
@@ -273,12 +275,12 @@ public class OrderService {
         order.setCompletedByUser(requester);
         order.setCompletedOrderDateUtc(LocalDateTime.now(ZoneOffset.UTC));
 
-        if(dto.money() != null) order.setMoney(dto.money());
-        if(dto.pix() != null) order.setPix(dto.pix());
-        if(dto.debit() != null) order.setDebit(dto.debit());
-        if(dto.credit() != null) order.setCredit(dto.credit());
-        if(dto.valeRefeicao() != null) order.setValeRefeicao(dto.valeRefeicao());
-        if(dto.othersPaymentModes() != null) order.setOthersPaymentModes(dto.othersPaymentModes());
+        if (dto.money() != null) order.setMoney(dto.money());
+        if (dto.pix() != null) order.setPix(dto.pix());
+        if (dto.debit() != null) order.setDebit(dto.debit());
+        if (dto.credit() != null) order.setCredit(dto.credit());
+        if (dto.valeRefeicao() != null) order.setValeRefeicao(dto.valeRefeicao());
+        if (dto.othersPaymentModes() != null) order.setOthersPaymentModes(dto.othersPaymentModes());
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);
@@ -415,9 +417,9 @@ public class OrderService {
             if (thisServiceHasTaxOrNot(company, order.getTableNumberOrDeliveryOrPickup()) && !orderToCloseDTO.clientSaidNoTax()) {
                 order.setServiceTax(order.getPrice() * company.getTaxServicePercentage() / 100);
             }
-
-            order.setTotalPrice(order.getPrice() + order.getServiceTax() + -Math.abs(order.getDiscount()) + order.getDeliveryTax());
         }
+
+        order.setTotalPrice(order.getPrice() + order.getServiceTax() + -Math.abs(order.getDiscount()) + order.getDeliveryTax());
     }
 
     private Boolean thisServiceHasTaxOrNot(Company company, String tableNumberOrDeliveryOrPickup) {

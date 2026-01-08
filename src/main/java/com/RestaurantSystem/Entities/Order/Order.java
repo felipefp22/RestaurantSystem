@@ -32,7 +32,6 @@ public class Order {
     private int orderNumberOnShift;
     private String tableNumberOrDeliveryOrPickup;
 
-
     @ManyToOne
     private Customer customer;
 

@@ -50,9 +50,9 @@ public class PrintSyncService {
         String header = getHeader(company);
         String date = getDate(order);
         String orderNum = "";
-        String tableOrDeliveryOrPickupNum = order.getTableNumberOrDeliveryOrPickup().equals("delivery") ? "* DELIVERY *\n\n" : order.getTableNumberOrDeliveryOrPickup().equals("pickup") ? "* RETIRADA *\n\n" : "";
+        String tableOrDeliveryOrPickupNum = order.getTableNumberOrDeliveryOrPickup().equals("delivery") ? "* DELIVERY *\n" : order.getTableNumberOrDeliveryOrPickup().equals("pickup") ? "* RETIRADA *\n" : "";
         String thirdSp = "";
-        String customerData = getAddress(order);
+        String customerData = getCustomerData(order);
 
         if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
             orderNum = getOrderNumber(order);
@@ -70,8 +70,9 @@ public class PrintSyncService {
         };
 
         String itemsText = createPreparationText(itemsToCreateText, isWithPrice, false, true);
+        String priceSection = getAmountsResume(order);
 
-        String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + thirdSp + customerData + leftCommand + itemsText + getFooter();
+        String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + thirdSp + customerData + leftCommand + itemsText + priceSection + getFooter();
 
         return finalText;
     }
@@ -110,7 +111,7 @@ public class PrintSyncService {
         String header = getHeader(company);
         String date = getDate(order);
         String orderNum = getOrderNumber(order);
-        String address = getAddress(order);
+        String address = getCustomerData(order);
 
         String finalText = centerCommand + dispatchOrOperation + header + leftCommand + orderNum + date + separatorLne + address + separatorLne + getFooter();
 
@@ -160,29 +161,34 @@ public class PrintSyncService {
         return "\n* Pedido Numero " + order.getOrderNumberOnShift() + " * \n";
     }
 
-    private String getAddress(Order order) {
-        try {
-            String systemCustomer = (order.getCustomer() != null && order.getCustomer().getCustomerName() != null) ?
-                    separatorLne + order.getCustomer().getCustomerName() + separatorLne : ((order.getPickupName() != null) ?
-                    separatorLne + order.getPickupName() + separatorLne : "");
+    private String getCustomerData(Order order) {
+        String systemCustomer = (order.getCustomer() != null && order.getCustomer().getCustomerName() != null) ?
+                separatorLne + order.getCustomer().getCustomerName() + separatorLne : ((order.getPickupName() != null) ?
+                separatorLne + order.getPickupName() + separatorLne : "");
 
+        try {
             if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
 
                 if (order.getIsThirdSpOrder() != null) {
                     return separatorLne + order.getPickupName() + "\n" +
                             order.getThirdSpAddress() + ", " + order.getThirdSpAddressNumber() + "\n" +
-                            (order.getThirdSpComplementAddress() != null ? "Compl:" + order.getThirdSpComplementAddress() + "\n" : "") +
-                            ((order.getThirdSpAddressReference() != null) ? "Ref: " + order.getThirdSpAddressReference() + "\n" : "") +
+                            (order.getThirdSpComplementAddress() != null ? boldOn + "Compl: " + boldOff + order.getThirdSpComplementAddress() + "\n" : "") +
+                            ((order.getThirdSpAddressReference() != null) ? boldOn + "Ref: " + boldOff + order.getThirdSpAddressReference() + "\n" : "") +
                             ((order.getThirdSpPhone() != null) ? "Tel: " + order.getThirdSpPhone() + "\n" : "") +
                             ((order.getThirdSpPhoneLocalizer() != null) ? "Localizador: " + order.getThirdSpPhoneLocalizer() : "")
                             + separatorLne;
                 } else {
-                    return "";
+                    return separatorLne +
+                            ((order.getCustomer().getCustomerName() != null) ? order.getCustomer().getCustomerName() + "\n" : "") +
+                            order.getCustomer().getAddress() + ", " + order.getCustomer().getAddressNumber() + "\n" +
+                            (order.getCustomer().getComplement() != null ? boldOn + "Compl: " + boldOff + order.getCustomer().getComplement() + "\n" : "") +
+                            ((order.getCustomer().getPhone() != null) ? "Tel: " + order.getCustomer().getPhone() : "") +
+                            separatorLne;
                 }
 
             } else if (order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
                 if (order.getIsThirdSpOrder() != null) {
-                    return "";
+                    return separatorLne + order.getPickupName() + "\n" + separatorLne;
                 } else {
                     return systemCustomer;
                 }
@@ -190,10 +196,29 @@ public class PrintSyncService {
                 return systemCustomer;
             }
         } catch (Exception e) {
-            return separatorLne + "Erro ao pegar dados do usuario, conferir no " + order.getIsThirdSpOrder() +
+            return systemCustomer + order.getIsThirdSpOrder() != null ? separatorLne + "Erro ao pegar dados do usuario, conferir no " + order.getIsThirdSpOrder() +
                     ((order.getThirdSpOrderNumber() != null) ? ", pedido numero " + order.getOrderNumberOnShift() : "") +
-                    "\n\nERRO descrição: " + e.getMessage() + separatorLne;
+                    "\n\nERRO descrição: " + e.getMessage() + separatorLne : "";
         }
+    }
+
+    private String getAmountsResume(Order order){
+        StringBuilder resume = new StringBuilder();
+        Boolean hasDiscount = (order.getDiscount() > 0);
+        Boolean hasServiceTax = (order.getServiceTax() > 0);
+        Boolean hasDeliveryTax = (order.getDeliveryTax() != null && order.getDeliveryTax() > 0);
+
+        resume.append( "\n" + rightCommand + separatorLne)
+                .append("Subtotal: R$ ").append(String.format("%.2f", order.getPrice())).append("\n")
+                .append(hasServiceTax ? "Taxa de Serviço: R$ " + String.format("%.2f", order.getServiceTax()) + "\n" : "")
+                .append(hasDeliveryTax ? "Taxa Delivery: R$ " + String.format("%.2f", order.getDeliveryTax()) + "\n" : "")
+                .append(hasDiscount ? "\nTotal: R$ " + String.format("%.2f", order.getTotalPrice() + order.getDiscount()) + "\n" : "")
+                .append(hasDiscount ? "Descontos: R$ " + String.format("%.2f", order.getDiscount()) + "\n" : "")
+                .append(boldOn).append("\n\nTotal Final: R$ " + String.format("%.2f", order.getTotalPrice())).append(boldOff)
+                .append(separatorLne)
+                .append(leftCommand);
+        return resume.toString();
+
     }
 
     private String getFooter() {
