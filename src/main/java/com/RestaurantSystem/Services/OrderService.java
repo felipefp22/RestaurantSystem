@@ -85,7 +85,9 @@ public class OrderService {
         List<OrdersItems> ordersItems = mapOrderItems(orderCreated, toCreateDTO.orderItemsIDs(), company, null);
 
         orderCreated.setOrderItems(ordersItems);
+        if(toCreateDTO.discountValue() != null) orderCreated.setDiscount(toCreateDTO.discountValue());
         calculateTotalPriceTaxAndDiscount(company, order, null);
+
         if(toCreateDTO.money() != null) orderCreated.setMoney(toCreateDTO.money());
         if(toCreateDTO.pix() != null) orderCreated.setPix(toCreateDTO.pix());
         if(toCreateDTO.debit() != null) orderCreated.setDebit(toCreateDTO.debit());
@@ -246,6 +248,7 @@ public class OrderService {
                 order.setDeliveryTax(0.0);
             }
 
+            if(orderToCloseDTO.discountValue() != null && orderToCloseDTO.discountValue() > 0) order.setDiscount(orderToCloseDTO.discountValue());
             calculateTotalPriceTaxAndDiscount(company, order, orderToCloseDTO);
             order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
             order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
@@ -413,11 +416,7 @@ public class OrderService {
                 order.setServiceTax(order.getPrice() * company.getTaxServicePercentage() / 100);
             }
 
-            if (orderToCloseDTO.discountValue() != null) {
-                order.setDiscount(-Math.abs(orderToCloseDTO.discountValue()));
-            }
-
-            order.setTotalPrice(order.getPrice() + order.getServiceTax() + order.getDiscount() + order.getDeliveryTax());
+            order.setTotalPrice(order.getPrice() + order.getServiceTax() + -Math.abs(order.getDiscount()) + order.getDeliveryTax());
         }
     }
 

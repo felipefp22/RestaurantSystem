@@ -14,6 +14,7 @@ public record CreateOrderDTO(
         List<OrderItemDTO> orderItemsIDs,
         String notes,
         Integer deliveryDistanceKM,
+        Double discountValue,
         Double money,
         Double pix,
         Double debit,

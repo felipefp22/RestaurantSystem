@@ -5,6 +5,7 @@ import java.util.UUID;
 public record FindOrderDTO(
         UUID companyID,
         UUID orderID,
+        Double discountValue,
         Double money,
         Double pix,
         Double debit,
