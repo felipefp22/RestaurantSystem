@@ -58,6 +58,14 @@ public class Order {
     private double totalPrice;
     private String notes;
 
+    private Double money;
+    private Double pix;
+    private Double debit;
+    private Double credit;
+    private Double valeRefeicao;
+    private Double othersPaymentModes;
+
+
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
@@ -114,6 +122,12 @@ public class Order {
         this.openedByUser = requester;
         this.notes = createOrderDTO.notes();
         this.status = OrderStatus.OPEN;
+        this.money = 0.0;
+        this.pix = 0.0;
+        this.debit = 0.0;
+        this.credit = 0.0;
+        this.valeRefeicao = 0.0;
+        this.othersPaymentModes = 0.0;
     }
 
     public Order(Shift shift, int orderNumberOnShift, IFoodCreateOrderDTO ifoodDTO) {
@@ -144,6 +158,12 @@ public class Order {
         this.thirdSpComplementAddress = ifoodDTO.addressComplement();
         this.thirdSpAddressReference = ifoodDTO.addressReference();
         this.isThirdSpPaid = (ifoodDTO.prePaid() >= ifoodDTO.orderAmount()) ? true : null;
+        this.money = 0.0;
+        this.pix = 0.0;
+        this.debit = 0.0;
+        this.credit = 0.0;
+        this.valeRefeicao = 0.0;
+        this.othersPaymentModes = 0.0;
     }
 
     // <>------------ Methods ------------<>
@@ -270,6 +290,54 @@ public class Order {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public Double getMoney() {
+        return money;
+    }
+
+    public void setMoney(Double money) {
+        this.money = money;
+    }
+
+    public Double getPix() {
+        return pix;
+    }
+
+    public void setPix(Double pix) {
+        this.pix = pix;
+    }
+
+    public Double getDebit() {
+        return debit;
+    }
+
+    public void setDebit(Double debit) {
+        this.debit = debit;
+    }
+
+    public Double getCredit() {
+        return credit;
+    }
+
+    public void setCredit(Double credit) {
+        this.credit = credit;
+    }
+
+    public Double getValeRefeicao() {
+        return valeRefeicao;
+    }
+
+    public void setValeRefeicao(Double valeRefeicao) {
+        this.valeRefeicao = valeRefeicao;
+    }
+
+    public Double getOthersPaymentModes() {
+        return othersPaymentModes;
+    }
+
+    public void setOthersPaymentModes(Double othersPaymentModes) {
+        this.othersPaymentModes = othersPaymentModes;
     }
 
     public OrderStatus getStatus() {

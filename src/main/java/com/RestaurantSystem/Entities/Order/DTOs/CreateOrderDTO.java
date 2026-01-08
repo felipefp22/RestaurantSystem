@@ -13,7 +13,13 @@ public record CreateOrderDTO(
         String pickupName,
         List<OrderItemDTO> orderItemsIDs,
         String notes,
-        Integer deliveryDistanceKM
+        Integer deliveryDistanceKM,
+        Double money,
+        Double pix,
+        Double debit,
+        Double credit,
+        Double valeRefeicao,
+        Double othersPaymentModes
 ) {
 
 }

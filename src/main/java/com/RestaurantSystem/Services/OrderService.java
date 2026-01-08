@@ -61,31 +61,38 @@ public class OrderService {
     // <> ---------- Methods ---------- <>
 
     @Transactional
-    public Order createOrder(String requesterID, CreateOrderDTO orderToCreate) {
+    public Order createOrder(String requesterID, CreateOrderDTO toCreateDTO) {
         AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
-        Company company = verificationsServices.retrieveCompany(orderToCreate.companyID());
+        Company company = verificationsServices.retrieveCompany(toCreateDTO.companyID());
         verificationsServices.worksOnCompany(company, requester);
 
-        Customer customer = orderToCreate.customerID() != null ? findCustomerOnCompany(company, orderToCreate.customerID()) : null;
+        Customer customer = toCreateDTO.customerID() != null ? findCustomerOnCompany(company, toCreateDTO.customerID()) : null;
         Shift currentShift = verificationsServices.retrieveCurrentShift(company);
 
-        if (orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery"))
-            deliveryVerifications(company, customer, orderToCreate.deliveryDistanceKM());
-        if (orderToCreate.tableNumberOrDeliveryOrPickup().equals("pickup"))
-            pickUpVerifications(customer, orderToCreate.pickupName());
+        if (toCreateDTO.tableNumberOrDeliveryOrPickup().equals("delivery"))
+            deliveryVerifications(company, customer);
+        if (toCreateDTO.tableNumberOrDeliveryOrPickup().equals("pickup"))
+            pickUpVerifications(customer, toCreateDTO.pickupName());
 
-        if (!orderToCreate.tableNumberOrDeliveryOrPickup().equals("delivery") && !orderToCreate.tableNumberOrDeliveryOrPickup().equals("pickup"))
-            isTableAvailable(company, orderToCreate.tableNumberOrDeliveryOrPickup(), null);
+        if (!toCreateDTO.tableNumberOrDeliveryOrPickup().equals("delivery") && !toCreateDTO.tableNumberOrDeliveryOrPickup().equals("pickup"))
+            isTableAvailable(company, toCreateDTO.tableNumberOrDeliveryOrPickup(), null);
 
-        Order order = new Order(requester, currentShift, (currentShift.getOrders().size() + 1), orderToCreate, customer);
+        Order order = new Order(requester, currentShift, (currentShift.getOrders().size() + 1), toCreateDTO, customer);
         if (order.getTableNumberOrDeliveryOrPickup().equals("delivery"))
             order.setDeliveryTax(customerDeliveryFeePlusExtraFee(company, customer));
         Order orderCreated = orderRepo.save(order);
 
-        List<OrdersItems> ordersItems = mapOrderItems(orderCreated, orderToCreate.orderItemsIDs(), company, null);
+        List<OrdersItems> ordersItems = mapOrderItems(orderCreated, toCreateDTO.orderItemsIDs(), company, null);
 
         orderCreated.setOrderItems(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
+        if(toCreateDTO.money() != null) orderCreated.setMoney(toCreateDTO.money());
+        if(toCreateDTO.pix() != null) orderCreated.setPix(toCreateDTO.pix());
+        if(toCreateDTO.debit() != null) orderCreated.setDebit(toCreateDTO.debit());
+        if(toCreateDTO.credit() != null) orderCreated.setCredit(toCreateDTO.credit());
+        if(toCreateDTO.valeRefeicao() != null) orderCreated.setValeRefeicao(toCreateDTO.valeRefeicao());
+        if(toCreateDTO.othersPaymentModes() != null) orderCreated.setOthersPaymentModes(toCreateDTO.othersPaymentModes());
+
         orderRepo.save(orderCreated);
         if (!order.getTableNumberOrDeliveryOrPickup().equals("pickup") && !order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
             createPrintSyncTable(company, orderCreated, ordersItems, "add");
@@ -185,7 +192,7 @@ public class OrderService {
         String pickUpName = changeOrderTableDTO.pickupName() != null ? changeOrderTableDTO.pickupName() : order.getPickupName();
 
         if (changeOrderTableDTO.tableNumberOrDeliveryOrPickup().equals("delivery")) {
-            deliveryVerifications(company, customer, changeOrderTableDTO.deliveryDistanceKM());
+            deliveryVerifications(company, customer);
 
             order.setDeliveryTax(customerDeliveryFeePlusExtraFee(company, customer));
             order.setCustomer(customer);
@@ -262,6 +269,13 @@ public class OrderService {
         order.setStatus(OrderStatus.PAID);
         order.setCompletedByUser(requester);
         order.setCompletedOrderDateUtc(LocalDateTime.now(ZoneOffset.UTC));
+
+        if(dto.money() != null) order.setMoney(dto.money());
+        if(dto.pix() != null) order.setPix(dto.pix());
+        if(dto.debit() != null) order.setDebit(dto.debit());
+        if(dto.credit() != null) order.setCredit(dto.credit());
+        if(dto.valeRefeicao() != null) order.setValeRefeicao(dto.valeRefeicao());
+        if(dto.othersPaymentModes() != null) order.setOthersPaymentModes(dto.othersPaymentModes());
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.save(order);
@@ -426,11 +440,11 @@ public class OrderService {
     }
 
     // <>---------------------------- CREATE/UPDATE ORDERS HELPERS -----------------------------------<>
-    private void deliveryVerifications(Company company, Customer customer, Integer deliveryDistanceKmFromDTO) {
+    private void deliveryVerifications(Company company, Customer customer) {
         if (customer == null) throw new RuntimeException("Customer is required for delivery orders.");
-        if (deliveryDistanceKmFromDTO == null)
+        if (customer.getDistanceFromStoreKM() == null || customer.getDistanceFromStoreKM() < 1)
             throw new RuntimeException("Delivery tax is required for delivery orders.");
-        if (deliveryDistanceKmFromDTO > company.getMaxDeliveryDistanceKM())
+        if (customer.getDistanceFromStoreKM() > company.getMaxDeliveryDistanceKM())
             throw new RuntimeException("customerExceedsMaximumDistance-" + company.getMaxDeliveryDistanceKM());
     }
 
