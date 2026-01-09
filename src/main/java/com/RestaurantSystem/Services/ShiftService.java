@@ -2,12 +2,14 @@ package com.RestaurantSystem.Services;
 
 import com.RestaurantSystem.Entities.Company.Company;
 import com.RestaurantSystem.Entities.Order.Order;
+import com.RestaurantSystem.Entities.Printer.PrintSync;
 import com.RestaurantSystem.Entities.Shift.DTOs.CloseShiftDTO;
 import com.RestaurantSystem.Entities.Shift.DTOs.ShiftOperationDTO;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
 import com.RestaurantSystem.Repositories.AuthUserRepository;
 import com.RestaurantSystem.Repositories.CompanyRepo;
+import com.RestaurantSystem.Repositories.PrintSyncRepo;
 import com.RestaurantSystem.Repositories.ShiftRepo;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import jakarta.transaction.Transactional;
@@ -28,12 +30,14 @@ public class ShiftService {
     private final AuthUserRepository authUserRepository;
     private final CompanyRepo companyRepo;
     private final VerificationsServices verificationsServices;
+    private final PrintSyncRepo printSyncRepo;
 
-    public ShiftService(ShiftRepo shiftRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, VerificationsServices verificationsServices) {
+    public ShiftService(ShiftRepo shiftRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo, VerificationsServices verificationsServices, PrintSyncRepo printSyncRepo) {
         this.shiftRepo = shiftRepo;
         this.authUserRepository = authUserRepository;
         this.companyRepo = companyRepo;
         this.verificationsServices = verificationsServices;
+        this.printSyncRepo = printSyncRepo;
     }
 
     //<>------------ Methods ------------<>
@@ -95,6 +99,8 @@ public class ShiftService {
             shift.setEndTimeUTC(LocalDateTime.now(ZoneOffset.UTC));
             shift.setEmployeeClosedShift(requester.getEmail());
 
+            Set<PrintSync> pintSyncsToDelete = company.getPrintSync();
+            printSyncRepo.deleteAll(pintSyncsToDelete);
             return shiftRepo.save(shift);
         } else {
             throw new RuntimeException("invalidAdminPassword");

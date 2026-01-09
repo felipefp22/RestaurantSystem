@@ -441,7 +441,9 @@ public class OrderService {
             }
         }
 
-        order.setTotalPrice(order.getPrice() + order.getServiceTax() + -Math.abs(order.getDiscount()) + order.getDeliveryTax());
+        double deliveryTax = order.getDeliveryTax() != null ? order.getDeliveryTax() : 0;
+
+        order.setTotalPrice(order.getPrice() + order.getServiceTax() + -Math.abs(order.getDiscount()) + deliveryTax);
     }
 
     private Boolean thisServiceHasTaxOrNot(Company company, String tableNumberOrDeliveryOrPickup) {
@@ -510,11 +512,12 @@ public class OrderService {
 
     // <>---------------------------- PRINT SYNC HELPERS -----------------------------------<>
     private void createPrintDispatchAndPreparation(Company company, Order order, List<OrdersItems> ordersItems, String action, Boolean isEdited) {
-        String dispatchString = printSyncService.createDispatchItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, true,true, isEdited);
-        String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"), isEdited);
-        String printFinalString = dispatchString + "\n\n" + printSyncService.getCutCommand() + preparationString;
+        try {
+            String dispatchString = printSyncService.createDispatchItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, true, true, isEdited);
+            String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"), isEdited);
+            String printFinalString = dispatchString + "\n\n" + printSyncService.getCutCommand() + preparationString;
 
-        List<PrintSync> printSyncCreate = new ArrayList<>();
+            List<PrintSync> printSyncCreate = new ArrayList<>();
 //        if (company.getPrintRules().stream().filter(x -> x.getPrintCategory().equals(PrintCategory.FULLORDER) && x.getPrinterID() != null && x.getCopies() > 0).findFirst().isPresent()) {
 //            printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printSyncService.createPreparationItemsPrint(company, order, PrintCategory.FULLORDER, ordersItems, action.equals("del"))));
 //
@@ -532,29 +535,40 @@ public class OrderService {
 //
 //        }
 
-        printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printFinalString));
+            printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printFinalString));
 
-        if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+            if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void createPrintJustPreparation(Company company, Order order, List<OrdersItems> ordersItems, String action) {
-        String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"), false);
-        String printFinalString = preparationString + "\n\n" + printSyncService.getCutCommand() + preparationString;
+        try {
+            String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"), false);
+            String printFinalString = preparationString + "\n\n" + printSyncService.getCutCommand() + preparationString;
 
-        List<PrintSync> printSyncCreate = new ArrayList<>();
-        printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printFinalString));
+            List<PrintSync> printSyncCreate = new ArrayList<>();
+            printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printFinalString));
 
-        if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+            if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void createPrintBill(Company company, Order order) {
-        String dispatchString = printSyncService.createDispatchItemsPrint(company, order, PrintCategory.BEVERAGES, order.getOrderItems(),false, true, false);
-        String printFinalString = dispatchString;
+        try {
+            String dispatchString = printSyncService.createDispatchItemsPrint(company, order, PrintCategory.BEVERAGES, order.getOrderItems(), false, true, false);
+            String printFinalString = dispatchString;
 
-        List<PrintSync> printSyncCreate = new ArrayList<>();
-        printSyncCreate.add(new PrintSync(company, PrintCategory.BILL, printFinalString));
+            List<PrintSync> printSyncCreate = new ArrayList<>();
+            printSyncCreate.add(new PrintSync(company, PrintCategory.BILL, printFinalString));
 
-        if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+            if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
 
