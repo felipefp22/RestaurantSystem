@@ -202,30 +202,6 @@ public class PrintSyncService {
         }
     }
 
-    private String getAmountsResume(Order order){
-        StringBuilder resume = new StringBuilder();
-        Boolean hasDiscount = (order.getDiscount() > 0);
-        Boolean hasServiceTax = (order.getServiceTax() > 0);
-        Boolean hasDeliveryTax = (order.getDeliveryTax() != null && order.getDeliveryTax() > 0);
-
-        resume.append( "\n" + rightCommand + separatorLne)
-                .append("Subtotal: R$ ").append(String.format("%.2f", order.getPrice())).append("\n")
-                .append(hasServiceTax ? "Taxa de Serviço: R$ " + String.format("%.2f", order.getServiceTax()) + "\n" : "")
-                .append(hasDeliveryTax ? "Taxa Delivery: R$ " + String.format("%.2f", order.getDeliveryTax()) + "\n" : "")
-                .append(hasDiscount ? "\nTotal: R$ " + String.format("%.2f", order.getTotalPrice() + order.getDiscount()) + "\n" : "")
-                .append(hasDiscount ? "Descontos: R$ " + String.format("%.2f", order.getDiscount()) + "\n" : "")
-                .append(boldOn).append("\n\nTotal Final: R$ " + String.format("%.2f", order.getTotalPrice())).append(boldOff)
-                .append(separatorLne)
-                .append(leftCommand);
-        return resume.toString();
-
-    }
-
-    private String getFooter() {
-        return "\n\n\n\n\n";
-    }
-
-
     private String createPreparationText(List<PrintSyncOrderItemsDTO> ordersToCreateText, Boolean withPrice, boolean isCancelled, Boolean saveSpace) {
         StringBuilder itemsText = new StringBuilder();
         Integer lastPrintPriority = null;
@@ -251,7 +227,43 @@ public class PrintSyncService {
             if (!Objects.equals(lastPrintPriority, x.getPrintPriority())) lastPrintPriority = x.getPrintPriority();
         }
 
-        return itemsText.toString();
+        return itemsText.toString() + separatorLne;
+    }
+
+    private String getAmountsResume(Order order){
+        StringBuilder resume = new StringBuilder();
+        Boolean hasDiscount = (order.getDiscount() > 0);
+        Boolean hasServiceTax = (order.getServiceTax() > 0);
+        Boolean hasDeliveryTax = (order.getDeliveryTax() != null && order.getDeliveryTax() > 0);
+        Boolean isThirdSpOrder = order.getIsThirdSpOrder() != null;
+        Double thirdSpAdditionalFees = order.getThirdSpAdditionalFees() != null ? order.getThirdSpAdditionalFees() : 0;
+
+        String money = (order.getDebit() != null && order.getDebit() > 0) ? "* Dinheiro " : "";
+        String pix = (order.getDebit() != null && order.getDebit() > 0) ? "* Pix " : "";
+        String debit = (order.getDebit() != null && order.getDebit() > 0) ? "* Debito " : "";
+        String credit = (order.getDebit() != null && order.getDebit() > 0) ? "* Credito " : "";
+        String valeRefeicao = (order.getDebit() != null && order.getDebit() > 0) ? "* Vale Refeicao " : "";
+        String others = (order.getDebit() != null && order.getDebit() > 0) ? "* Outros " : "";
+
+        resume.append( "\n" + rightCommand + separatorLne)
+                .append("Subtotal: R$ ").append(String.format("%.2f", order.getPrice())).append("\n")
+                .append(hasServiceTax ? "Taxa de Serviço: R$ " + String.format("%.2f", order.getServiceTax()) + "\n" : "")
+                .append(hasDeliveryTax ? "Taxa Delivery: R$ " + String.format("%.2f", order.getDeliveryTax()) + "\n" : "")
+                .append(isThirdSpOrder ? "Taxa " + order.getIsThirdSpOrder() + ": R$ " + String.format("%.2f", thirdSpAdditionalFees) + "\n" : "")
+                .append(hasDiscount ? "\nTotal: R$ " + String.format("%.2f", order.getTotalPrice() + order.getDiscount()) + "\n" : "")
+                .append(hasDiscount ? "Descontos: R$ " + String.format("%.2f", order.getDiscount()) + "\n" : "")
+                .append(boldOn).append("\n\nTotal Final: R$ " + String.format("%.2f", order.getTotalPrice())).append(boldOff)
+                .append(separatorLne + centerCommand)
+                .append(separatorLne)
+                .append("Forma de Pagamento\n" + money + pix + debit + credit + valeRefeicao + others)
+                .append(separatorLne)
+                .append(leftCommand);
+        return resume.toString();
+
+    }
+
+    private String getFooter() {
+        return "\n\n\n\n\n";
     }
 
     private List<PrintSyncOrderItemsDTO> getPrintSyncOrderItemsDTO(Company company, List<OrdersItems> orderItems) {

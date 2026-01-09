@@ -331,14 +331,14 @@ public class IFoodService {
                 }, null);
     }
 
-    private void dispatchIFood(CompanyIfood companyIFood, String orderID) {
+    public void dispatchIFood(CompanyIfood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/dispatch", HttpMethod.POST, null,
                 new ParameterizedTypeReference<Void>() {
                 }, null);
     }
 
-    private void readyToPickupIFood(CompanyIfood companyIFood, String orderID) {
+    public void readyToPickupIFood(CompanyIfood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/readyToPickup", HttpMethod.POST, null,
                 new ParameterizedTypeReference<Void>() {
@@ -352,7 +352,7 @@ public class IFoodService {
                 }, null);
     }
 
-    private void deliveredIFood(CompanyIfood companyIFood, String orderID) {
+    public void deliveredIFood(CompanyIfood companyIFood, String orderID) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
                 "/order/v1.0/orders/" + orderID + "/arrivedAtDestination", HttpMethod.POST, null,
                 new ParameterizedTypeReference<Void>() {

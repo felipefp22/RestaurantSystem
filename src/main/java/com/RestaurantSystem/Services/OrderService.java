@@ -15,10 +15,14 @@ import com.RestaurantSystem.Entities.Product.ProductOption;
 import com.RestaurantSystem.Entities.Shift.Shift;
 import com.RestaurantSystem.Entities.ThirdSuppliers.DTOs.IFoodDTOs.IFoodCreateOrderDTO;
 import com.RestaurantSystem.Entities.User.AuthUserLogin;
+import com.RestaurantSystem.EventsListeners.Events.ThirdSupplierDeliveredEvent;
+import com.RestaurantSystem.EventsListeners.Events.ThirdSupplierDispatchEvent;
+import com.RestaurantSystem.EventsListeners.Events.ThirdSupplierReadyToPickupEvent;
 import com.RestaurantSystem.Repositories.*;
 import com.RestaurantSystem.Services.AuxsServices.PrintSyncService;
 import com.RestaurantSystem.Services.AuxsServices.VerificationsServices;
 import com.RestaurantSystem.WebSocket.SignalR;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,9 +47,11 @@ public class OrderService {
     private final PrintSyncService printSyncService;
     private final PrintSyncRepo printSyncRepo;
     private final SignalR signalR;
+    private final ApplicationEventPublisher eventPublisher;
+
 
     public OrderService(OrderRepo orderRepo, OrdersItemsRepo ordersItemsRepo, OrdersItemsCancelledRepo ordersItemsCancelledRepo, AuthUserRepository authUserRepository, CompanyRepo companyRepo,
-                        ShiftRepo shiftRepo, VerificationsServices verificationsServices, PrintSyncService printSyncService, PrintSyncRepo printSyncRepo, SignalR signalR) {
+                        ShiftRepo shiftRepo, VerificationsServices verificationsServices, PrintSyncService printSyncService, PrintSyncRepo printSyncRepo, SignalR signalR, ApplicationEventPublisher eventPublisher) {
         this.orderRepo = orderRepo;
         this.ordersItemsRepo = ordersItemsRepo;
         this.ordersItemsCancelledRepo = ordersItemsCancelledRepo;
@@ -56,6 +62,7 @@ public class OrderService {
         this.printSyncService = printSyncService;
         this.printSyncRepo = printSyncRepo;
         this.signalR = signalR;
+        this.eventPublisher = eventPublisher;
     }
 
     // <> ---------- Methods ---------- <>
@@ -251,11 +258,13 @@ public class OrderService {
 
             if (orderToCloseDTO.discountValue() != null && orderToCloseDTO.discountValue() > 0)
                 order.setDiscount(orderToCloseDTO.discountValue());
+
             calculateTotalPriceTaxAndDiscount(company, order, orderToCloseDTO);
             order.setStatus(OrderStatus.CLOSEDWAITINGPAYMENT);
             order.setClosedWaitingPaymentAtUtc(LocalDateTime.now(ZoneOffset.UTC));
             order.setCompletedByUser(requester);
             orderRepo.save(order);
+            adviseThirdSpDispatchOrReadyToPickup(order);
         });
 
 //        signalR.sendShiftOperationSigr(company);
@@ -283,6 +292,8 @@ public class OrderService {
         if (dto.othersPaymentModes() != null) order.setOthersPaymentModes(dto.othersPaymentModes());
 
         signalR.sendShiftOperationSigr(company);
+        adviseThirdSpDelivered(order);
+
         return orderRepo.save(order);
     }
 
@@ -438,6 +449,23 @@ public class OrderService {
                 .filter(c -> c.getId().equals(customerID))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Customer not found in the company."));
+    }
+
+    private void adviseThirdSpDispatchOrReadyToPickup(Order order) {
+        if (order.getIsThirdSpOrder() != null) {
+            if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+                eventPublisher.publishEvent(new ThirdSupplierDispatchEvent(order));
+            }
+            if (order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
+                eventPublisher.publishEvent(new ThirdSupplierReadyToPickupEvent(order));
+            }
+        }
+    }
+
+    private void adviseThirdSpDelivered(Order order) {
+        if (order.getIsThirdSpOrder() != null) {
+            eventPublisher.publishEvent(new ThirdSupplierDeliveredEvent(order));
+        }
     }
 
     // <>---------------------------- CREATE/UPDATE ORDERS HELPERS -----------------------------------<>

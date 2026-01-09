@@ -50,11 +50,12 @@ public class Order {
     @ManyToOne
     private AuthUserLogin ifCanceledAuthorizedByUser;
 
-    private double price;
+    private double price; //subTotal
     private double serviceTax;
     private double discount;
     private Double deliveryTax;
     private double totalPrice;
+    private Double thirdSpAdditionalFees;
     private String notes;
 
     private Double money;
@@ -138,6 +139,7 @@ public class Order {
         this.openOrderDateUtc = LocalDateTime.now(ZoneOffset.UTC);
         this.notes = null;
         this.status = OrderStatus.OPEN;
+        this.thirdSpAdditionalFees = ifoodDTO.additionalFees();
         this.totalPrice = ifoodDTO.orderAmount();
 
         this.deliveryTax = ifoodDTO.deliveryFee();
@@ -281,6 +283,10 @@ public class Order {
 
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public Double getThirdSpAdditionalFees() {
+        return thirdSpAdditionalFees;
     }
 
     public String getNotes() {
