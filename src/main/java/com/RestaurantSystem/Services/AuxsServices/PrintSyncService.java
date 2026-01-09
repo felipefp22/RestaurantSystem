@@ -46,7 +46,7 @@ public class PrintSyncService {
     }
 
     // <>------------ Methods ------------<>
-    public String createDispatchItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isWithPrice) {
+    public String createDispatchItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean printItemsNotes, Boolean isWithPrice, Boolean isEdited) {
         String header = getHeader(company);
         String date = getDate(order);
         String orderNum = "";
@@ -69,15 +69,16 @@ public class PrintSyncService {
             default -> getPrintSyncOrderItemsDTO(company, orderItems);
         };
 
-        String itemsText = createPreparationText(itemsToCreateText, isWithPrice, false, true);
-        String priceSection = getAmountsResume(order);
+        String itemsText = createPreparationText(itemsToCreateText, isWithPrice, printItemsNotes, false, true);
+        String priceSection = isWithPrice ? getAmountsResume(order) : "";
+        String editedAdvise = isEdited ?  separatorLne + " ***! PEDIDO ALTERADO !*** " + separatorLne : "";
 
-        String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + thirdSp + customerData + leftCommand + itemsText + priceSection + getFooter();
+        String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + editedAdvise + thirdSp + customerData + leftCommand + itemsText + editedAdvise + priceSection + getFooter();
 
         return finalText;
     }
 
-    public String createPreparationItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isCancelled) {
+    public String createPreparationItemsPrint(Company company, Order order, PrintCategory printCategory, List<OrdersItems> orderItems, Boolean isCancelled, Boolean isEdited) {
         String header = getHeader(company);
         String date = getDate(order);
         String orderNum = getOrderNumber(order);
@@ -98,9 +99,11 @@ public class PrintSyncService {
             default -> getPrintSyncOrderItemsDTO(company, orderItems);
         };
 
-        String itemsText = createPreparationText(itemsToCreateText, false, isCancelled, false);
+        String itemsText = createPreparationText(itemsToCreateText, false, true, isCancelled, false);
+        String editedAdvise = isEdited ?  separatorLne + " ***! PEDIDO ALTERADO !*** " + separatorLne : "";
 
-        String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + thirdSp + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
+
+        String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + editedAdvise + thirdSp + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
                 itemsText + getFooter();
 
         return finalText;
@@ -202,7 +205,7 @@ public class PrintSyncService {
         }
     }
 
-    private String createPreparationText(List<PrintSyncOrderItemsDTO> ordersToCreateText, Boolean withPrice, boolean isCancelled, Boolean saveSpace) {
+    private String createPreparationText(List<PrintSyncOrderItemsDTO> ordersToCreateText, Boolean withPrice, Boolean printItemsNotes, boolean isCancelled, Boolean saveSpace) {
         StringBuilder itemsText = new StringBuilder();
         Integer lastPrintPriority = null;
         for (PrintSyncOrderItemsDTO x : ordersToCreateText) {
@@ -221,7 +224,7 @@ public class PrintSyncService {
                     .append(boldOn + x.getName().toUpperCase().replaceAll("/", " / ") + boldOff)
                     .append(withPrice ? (" - R$ " + String.format("%.2f", (x.getPrice() * x.getQuantity()))) : "")
                     .append(x.getProductOptions() != null && !x.getProductOptions().isEmpty() ? x.getProductOptions().stream().map(option -> "\n - " + option.split("\\|")[1]).reduce("", String::concat) : "")
-                    .append((x.getNotes() != null && !x.getNotes().isBlank()) ? italic + "\n  -- " + x.getNotes() + italicOff : "")
+                    .append((x.getNotes() != null && !x.getNotes().isBlank() && printItemsNotes) ? italic + "\n  -- " + x.getNotes() + italicOff : "")
                     .append(isCancelled ? " (CANCELADO)" : "");
 
             if (!Objects.equals(lastPrintPriority, x.getPrintPriority())) lastPrintPriority = x.getPrintPriority();
@@ -238,12 +241,12 @@ public class PrintSyncService {
         Boolean isThirdSpOrder = order.getIsThirdSpOrder() != null;
         Double thirdSpAdditionalFees = order.getThirdSpAdditionalFees() != null ? order.getThirdSpAdditionalFees() : 0;
 
-        String money = (order.getDebit() != null && order.getDebit() > 0) ? "* Dinheiro " : "";
-        String pix = (order.getDebit() != null && order.getDebit() > 0) ? "* Pix " : "";
+        String money = (order.getMoney() != null && order.getMoney() > 0) ? "* Dinheiro " : "";
+        String pix = (order.getPix() != null && order.getPix() > 0) ? "* Pix " : "";
         String debit = (order.getDebit() != null && order.getDebit() > 0) ? "* Debito " : "";
-        String credit = (order.getDebit() != null && order.getDebit() > 0) ? "* Credito " : "";
-        String valeRefeicao = (order.getDebit() != null && order.getDebit() > 0) ? "* Vale Refeicao " : "";
-        String others = (order.getDebit() != null && order.getDebit() > 0) ? "* Outros " : "";
+        String credit = (order.getCredit() != null && order.getCredit() > 0) ? "* Credito " : "";
+        String valeRefeicao = (order.getValeRefeicao() != null && order.getValeRefeicao() > 0) ? "* Vale Refeicao " : "";
+        String others = (order.getOthersPaymentModes() != null && order.getOthersPaymentModes() > 0) ? "* Outros " : "";
 
         resume.append( "\n" + rightCommand + separatorLne)
                 .append("Subtotal: R$ ").append(String.format("%.2f", order.getPrice())).append("\n")

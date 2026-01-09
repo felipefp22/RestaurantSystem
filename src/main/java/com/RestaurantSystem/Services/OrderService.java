@@ -104,14 +104,11 @@ public class OrderService {
             orderCreated.setOthersPaymentModes(toCreateDTO.othersPaymentModes());
 
         orderRepo.save(orderCreated);
-        if (!order.getTableNumberOrDeliveryOrPickup().equals("pickup") && !order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
-            createPrintSyncTable(company, orderCreated, ordersItems, "add");
-        } else if (order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
-            createPrintSyncTable(company, orderCreated, ordersItems, "add");
-        } else if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
-            createPrintSyncTable(company, orderCreated, ordersItems, "add");
+        if (order.getTableNumberOrDeliveryOrPickup().equals("pickup") || order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+            createPrintDispatchAndPreparation(company, orderCreated, ordersItems, "add", false);
+        } else {
+            createPrintJustPreparation(company, orderCreated, ordersItems, "add");
         }
-
 
 //        signalR.sendShiftOperationSigr(company);
 
@@ -161,7 +158,12 @@ public class OrderService {
         order.getOrderItems().addAll(ordersItems);
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
-        createPrintSyncTable(company, order, ordersItems, "add");
+
+        if (order.getTableNumberOrDeliveryOrPickup().equals("pickup") || order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+            createPrintDispatchAndPreparation(company, order, ordersItems, "add", true);
+        } else {
+            createPrintJustPreparation(company, order, ordersItems, "add");
+        }
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
@@ -181,7 +183,11 @@ public class OrderService {
 
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
-        createPrintSyncTable(company, order, ordersItemsToCancel, "del");
+        if (order.getTableNumberOrDeliveryOrPickup().equals("pickup") || order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+            createPrintDispatchAndPreparation(company, order, ordersItemsToCancel, "add", true);
+        } else {
+            createPrintJustPreparation(company, order, ordersItemsToCancel, "del");
+        }
 
         signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after removing orderItemsIDs."));
@@ -265,7 +271,12 @@ public class OrderService {
             order.setCompletedByUser(requester);
             orderRepo.save(order);
             adviseThirdSpDispatchOrReadyToPickup(order);
+
+            if (!order.getTableNumberOrDeliveryOrPickup().equals("pickup") && !order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+                createPrintBill(company, order);
+            }
         });
+
 
 //        signalR.sendShiftOperationSigr(company);
     }
@@ -399,7 +410,7 @@ public class OrderService {
                     totalPrice = productPrice + productOptions.stream().mapToDouble(ProductOption::getPrice).sum();
                 }
 
-                List<String> productOpts = productOptions.stream().map(po -> po.getId().toString() + "|" + po.getName() + "| R$ " + po.getPrice()).sorted().toList();
+                List<String> productOpts = productOptions.stream().map(po -> po.getId().toString() + "|" + po.getName()).sorted().toList();
 
                 String notes = x.notes();
                 if (thirdSpData != null && x.ifoodPdvCodeError() != null)
@@ -498,9 +509,9 @@ public class OrderService {
     }
 
     // <>---------------------------- PRINT SYNC HELPERS -----------------------------------<>
-    private void createPrintSyncTable(Company company, Order order, List<OrdersItems> ordersItems, String action) {
-        String dispatchString = printSyncService.createDispatchItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, true);
-        String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"));
+    private void createPrintDispatchAndPreparation(Company company, Order order, List<OrdersItems> ordersItems, String action, Boolean isEdited) {
+        String dispatchString = printSyncService.createDispatchItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, true,true, isEdited);
+        String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"), isEdited);
         String printFinalString = dispatchString + "\n\n" + printSyncService.getCutCommand() + preparationString;
 
         List<PrintSync> printSyncCreate = new ArrayList<>();
@@ -525,6 +536,27 @@ public class OrderService {
 
         if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
     }
+
+    private void createPrintJustPreparation(Company company, Order order, List<OrdersItems> ordersItems, String action) {
+        String preparationString = printSyncService.createPreparationItemsPrint(company, order, PrintCategory.BEVERAGES, ordersItems, action.equals("del"), false);
+        String printFinalString = preparationString + "\n\n" + printSyncService.getCutCommand() + preparationString;
+
+        List<PrintSync> printSyncCreate = new ArrayList<>();
+        printSyncCreate.add(new PrintSync(company, PrintCategory.FULLORDER, printFinalString));
+
+        if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+    }
+
+    private void createPrintBill(Company company, Order order) {
+        String dispatchString = printSyncService.createDispatchItemsPrint(company, order, PrintCategory.BEVERAGES, order.getOrderItems(),false, true, false);
+        String printFinalString = dispatchString;
+
+        List<PrintSync> printSyncCreate = new ArrayList<>();
+        printSyncCreate.add(new PrintSync(company, PrintCategory.BILL, printFinalString));
+
+        if (printSyncCreate != null) printSyncRepo.saveAll(printSyncCreate);
+    }
+
 
 // <>---------------------------- END || CREATE/UPDATE ORDERS HELPERS || END -----------------------------------<>
 
