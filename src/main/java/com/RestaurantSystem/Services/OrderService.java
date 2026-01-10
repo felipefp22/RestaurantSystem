@@ -126,6 +126,7 @@ public class OrderService {
         List<OrdersItems> ordersItems = mapOrderItems(orderCreated, ifoodDTO.orderItemsDTOs(), company, ifoodDTO);
         orderCreated.setOrderItems(ordersItems);
         orderRepo.save(orderCreated);
+        createPrintDispatchAndPreparation(company, orderCreated, ordersItems, "add", false);
     }
 
     public Order addNotesOnOrder(String requesterID, UpdateNotesOnOrderDTO notesAndOrderID) {
@@ -160,7 +161,7 @@ public class OrderService {
         orderRepo.save(order);
 
         if (order.getTableNumberOrDeliveryOrPickup().equals("pickup") || order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
-            createPrintDispatchAndPreparation(company, order, ordersItems, "add", true);
+            createPrintDispatchAndPreparation(company, order, order.getOrderItems(), "add", true);
         } else {
             createPrintJustPreparation(company, order, ordersItems, "add");
         }
@@ -184,7 +185,7 @@ public class OrderService {
         calculateTotalPriceTaxAndDiscount(company, order, null);
         orderRepo.save(order);
         if (order.getTableNumberOrDeliveryOrPickup().equals("pickup") || order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
-            createPrintDispatchAndPreparation(company, order, ordersItemsToCancel, "add", true);
+            createPrintDispatchAndPreparation(company, order, order.getOrderItems(), "add", true);
         } else {
             createPrintJustPreparation(company, order, ordersItemsToCancel, "del");
         }
@@ -359,6 +360,23 @@ public class OrderService {
         }
     }
 
+    public void reprintOrder(String requesterID, FindOrderDTO dto) {
+        AuthUserLogin requester = verificationsServices.retrieveRequester(requesterID);
+        Company company = verificationsServices.retrieveCompany(dto.companyID());
+        verificationsServices.justOwnerOrServer(company, requester);
+
+        Order order = verificationsServices.retrieveOrderOpenedDoesnoteMatterShift(company, dto.orderID());
+
+        if (order.getTableNumberOrDeliveryOrPickup().equals("pickup") || order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
+            createPrintDispatchAndPreparation(company, order, order.getOrderItems(), "add", false);
+        } else {
+            if (order.getStatus().equals(OrderStatus.OPEN)) {
+                createPrintJustPreparation(company, order, order.getOrderItems(), "add");
+            } else {
+                createPrintBill(company, order);
+            }
+        }
+    }
     // <> ---------- Aux Methods ---------- <>
 
     // <>---------------------------- ADD/REMOVE ITEMS HELPERS -----------------------------------<>

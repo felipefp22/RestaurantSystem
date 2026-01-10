@@ -20,11 +20,15 @@ public class ThirdSupplierDeliveredListener {
     // <>------------ Methods ------------<>
     @EventListener
     public void handleDeliveredIFood(ThirdSupplierDeliveredEvent event) {
-        Order order = event.getOrder();
-        if (order.getIsThirdSpOrder() == null) return;
+        try {
+            Order order = event.getOrder();
+            if (order.getIsThirdSpOrder() == null) return;
 
-        if (order.getIsThirdSpOrder().equals(ThirdSuppliersEnum.IFOOD))
-            ifoodService.deliveredIFood(order.getShift().getCompany().getCompanyIFoodData(), order.getThirdSpOrderID());
+            if (order.getIsThirdSpOrder().equals(ThirdSuppliersEnum.IFOOD))
+                ifoodService.deliveredIFood(order.getShift().getCompany().getCompanyIFoodData(), order.getThirdSpOrderID(), order.getThirdSpDeliveryCode());
+        } catch (Exception e) {
+            System.out.println("Error on handleDeliveredIFood: " + e.getMessage());
+        }
     }
 
 }

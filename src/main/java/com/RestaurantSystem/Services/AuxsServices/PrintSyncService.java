@@ -25,6 +25,11 @@ public class PrintSyncService {
     private final String italic = "{-Italic-}";
     private final String italicOff = "{-Normal-}";
 
+    private final String fontDoubleHeight = "{-DoubleHeight-}";
+    private final String fontDoubleWidth = "{-DoubleWidth-}";
+    private final String fontDoubleBoth = "{-DoubleBoth-}";
+    private final String fontSizeNormal = "{-SizeNormal-}";
+
     private final String underlining1 = "{-Underline-}";
     private final String underlining2 = "{-Underline2-}";
     private final String underliningOff = "{-UnderlineOff-}";
@@ -56,7 +61,8 @@ public class PrintSyncService {
 
         if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
             orderNum = getOrderNumber(order);
-            if (order.getIsThirdSpOrder() != null) thirdSp = separatorLne + order.getIsThirdSpOrder() + separatorLne;
+            if (order.getIsThirdSpOrder() != null)
+                thirdSp = separatorLne + order.getIsThirdSpOrder() + (order.getThirdSpOrderNumber() != null ? (": " + order.getThirdSpOrderNumber()) : "") + separatorLne;
         } else {
             tableOrDeliveryOrPickupNum = "\nMesa: " + order.getTableNumberOrDeliveryOrPickup() + "\n\n";
         }
@@ -71,7 +77,7 @@ public class PrintSyncService {
 
         String itemsText = createPreparationText(itemsToCreateText, isWithPrice, printItemsNotes, false, true);
         String priceSection = isWithPrice ? getAmountsResume(order) : "";
-        String editedAdvise = isEdited ?  separatorLne + " ***! PEDIDO ALTERADO !*** " + separatorLne : "";
+        String editedAdvise = isEdited ? separatorLne + " ***! PEDIDO ALTERADO !*** " + separatorLne : "";
 
         String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + editedAdvise + thirdSp + customerData + leftCommand + itemsText + editedAdvise + priceSection + getFooter();
 
@@ -88,7 +94,8 @@ public class PrintSyncService {
 
         if (order.getTableNumberOrDeliveryOrPickup().equals("delivery") || order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
             orderNum = getOrderNumber(order);
-            if (order.getIsThirdSpOrder() != null) thirdSp = separatorLne + order.getIsThirdSpOrder() + separatorLne;
+            if (order.getIsThirdSpOrder() != null)
+                thirdSp = separatorLne + order.getIsThirdSpOrder() + (order.getThirdSpOrderNumber() != null ? (": " + order.getThirdSpOrderNumber()) : "") + separatorLne;
         }
 
         List<PrintSyncOrderItemsDTO> itemsToCreateText = switch (printCategory) {
@@ -100,7 +107,7 @@ public class PrintSyncService {
         };
 
         String itemsText = createPreparationText(itemsToCreateText, false, true, isCancelled, false);
-        String editedAdvise = isEdited ?  separatorLne + " ***! PEDIDO ALTERADO !*** " + separatorLne : "";
+        String editedAdvise = isEdited ? separatorLne + " ***! PEDIDO ALTERADO !*** " + separatorLne : "";
 
 
         String finalText = centerCommand + header + date + orderNum + tableOrDeliveryOrPickupNum + editedAdvise + thirdSp + leftCommand + (isCancelled ? getCancelledText() + "\n" : "") +
@@ -173,7 +180,7 @@ public class PrintSyncService {
             if (order.getTableNumberOrDeliveryOrPickup().equals("delivery")) {
 
                 if (order.getIsThirdSpOrder() != null) {
-                    return separatorLne + order.getPickupName() + "\n" +
+                    return order.getPickupName() + "\n" +
                             order.getThirdSpAddress() + ", " + order.getThirdSpAddressNumber() + "\n" +
                             (order.getThirdSpComplementAddress() != null ? boldOn + "Compl: " + boldOff + order.getThirdSpComplementAddress() + "\n" : "") +
                             ((order.getThirdSpAddressReference() != null) ? boldOn + "Ref: " + boldOff + order.getThirdSpAddressReference() + "\n" : "") +
@@ -191,7 +198,7 @@ public class PrintSyncService {
 
             } else if (order.getTableNumberOrDeliveryOrPickup().equals("pickup")) {
                 if (order.getIsThirdSpOrder() != null) {
-                    return separatorLne + order.getPickupName() + "\n" + separatorLne;
+                    return order.getPickupName() + separatorLne;
                 } else {
                     return systemCustomer;
                 }
@@ -233,12 +240,13 @@ public class PrintSyncService {
         return itemsText.toString() + separatorLne;
     }
 
-    private String getAmountsResume(Order order){
+    private String getAmountsResume(Order order) {
         StringBuilder resume = new StringBuilder();
         Boolean hasDiscount = (order.getDiscount() > 0);
         Boolean hasServiceTax = (order.getServiceTax() > 0);
         Boolean hasDeliveryTax = (order.getDeliveryTax() != null && order.getDeliveryTax() > 0);
         Boolean isThirdSpOrder = order.getIsThirdSpOrder() != null;
+        Double thirdSpPrePaid = (isThirdSpOrder && order.getThirdSpPrePaid() != null) ? order.getThirdSpPrePaid() : 0.0;
         Double thirdSpAdditionalFees = order.getThirdSpAdditionalFees() != null ? order.getThirdSpAdditionalFees() : 0;
 
         String money = (order.getMoney() != null && order.getMoney() > 0) ? "* Dinheiro " : "";
@@ -248,7 +256,7 @@ public class PrintSyncService {
         String valeRefeicao = (order.getValeRefeicao() != null && order.getValeRefeicao() > 0) ? "* Vale Refeicao " : "";
         String others = (order.getOthersPaymentModes() != null && order.getOthersPaymentModes() > 0) ? "* Outros " : "";
 
-        resume.append( "\n" + rightCommand + separatorLne)
+        resume.append("\n" + rightCommand + separatorLne)
                 .append("Subtotal: R$ ").append(String.format("%.2f", order.getPrice())).append("\n")
                 .append(hasServiceTax ? "Taxa de Serviço: R$ " + String.format("%.2f", order.getServiceTax()) + "\n" : "")
                 .append(hasDeliveryTax ? "Taxa Delivery: R$ " + String.format("%.2f", order.getDeliveryTax()) + "\n" : "")
@@ -256,9 +264,11 @@ public class PrintSyncService {
                 .append(hasDiscount ? "\nTotal: R$ " + String.format("%.2f", order.getTotalPrice() + order.getDiscount()) + "\n" : "")
                 .append(hasDiscount ? "Descontos: R$ " + String.format("%.2f", order.getDiscount()) + "\n" : "")
                 .append(boldOn).append("\n\nTotal Final: R$ " + String.format("%.2f", order.getTotalPrice())).append(boldOff)
+                .append(boldOn).append(fontDoubleHeight).append(thirdSpPrePaid.equals(order.getTotalPrice()) ? "\n* PAGO *" : "").append(boldOff).append(fontSizeNormal)
                 .append(separatorLne + centerCommand)
                 .append(separatorLne)
-                .append("Forma de Pagamento\n" + money + pix + debit + credit + valeRefeicao + others)
+                .append((!isThirdSpOrder || !thirdSpPrePaid.equals(order.getTotalPrice())) ? "Forma de Pagamento\n" + money + pix + debit + credit + valeRefeicao + others : "")
+                .append(boldOn).append(fontDoubleBoth).append(thirdSpPrePaid.equals(order.getTotalPrice()) ? "*$$ PEDIDO JA PAGO $$*\n Nao cobrar" : "").append(boldOff).append(fontSizeNormal)
                 .append(separatorLne)
                 .append(leftCommand);
         return resume.toString();

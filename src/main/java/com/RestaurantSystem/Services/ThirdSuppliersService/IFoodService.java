@@ -165,6 +165,11 @@ public class IFoodService {
                 }, null);
         if (ifoodEvents == null) return;
 
+        ifoodEvents.get().stream().filter(ev -> Objects.equals(ev.fullCode(), "DISPATCHED")).forEach(x -> {
+            OrderDetailsIFoodDTO ifoodOrderDetails = getIFoodOrderDetails(dto.companyIfoodData(), x.orderId());
+            System.out.println("");
+        });
+
         ifoodEvents.get().stream().filter(ev -> Objects.equals(ev.fullCode(), "PLACED")).forEach(x -> {
             confirmOrderIFood(company.getCompanyIFoodData(), x.orderId());
 
@@ -175,7 +180,7 @@ public class IFoodService {
                 List<OrderItemDTO> orderItemsDTO = createOrderItemDTO(company, ifoodOrderDetails);
                 IFoodCreateOrderDTO ifoodToCreateOrder = new IFoodCreateOrderDTO(company, ifoodOrderDetails, orderItemsDTO);
                 orderService.createThirdSupplierOrder(ifoodToCreateOrder);
-            } catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("Error on create iFood order: " + e.getMessage());
 //                printSyncRepo.save(new PrintSync(company, PrintCategory.FULLORDER, "\n\n\nErro ao criar pedido iFood ID:\n " + ifoodOrderID + ". Verificar na plataforma iFood.\n\n[Contate nosso 'Comanda Rapida' Suporte e informe o erro]\n\n\n\n\n\n\n"));
             }
@@ -245,7 +250,7 @@ public class IFoodService {
 
                 List<String> productsIDs = product != null ? List.of(product.getId().toString()) : List.of();
                 List<String> productOptsIDs = getProductOptsIDsFromPdvCodes(productOptsMap, productOptsPdvCodes, pdvCodeError);
-                if(product == null) pdvCodeError.set(true);
+                if (product == null) pdvCodeError.set(true);
 
                 String pdvCodeErrorMsg = (product != null ? "" : x.externalCode() + "|" + x.name() + " R$" + x.unitPrice() + " - produto nao encontrado") +
                         (!pdvCodeError.get() ? null : createErrorMsg(new ArrayList<>(), options));
@@ -352,9 +357,9 @@ public class IFoodService {
                 }, null);
     }
 
-    public void deliveredIFood(CompanyIfood companyIFood, String orderID) {
+    public void deliveredIFood(CompanyIfood companyIFood, String orderID, String deliveryCode) {
         webClientLinkRequestIFood.requisitionGenericIFood(companyIFood,
-                "/order/v1.0/orders/" + orderID + "/arrivedAtDestination", HttpMethod.POST, null,
+                "/order/v1.0/orders/" + orderID + "/verifyDeliveryCode", HttpMethod.POST, new VerificationCodeIfoodDTO(deliveryCode),
                 new ParameterizedTypeReference<Void>() {
                 }, null);
     }

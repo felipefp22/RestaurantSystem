@@ -111,6 +111,16 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/reprint-order")
+    public ResponseEntity reprintOrder(@RequestHeader("Authorization") String authorizationHeader,
+                                           @RequestBody FindOrderDTO dto) {
+        String requesterID = retriveAuthInfosService.retrieveEmailOfUser(authorizationHeader);
+
+        orderService.reprintOrder(requesterID, dto);
+
+        return ResponseEntity.ok().build();
+    }
+
 
     // <>------------ Prints Service ------------<>
 //    @PutMapping("/mark-orderPrintSync-printed")

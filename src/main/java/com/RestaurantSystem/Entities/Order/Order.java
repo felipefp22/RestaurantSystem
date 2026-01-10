@@ -103,9 +103,11 @@ public class Order {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String thirdSpAddressReference; // its like complement extension
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Boolean isThirdSpPaid;
+    private Double thirdSpPrePaid;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String thirdSpOrderResume;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String thirdSpDeliveryCode;
 
 
     // <>------------ Constructors ------------<>
@@ -140,8 +142,8 @@ public class Order {
         this.notes = null;
         this.status = OrderStatus.OPEN;
         this.thirdSpAdditionalFees = ifoodDTO.additionalFees();
+        this.price = ifoodDTO.subTotal();
         this.totalPrice = ifoodDTO.orderAmount();
-
         this.deliveryTax = ifoodDTO.deliveryFee();
 
         this.isThirdSpOrder = ThirdSuppliersEnum.IFOOD;
@@ -158,7 +160,8 @@ public class Order {
         this.thirdSpAddressNumber = ifoodDTO.spotNumber();
         this.thirdSpComplementAddress = ifoodDTO.addressComplement();
         this.thirdSpAddressReference = ifoodDTO.addressReference();
-        this.isThirdSpPaid = (ifoodDTO.prePaid() >= ifoodDTO.orderAmount()) ? true : null;
+        this.thirdSpPrePaid = ifoodDTO.prePaid();
+        this.thirdSpDeliveryCode = ifoodDTO.pickUpCode();
         this.money = 0.0;
         this.pix = 0.0;
         this.debit = 0.0;
@@ -477,12 +480,8 @@ public class Order {
         this.thirdSpAddressReference = thirdSpAddressReference;
     }
 
-    public Boolean getThirdSpPaid() {
-        return isThirdSpPaid;
-    }
-
-    public void setThirdSpPaid(Boolean thirdSpPaid) {
-        isThirdSpPaid = thirdSpPaid;
+    public Double getThirdSpPrePaid() {
+        return thirdSpPrePaid;
     }
 
     public String getThirdSpOrderResume() {
@@ -491,5 +490,9 @@ public class Order {
 
     public void setThirdSpOrderResume(String thirdSpOrderResume) {
         this.thirdSpOrderResume = thirdSpOrderResume;
+    }
+
+    public String getThirdSpDeliveryCode() {
+        return thirdSpDeliveryCode;
     }
 }
