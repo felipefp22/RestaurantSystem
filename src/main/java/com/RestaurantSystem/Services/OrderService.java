@@ -166,6 +166,7 @@ public class OrderService {
             createPrintJustPreparation(company, order, ordersItems, "add");
         }
 
+        
         signalR.sendShiftOperationSigr(company);
         return orderRepo.findById(order.getId()).orElseThrow(() -> new RuntimeException("Order not found after adding orderItemsIDs."));
     }
